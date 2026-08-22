@@ -5,10 +5,10 @@ import { StatsBar } from "@/components/StatsBar";
 import { getAboutPageStats } from "@/lib/about-data";
 import {
   BRAND_LABEL,
-  CONTACT_EMAIL,
   FOUNDER_BIO,
   FOUNDER_HANDLE,
   FOUNDER_NAME,
+  FOUNDER_X_URL,
   SITE_NAME,
 } from "@/lib/brand";
 import { formatLaunchDate, formatMoney } from "@/lib/format";
@@ -33,7 +33,7 @@ function StatCard({
       <div className="tabular text-[26px] font-bold leading-none tracking-tight sm:text-[28px]">
         {children}
       </div>
-      <p className="mt-2 text-[12px] text-muted">{label}</p>
+      <p className="mt-2 truncate text-[12px] text-muted">{label}</p>
     </div>
   );
 }
@@ -42,6 +42,7 @@ export default async function AboutPage() {
   const stats = await getAboutPageStats();
   const launchLine = formatLaunchDate(stats.launchedAt);
   const hasBoard = stats.totalListings > 0;
+  const handle = FOUNDER_HANDLE.replace(/^@/, "");
 
   return (
     <main className="flex-1">
@@ -70,7 +71,7 @@ export default async function AboutPage() {
           </p>
 
           <p className="mt-6 text-[15px] font-medium text-foreground">
-            {hasBoard ? "A few things happening since then:" : "The board is open — here's where we are:"}
+            {hasBoard ? "A few crazy things that happened since then:" : "A few things worth knowing:"}
           </p>
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
@@ -89,7 +90,7 @@ export default async function AboutPage() {
             <StatCard
               label={
                 hasBoard
-                  ? `highest bid · ${stats.topListing!.displayUrl}`
+                  ? `highest bid (so far) · ${stats.topListing!.displayUrl}`
                   : "highest bid (so far)"
               }
             >
@@ -110,26 +111,24 @@ export default async function AboutPage() {
             {hasBoard ? (
               <>
                 <span className="font-semibold text-foreground">
-                  {stats.totalListings.toLocaleString()} listing{stats.totalListings === 1 ? "" : "s"}
+                  {stats.totalListings.toLocaleString()} paid listing
+                  {stats.totalListings === 1 ? "" : "s"}
                 </span>{" "}
-                on the board and{" "}
-                <span className="font-semibold text-foreground">
-                  {stats.totalBids.toLocaleString()} completed bid{stats.totalBids === 1 ? "" : "s"}
-                </span>
-                . Every number above is real — unique visitors, completed payments only, live SSE
-                updates.{" "}
+                and climbing — every rank earned with real money, not fake rows. Visitors are real
+                IPs. Revenue is completed checkout only. No padding, no theatre.{" "}
                 <Link href="/stats" className="text-accent underline underline-offset-2">
                   See live stats →
                 </Link>
               </>
             ) : (
               <>
-                No paid listings yet — which means{" "}
+                Nobody&apos;s claimed the board yet — which means{" "}
                 <Link href="/" className="font-semibold text-accent underline underline-offset-2">
                   #1 is still {formatMoney(5)}
                 </Link>
-                . All stats on this page are still honest: visitors are real IPs, revenue counts
-                completed payments only.{" "}
+                . That&apos;s the cheapest this spot will ever be. The numbers above aren&apos;t
+                dressed up: real visitors, real payments, zero filler. First name on the board wins
+                the story.{" "}
                 <Link href="/stats" className="text-accent underline underline-offset-2">
                   See live stats →
                 </Link>
@@ -138,74 +137,41 @@ export default async function AboutPage() {
           </p>
 
           <p className="mt-5 text-[15px] leading-relaxed text-muted">
-            Discovery is usually rented — SEO, ads, launch-day upvotes. {BRAND_LABEL} is the
-            opposite. You pay, you rank. The price is public. The ledger is public. Raise anytime
-            by entering the same URL — you only pay the difference.
+            Most discovery is rented — you pay Google, you pray on Product Hunt, you hire an agency
+            and hope someone clicks. {BRAND_LABEL} flips it: you pay once, your bid{" "}
+            <span className="font-medium text-foreground">is</span> your rank. Price on the wall.
+            Ledger in the open. Same URL to raise — you only cover the gap.
           </p>
 
           <p className="mt-5 text-[15px] font-semibold leading-relaxed text-foreground">
             The board is here. Same rules. Same idea. Rank is the bid — nothing else.
           </p>
 
-          {/* Kingbid extras — compact, not card-heavy */}
-          <div className="mt-10 border-t border-border pt-8">
-            <h2 className="text-[15px] font-bold text-foreground">What you get if you bid</h2>
-            <ul className="mt-3 space-y-2 text-[14px] leading-relaxed text-muted">
-              <li>→ A public listing until someone outbids you — dofollow link included.</li>
-              <li>→ Click stats, trending slots, and outbid email alerts (optional).</li>
-              <li>→ Share cards, listing pages, referral credits, and global or local boards.</li>
-            </ul>
-            <p className="mt-4 text-[14px] text-muted">
-              <Link href="/rules" className="text-accent underline underline-offset-2">
-                Read the full rules →
-              </Link>
-            </p>
-          </div>
-
-          {/* Founder */}
           <div className="mt-10 flex gap-4 border-t border-border pt-8">
-            <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[15px] font-bold text-accent"
-              aria-hidden
-            >
-              {FOUNDER_NAME.split(" ")
-                .map((w) => w[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase()}
-            </div>
+            <img
+              src={`https://unavatar.io/x/${handle}`}
+              alt=""
+              width={48}
+              height={48}
+              className="h-12 w-12 shrink-0 rounded-full bg-surface-2 object-cover"
+            />
             <div>
               <p className="text-[15px] font-semibold text-foreground">
                 {FOUNDER_NAME}{" "}
                 <span className="font-normal text-muted">
                   —{" "}
                   <a
-                    href={`https://x.com/${FOUNDER_HANDLE.replace(/^@/, "")}`}
+                    href={FOUNDER_X_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-accent hover:underline"
                   >
-                    @{FOUNDER_HANDLE.replace(/^@/, "")}
+                    @{handle}
                   </a>
                 </span>
               </p>
               <p className="mt-1.5 text-[14px] leading-relaxed text-muted">{FOUNDER_BIO}</p>
-              <p className="mt-2 text-[13px] text-muted">
-                Questions?{" "}
-                <a href={`mailto:${CONTACT_EMAIL}`} className="text-accent hover:underline">
-                  {CONTACT_EMAIL}
-                </a>
-              </p>
             </div>
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link
-              href="/"
-              className="inline-block rounded-full bg-accent px-8 py-3 text-[14px] font-semibold text-white transition-all hover:brightness-110"
-            >
-              Go to the leaderboard →
-            </Link>
           </div>
         </article>
       </div>

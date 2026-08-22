@@ -81,19 +81,29 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
               was added to the board.
             </p>
             <p className="mt-2 text-[14px] text-muted">
-              In <strong className="text-foreground">test mode</strong>, use Dodo test cards for your
-              checkout currency — not a real bank card.
+              Test cards only work when they <strong className="text-foreground">match checkout</strong>{" "}
+              (currency + billing country). A mismatch always declines.
             </p>
-            <ul className="mt-3 space-y-1.5 text-left text-[13px] text-muted">
+            <ul className="mt-3 space-y-2 text-left text-[13px] text-muted">
               <li>
-                <strong className="text-foreground">India (INR):</strong>{" "}
+                <strong className="text-foreground">Nepal (NPR):</strong> billing country{" "}
+                <strong>Nepal</strong>, pay in NPR · card{" "}
+                <code className="text-accent">4242 4242 4242 4242</code> · 06/32 · 123
+              </li>
+              <li>
+                <strong className="text-foreground">India (INR):</strong> billing country{" "}
+                <strong>India</strong>, pay in INR · card{" "}
                 <code className="text-accent">4576 2389 1277 1450</code> · 06/32 · 123
               </li>
               <li>
-                <strong className="text-foreground">US (USD):</strong>{" "}
+                <strong className="text-foreground">US (USD):</strong> billing country{" "}
+                <strong>United States</strong>, pay in USD · card{" "}
                 <code className="text-accent">4242 4242 4242 4242</code> · 06/32 · 123
               </li>
             </ul>
+            <p className="mt-3 text-[12px] text-muted">
+              Do not use the India card on a USD/US checkout — that is what causes “card declined”.
+            </p>
             <Link
               href="/"
               className="mt-8 inline-block rounded-full bg-accent px-8 py-3 text-[14px] font-semibold text-white hover:brightness-110"

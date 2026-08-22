@@ -391,6 +391,7 @@ function HomeClientInner({
         scope={scope}
         countryName={countryName}
         countryCode={selectedCountry}
+        detectedCountry={viewerCountry}
       />
     </>
   );

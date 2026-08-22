@@ -5,6 +5,7 @@ import type { LeaderboardData } from "@/lib/leaderboard";
 import { formatMoney } from "@/lib/format";
 import { REF_COOKIE } from "@/lib/brand";
 import type { BoardScope } from "@/lib/geo";
+import { POPULAR_COUNTRIES, countryDisplayName, countryFlagEmoji } from "@/lib/geo";
 
 export interface BidPrefill {
   mode: "new" | "claim" | "takeover";
@@ -22,6 +23,7 @@ interface Props {
   scope?: BoardScope;
   countryName?: string | null;
   countryCode?: string;
+  detectedCountry: string;
 }
 
 export function BidModal({
@@ -32,11 +34,13 @@ export function BidModal({
   scope = "global",
   countryName,
   countryCode,
+  detectedCountry,
 }: Props) {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
+  const [billingCountry, setBillingCountry] = useState(detectedCountry);
   const [amount, setAmount] = useState(prefill.amount);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,9 +49,10 @@ export function BidModal({
     if (open) {
       setAmount(prefill.amount);
       setUrl(prefill.url ?? "");
+      setBillingCountry(detectedCountry);
       setError(null);
     }
-  }, [open, prefill]);
+  }, [open, prefill, detectedCountry]);
 
   // Detect a raise: the entered URL matches a listing already on the board
   const existing = useMemo(() => {
@@ -104,6 +109,7 @@ export function BidModal({
           referralSlug: referralSlugFromCookie(),
           scope,
           countryCode: scope === "local" ? countryCode : undefined,
+          billingCountryCode: billingCountry,
         }),
       });
       const data = await res.json();
@@ -204,6 +210,28 @@ export function BidModal({
               </div>
             </>
           )}
+
+          <div>
+            <label className="block text-xs font-medium text-muted mb-1.5">
+              Billing country
+            </label>
+            <select
+              value={billingCountry}
+              onChange={(e) => setBillingCountry(e.target.value.toUpperCase())}
+              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-accent transition-colors"
+            >
+              {POPULAR_COUNTRIES.map((code) => (
+                <option key={code} value={code}>
+                  {countryFlagEmoji(code)} {countryDisplayName(code)}
+                  {code === detectedCountry ? " (detected)" : ""}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-xs text-muted">
+              Checkout currency follows this country (NPR, INR, USD, AUD, …). Pick where your
+              card is billed — you can also change it again on the payment page.
+            </p>
+          </div>
 
           <div>
             <label className="block text-xs font-medium text-muted mb-1.5">

@@ -7,7 +7,7 @@ import { createCheckout } from "@/lib/payments";
 import { getClientIp, hashIp, rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 import { resolveReferralSlug, referralCookieName } from "@/lib/referral";
-import { getCheckoutCountryCode, parseScope, resolveCountryCode } from "@/lib/geo";
+import { getCheckoutCountryCode, isValidCountryCode, parseScope, resolveCountryCode } from "@/lib/geo";
 
 const bidSchema = z.object({
   url: z.string().min(1).max(500),
@@ -19,6 +19,8 @@ const bidSchema = z.object({
   referralSlug: z.string().max(100).optional(),
   scope: z.enum(["global", "local"]).optional(),
   countryCode: z.string().length(2).optional(),
+  /** Checkout billing country — sets Dodo currency (IN→INR, US→USD, NP→NPR, …). */
+  billingCountryCode: z.string().length(2).optional(),
 });
 
 function referralFromRequest(request: Request, bodySlug?: string): string | null {
@@ -72,7 +74,17 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
       countryCode,
     });
 
-    const checkoutCountry = getCheckoutCountryCode(request, scope, countryCode);
+    const billingOverride = parsed.data.billingCountryCode?.toUpperCase();
+    if (billingOverride && !isValidCountryCode(billingOverride)) {
+      return NextResponse.json({ error: "Invalid billing country." }, { status: 400 });
+    }
+
+    const checkoutCountry = getCheckoutCountryCode(
+      request,
+      scope,
+      countryCode,
+      billingOverride
+    );
 
     const checkoutUrl = await createCheckout({
       paymentId: intent.paymentId,

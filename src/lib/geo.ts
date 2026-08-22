@@ -76,14 +76,17 @@ export function resolveCountryCode(request: Request): string {
 }
 
 /**
- * Country for Dodo checkout billing — uses IP geo, not the board-viewing cookie.
- * Local bids use the board country; global bids use where the visitor actually is.
+ * Country for Dodo checkout billing.
+ * User override wins, then local board country, then IP geo.
  */
 export function getCheckoutCountryCode(
   request: Request,
   scope: BoardScope,
-  localBoardCountry: string | null
+  localBoardCountry: string | null,
+  billingCountryOverride?: string | null
 ): string {
+  const override = billingCountryOverride?.toUpperCase();
+  if (override && isValidCountryCode(override)) return override;
   if (scope === "local" && localBoardCountry) return localBoardCountry;
   return getCountryFromRequest(request);
 }

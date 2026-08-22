@@ -5,6 +5,7 @@ import { StatsBar } from "@/components/StatsBar";
 import { getAboutPageStats } from "@/lib/about-data";
 import {
   BRAND_LABEL,
+  CONTACT_EMAIL,
   FOUNDER_BIO,
   FOUNDER_HANDLE,
   FOUNDER_NAME,
@@ -171,6 +172,12 @@ export default async function AboutPage() {
                 </span>
               </p>
               <p className="mt-1.5 text-[14px] leading-relaxed text-muted">{FOUNDER_BIO}</p>
+              <p className="mt-2 text-[13px] text-muted">
+                Questions?{" "}
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-accent hover:underline">
+                  {CONTACT_EMAIL}
+                </a>
+              </p>
             </div>
           </div>
         </article>

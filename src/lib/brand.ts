@@ -7,6 +7,6 @@ export const FOUNDER_X_URL =
   process.env.NEXT_PUBLIC_FOUNDER_X_URL ?? "https://x.com/Mintu_aa";
 export const FOUNDER_BIO =
   process.env.NEXT_PUBLIC_FOUNDER_BIO ??
-  "Indie builder from Nepal. Founder of kingbid.lol and agentagi.dev.";
+  "Built kingbid.lol — a pay-to-rank leaderboard with global and local country boards.";
 export const REF_COOKIE = "kingbid_ref";
 export const COUNTRY_COOKIE = "kingbid_country";

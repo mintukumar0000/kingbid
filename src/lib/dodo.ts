@@ -25,6 +25,10 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
     throw new Error("DODO_PAYMENTS_API_KEY and DODO_PAYMENTS_PRODUCT_ID are required.");
   }
 
+  // Force USD so US test cards (4242…) work. Without this, Nepal/IN users often
+  // see NPR/INR checkout where US test cards are declined.
+  const billingCurrency = process.env.DODO_BILLING_CURRENCY ?? "USD";
+
   const res = await fetch(`${apiBase()}/checkouts`, {
     method: "POST",
     headers: {
@@ -36,9 +40,11 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
         {
           product_id: productId,
           quantity: 1,
-          amount: params.amount * 100, // cents — PWYW product
+          amount: params.amount * 100, // cents for USD PWYW product
         },
       ],
+      billing_currency: billingCurrency,
+      allowed_payment_method_types: ["credit", "debit"],
       return_url: `${siteUrl()}/success/${encodeURIComponent(params.paymentId)}`,
       customer: params.email ? { email: params.email } : undefined,
       metadata: {

@@ -7,7 +7,7 @@ import { createCheckout } from "@/lib/payments";
 import { getClientIp, hashIp, rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 import { resolveReferralSlug, referralCookieName } from "@/lib/referral";
-import { parseScope, resolveCountryCode } from "@/lib/geo";
+import { getCheckoutCountryCode, parseScope, resolveCountryCode } from "@/lib/geo";
 
 const bidSchema = z.object({
   url: z.string().min(1).max(500),
@@ -72,13 +72,15 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
       countryCode,
     });
 
+    const checkoutCountry = getCheckoutCountryCode(request, scope, countryCode);
+
     const checkoutUrl = await createCheckout({
       paymentId: intent.paymentId,
       amount: intent.amount,
       listingUrl: intent.listingUrl,
       displayUrl: intent.displayUrl,
       email: parsed.data.email || undefined,
-      countryCode: resolveCountryCode(request),
+      countryCode: checkoutCountry,
     });
 
     await prisma.analytics.create({
@@ -88,6 +90,7 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
           amount: intent.amount,
           creditApplied: intent.creditApplied,
           url: intent.listingUrl,
+          checkoutCountry,
           ip: hashIp(ip),
           referralSlug,
         }),

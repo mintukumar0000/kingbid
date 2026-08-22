@@ -75,6 +75,19 @@ export function resolveCountryCode(request: Request): string {
   return getCountryFromRequest(request);
 }
 
+/**
+ * Country for Dodo checkout billing — uses IP geo, not the board-viewing cookie.
+ * Local bids use the board country; global bids use where the visitor actually is.
+ */
+export function getCheckoutCountryCode(
+  request: Request,
+  scope: BoardScope,
+  localBoardCountry: string | null
+): string {
+  if (scope === "local" && localBoardCountry) return localBoardCountry;
+  return getCountryFromRequest(request);
+}
+
 export function countryDisplayName(code: string): string {
   if (!code || code === "XX") return "your region";
   try {

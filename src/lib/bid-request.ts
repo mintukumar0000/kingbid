@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { BidError, createBidIntent } from "@/lib/bidding";
 import { createCheckout } from "@/lib/payments";
+import { dodoCheckoutUserMessage } from "@/lib/dodo";
 import { getClientIp, hashIp, rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 import { resolveReferralSlug, referralCookieName } from "@/lib/referral";
@@ -106,6 +107,27 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
       return NextResponse.json({ error: e.message }, { status: 422 });
     }
     console.error("bid request failed:", e);
+
+    const err = e as Error & { dodoStatus?: number; dodoBody?: string };
+    if (err.dodoStatus) {
+      return NextResponse.json(
+        { error: dodoCheckoutUserMessage(err.dodoStatus, err.dodoBody ?? "") },
+        { status: 502 }
+      );
+    }
+    if (err.message?.includes("Dodo checkout failed")) {
+      const match = err.message.match(/Dodo checkout failed \((\d+)\):/);
+      const status = match ? Number(match[1]) : 500;
+      const body = err.message.split(": ").slice(1).join(": ") ?? "";
+      return NextResponse.json(
+        { error: dodoCheckoutUserMessage(status, body) },
+        { status: 502 }
+      );
+    }
+    if (err.message?.includes("Nothing to charge")) {
+      return NextResponse.json({ error: err.message }, { status: 422 });
+    }
+
     return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
   }
 }

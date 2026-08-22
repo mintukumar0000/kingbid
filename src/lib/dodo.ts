@@ -22,11 +22,32 @@ export function isDodoLiveMode(): boolean {
   return process.env.DODO_PAYMENTS_ENVIRONMENT === "live_mode";
 }
 
+/** Map Dodo API failures to a short user-facing checkout error. */
+export function dodoCheckoutUserMessage(status: number, body: string): string {
+  if (status === 401) {
+    return "Checkout is unavailable — live payment keys may not match. Check Dodo live API key on Vercel.";
+  }
+  if (status === 422) {
+    if (/product/i.test(body)) {
+      return "Checkout product is not set up in Dodo live mode. Confirm the live product ID on Vercel.";
+    }
+    return "Could not start checkout for this bid amount. Try a different amount.";
+  }
+  if (status === 404) {
+    return "Payment product not found in Dodo. Confirm DODO_PAYMENTS_PRODUCT_ID for live mode.";
+  }
+  return "Could not start checkout. Please try again in a moment.";
+}
+
 export async function createDodoCheckout(params: CheckoutParams): Promise<string> {
   const productId = process.env.DODO_PAYMENTS_PRODUCT_ID;
   const apiKey = process.env.DODO_PAYMENTS_API_KEY;
   if (!productId || !apiKey) {
     throw new Error("DODO_PAYMENTS_API_KEY and DODO_PAYMENTS_PRODUCT_ID are required.");
+  }
+
+  if (params.amount < 1) {
+    throw new Error("Nothing to charge — referral credit may cover this raise. Contact support.");
   }
 
   // Adaptive currency + billing country are handled entirely on Dodo checkout
@@ -64,7 +85,13 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Dodo checkout failed (${res.status}): ${body}`);
+    const err = new Error(`Dodo checkout failed (${res.status}): ${body}`) as Error & {
+      dodoStatus?: number;
+      dodoBody?: string;
+    };
+    err.dodoStatus = res.status;
+    err.dodoBody = body;
+    throw err;
   }
 
   const session = (await res.json()) as { checkout_url?: string; checkoutUrl?: string };

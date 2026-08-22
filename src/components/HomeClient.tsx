@@ -208,7 +208,9 @@ function HomeClientInner({
             >
               −
             </button>
-            <span className="tabular text-[28px] text-accent sm:text-[36px]">{formatMoneyPlain(heroValue)}</span>
+            <span className="tabular text-[28px] text-accent underline decoration-accent/50 underline-offset-[6px] sm:text-[36px]">
+              {formatMoneyPlain(heroValue)}
+            </span>
             <button
               type="button"
               onClick={() => setHeroAmount(Math.min(999_999, heroValue + 1))}

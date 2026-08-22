@@ -18,6 +18,10 @@ export function isDodoConfigured(): boolean {
   return !!process.env.DODO_PAYMENTS_API_KEY;
 }
 
+export function isDodoLiveMode(): boolean {
+  return process.env.DODO_PAYMENTS_ENVIRONMENT === "live_mode";
+}
+
 export async function createDodoCheckout(params: CheckoutParams): Promise<string> {
   const productId = process.env.DODO_PAYMENTS_PRODUCT_ID;
   const apiKey = process.env.DODO_PAYMENTS_API_KEY;

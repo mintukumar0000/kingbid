@@ -10,6 +10,7 @@ import { failBid } from "@/lib/bidding";
 import { formatMoney } from "@/lib/format";
 import { getRankForListing } from "@/lib/listing-page";
 import { BRAND_LABEL, SITE_NAME } from "@/lib/brand";
+import { isDodoLiveMode } from "@/lib/dodo";
 import { ogClaimUrl } from "@/lib/site";
 import { PAGE } from "@/lib/layout";
 
@@ -57,6 +58,7 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
 
   const failed = bid.status === "failed" || dodoFailed;
   const completed = bid.status === "completed";
+  const livePayments = isDodoLiveMode();
   const rank = completed ? await getRankForListing(bid.listingId) : null;
   const total = completed ? bid.totalAfter : bid.amount;
 
@@ -80,30 +82,39 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
               Your card was declined or the checkout was cancelled. No charge was completed — nothing
               was added to the board.
             </p>
-            <p className="mt-2 text-[14px] text-muted">
-              Test cards only work when they <strong className="text-foreground">match checkout</strong>{" "}
-              (currency + billing country). A mismatch always declines.
-            </p>
-            <ul className="mt-3 space-y-2 text-left text-[13px] text-muted">
-              <li>
-                <strong className="text-foreground">Nepal (NPR):</strong> billing country{" "}
-                <strong>Nepal</strong>, pay in NPR · card{" "}
-                <code className="text-accent">4242 4242 4242 4242</code> · 06/32 · 123
-              </li>
-              <li>
-                <strong className="text-foreground">India (INR):</strong> billing country{" "}
-                <strong>India</strong>, pay in INR · card{" "}
-                <code className="text-accent">4576 2389 1277 1450</code> · 06/32 · 123
-              </li>
-              <li>
-                <strong className="text-foreground">US (USD):</strong> billing country{" "}
-                <strong>United States</strong>, pay in USD · card{" "}
-                <code className="text-accent">4242 4242 4242 4242</code> · 06/32 · 123
-              </li>
-            </ul>
-            <p className="mt-3 text-[12px] text-muted">
-              Do not use the India card on a USD/US checkout — that is what causes “card declined”.
-            </p>
+            {livePayments ? (
+              <p className="mt-2 text-[14px] text-muted">
+                Try a different card or contact your bank. Make sure billing country on checkout
+                matches your card.
+              </p>
+            ) : (
+              <>
+                <p className="mt-2 text-[14px] text-muted">
+                  Test cards only work when they <strong className="text-foreground">match checkout</strong>{" "}
+                  (currency + billing country). A mismatch always declines.
+                </p>
+                <ul className="mt-3 space-y-2 text-left text-[13px] text-muted">
+                  <li>
+                    <strong className="text-foreground">Nepal (NPR):</strong> billing country{" "}
+                    <strong>Nepal</strong>, pay in NPR · card{" "}
+                    <code className="text-accent">4242 4242 4242 4242</code> · 06/32 · 123
+                  </li>
+                  <li>
+                    <strong className="text-foreground">India (INR):</strong> billing country{" "}
+                    <strong>India</strong>, pay in INR · card{" "}
+                    <code className="text-accent">4576 2389 1277 1450</code> · 06/32 · 123
+                  </li>
+                  <li>
+                    <strong className="text-foreground">US (USD):</strong> billing country{" "}
+                    <strong>United States</strong>, pay in USD · card{" "}
+                    <code className="text-accent">4242 4242 4242 4242</code> · 06/32 · 123
+                  </li>
+                </ul>
+                <p className="mt-3 text-[12px] text-muted">
+                  Do not use the India card on a USD/US checkout — that is what causes “card declined”.
+                </p>
+              </>
+            )}
             <Link
               href="/"
               className="mt-8 inline-block rounded-full bg-accent px-8 py-3 text-[14px] font-semibold text-white hover:brightness-110"

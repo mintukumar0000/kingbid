@@ -81,10 +81,19 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
               was added to the board.
             </p>
             <p className="mt-2 text-[14px] text-muted">
-              Use a Dodo <strong className="text-foreground">test card</strong> in test mode:{" "}
-              <code className="text-accent">4242 4242 4242 4242</code> · expiry{" "}
-              <code className="text-accent">06/32</code> · CVC <code className="text-accent">123</code>
+              In <strong className="text-foreground">test mode</strong>, use Dodo test cards for your
+              checkout currency — not a real bank card.
             </p>
+            <ul className="mt-3 space-y-1.5 text-left text-[13px] text-muted">
+              <li>
+                <strong className="text-foreground">India (INR):</strong>{" "}
+                <code className="text-accent">4576 2389 1277 1450</code> · 06/32 · 123
+              </li>
+              <li>
+                <strong className="text-foreground">US (USD):</strong>{" "}
+                <code className="text-accent">4242 4242 4242 4242</code> · 06/32 · 123
+              </li>
+            </ul>
             <Link
               href="/"
               className="mt-8 inline-block rounded-full bg-accent px-8 py-3 text-[14px] font-semibold text-white hover:brightness-110"

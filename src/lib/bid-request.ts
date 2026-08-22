@@ -78,6 +78,7 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
       listingUrl: intent.listingUrl,
       displayUrl: intent.displayUrl,
       email: parsed.data.email || undefined,
+      countryCode: resolveCountryCode(request),
     });
 
     await prisma.analytics.create({

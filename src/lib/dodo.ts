@@ -25,9 +25,30 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
     throw new Error("DODO_PAYMENTS_API_KEY and DODO_PAYMENTS_PRODUCT_ID are required.");
   }
 
-  // Force USD so US test cards (4242…) work. Without this, Nepal/IN users often
-  // see NPR/INR checkout where US test cards are declined.
-  const billingCurrency = process.env.DODO_BILLING_CURRENCY ?? "USD";
+  // Adaptive currency: Dodo shows INR in India, USD in US, AUD in Australia, etc.
+  // Only override when DODO_BILLING_CURRENCY is explicitly set (e.g. force USD for debugging).
+  const billingCurrency = process.env.DODO_BILLING_CURRENCY?.trim();
+  const country = params.countryCode?.toUpperCase();
+
+  const payload: Record<string, unknown> = {
+    product_cart: [
+      {
+        product_id: productId,
+        quantity: 1,
+        amount: params.amount * 100, // USD cents on PWYW product; Dodo converts at checkout
+      },
+    ],
+    allowed_payment_method_types: ["credit", "debit"],
+    return_url: `${siteUrl()}/success/${encodeURIComponent(params.paymentId)}`,
+    customer: params.email ? { email: params.email } : undefined,
+    metadata: {
+      paymentId: params.paymentId,
+      listingUrl: params.listingUrl,
+    },
+  };
+
+  if (billingCurrency) payload.billing_currency = billingCurrency;
+  if (country) payload.billing_address = { country };
 
   const res = await fetch(`${apiBase()}/checkouts`, {
     method: "POST",
@@ -35,23 +56,7 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      product_cart: [
-        {
-          product_id: productId,
-          quantity: 1,
-          amount: params.amount * 100, // cents for USD PWYW product
-        },
-      ],
-      billing_currency: billingCurrency,
-      allowed_payment_method_types: ["credit", "debit"],
-      return_url: `${siteUrl()}/success/${encodeURIComponent(params.paymentId)}`,
-      customer: params.email ? { email: params.email } : undefined,
-      metadata: {
-        paymentId: params.paymentId,
-        listingUrl: params.listingUrl,
-      },
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {

@@ -5,6 +5,15 @@ import { settlePayment } from "@/lib/settle";
 
 export const dynamic = "force-dynamic";
 
+/** Browser visits use GET — webhooks use POST from Dodo only. */
+export function GET() {
+  return NextResponse.json({
+    ok: true,
+    endpoint: "dodo",
+    message: "Webhook is live. Dodo sends POST here after checkout — do not open this URL to test payments.",
+  });
+}
+
 // Dodo Payments webhook — fulfill ONLY on payment.succeeded (not browser redirect).
 // Docs: https://docs.dodopayments.com/developer-resources/webhooks
 export async function POST(request: Request) {

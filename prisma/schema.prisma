@@ -1,0 +1,108 @@
+// Pay-to-rank leaderboard schema.
+// Local dev uses SQLite (zero setup). For production (Vercel + Supabase/Neon),
+// change provider to "postgresql" and set DATABASE_URL accordingly.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Listing {
+  id            String    @id @default(uuid())
+  url           String    @unique // canonical cleaned URL (no query params / hash)
+  slug          String    @unique // shareable slug, e.g. "orynth.dev"
+  displayUrl    String // human-friendly label, e.g. "orynth.dev" or "@handle on X"
+  kind          String    @default("website") // website | x_handle
+  handle        String? // X/Twitter handle if applicable
+  title         String
+  description   String    @default("")
+  currentBid    Int       @default(0) // global board bid; 0 = hidden until first global payment
+  localBid      Int       @default(0) // country board bid; 0 = not on local board
+  countryCode   String? // ISO country for local board (set on first local bid)
+  localLastBidAt DateTime?
+  ownerEmail    String?
+  creditBalance Int       @default(0) // referral credits ($1 each) applied on next raise
+  clickCount    Int       @default(0)
+  lastBidAt     DateTime  @default(now()) // tie-break: equal bids -> earlier lastBidAt ranks higher
+  takeoverUntil DateTime? // active #1 lock expiry
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bids          Bid[]
+  clicks        Click[]
+  referrals     Bid[]     @relation("ReferralListing")
+
+  @@index([currentBid(sort: Desc), lastBidAt])
+  @@index([countryCode, localBid(sort: Desc), localLastBidAt])
+  @@map("listings")
+}
+
+model Bid {
+  id                String    @id @default(uuid())
+  listingId         String
+  amount            Int // dollars actually paid at checkout (after credits)
+  creditApplied     Int       @default(0) // referral credits applied to this payment
+  bidIncrease       Int       @default(0) // total added to listing bid (amount + creditApplied)
+  totalAfter        Int       @default(0) // listing total bid after this payment completed
+  paymentId         String    @unique // Polar payment/checkout ID (or mock id locally)
+  status            String    @default("pending") // pending | completed | failed
+  isTakeover        Boolean   @default(false)
+  takeoverEnd       DateTime? // when the 3h takeover lock expires
+  email             String?
+  scope             String    @default("global") // global | local
+  countryCode       String? // bidder country when scope=local
+  referralListingId String? // listing slug owner who referred this bidder
+  createdAt         DateTime  @default(now())
+  completedAt       DateTime?
+  listing           Listing   @relation(fields: [listingId], references: [id])
+  referralListing   Listing?  @relation("ReferralListing", fields: [referralListingId], references: [id])
+
+  @@index([listingId, createdAt(sort: Desc)])
+  @@index([status, completedAt(sort: Desc)])
+  @@map("bids")
+}
+
+model Click {
+  id        String   @id @default(cuid())
+  listingId String
+  ipHash    String
+  createdAt DateTime @default(now())
+  listing   Listing  @relation(fields: [listingId], references: [id])
+
+  @@index([listingId, createdAt])
+  @@index([createdAt])
+  @@map("clicks")
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  event     String // click | view | bid | share
+  listingId String?
+  metadata  String   @default("{}") // JSON string (SQLite-safe; jsonb on Postgres if desired)
+  createdAt DateTime @default(now())
+
+  @@index([event, createdAt])
+  @@map("analytics")
+}
+
+model Visitor {
+  id        String   @id @default(cuid())
+  ipHash    String   @unique
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+
+  @@index([lastSeen])
+  @@map("visitors")
+}
+
+// Platform metadata (launch timestamp, etc.)
+model Meta {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("meta")
+}

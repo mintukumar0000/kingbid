@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
+/* Light (kingbid.lol) — cream page, coral money, peach featured cards */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fcfbf7;
+  --surface: #ffffff;
+  --surface-2: #fff7f3;
+  --border: #efe6df;
+  --border-strong: #e8d8cf;
+  --foreground: #1c1917;
+  --muted: #8a7e76;
+  --accent: #e55b3c;
+  --accent-soft: #fff1ec;
+  --green: #22a06b;
+  --red: #e55b3c;
+  --gold: #e55b3c;
+  --silver: #c4b8b0;
+  --bronze: #c98a6a;
+  --peach: #fff5f2;
+  --shadow: 0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(229, 91, 60, 0.05);
+}
+
+html.dark {
+  --background: #0f0d0c;
+  --surface: #171412;
+  --surface-2: #1e1a18;
+  --border: #2a2421;
+  --border-strong: #3a322e;
+  --foreground: #f5efe9;
+  --muted: #9a8e86;
+  --accent: #f07155;
+  --accent-soft: rgba(240, 113, 85, 0.12);
+  --green: #34d399;
+  --red: #f07155;
+  --gold: #f07155;
+  --silver: #8a8078;
+  --bronze: #c98a6a;
+  --peach: #241c18;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-green: var(--green);
+  --color-red: var(--red);
+  --color-gold: var(--gold);
+  --color-silver: var(--silver);
+  --color-bronze: var(--bronze);
+  --color-peach: var(--peach);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes flash-row {
+  0% { background-color: color-mix(in srgb, var(--accent) 22%, transparent); }
+  100% { background-color: transparent; }
+}
+.flash-row {
+  animation: flash-row 1.8s ease-out;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.slide-in {
+  animation: slide-in 0.32s ease-out;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-in {
+  animation: modal-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ticker-up {
+  from { transform: translateY(40%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.ticker-up {
+  animation: ticker-up 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 6px;
 }

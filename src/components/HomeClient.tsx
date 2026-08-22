@@ -224,7 +224,7 @@ function HomeClientInner({
           {scope === "local" ? (
             <>
               Compete on the {countryName} board only. Same rules — {formatMoney(board.minBid)} minimum,
-              outbid rivals in your country.
+              outbid rivals on this board.
             </>
           ) : (
             <>

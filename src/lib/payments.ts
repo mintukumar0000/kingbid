@@ -13,8 +13,6 @@ export interface CheckoutParams {
   listingUrl: string;
   displayUrl: string;
   email?: string;
-  /** ISO country for Dodo adaptive currency (IN → INR, US → USD, AU → AUD, …). */
-  countryCode?: string;
 }
 
 export function isMockPayments(): boolean {

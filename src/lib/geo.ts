@@ -75,22 +75,6 @@ export function resolveCountryCode(request: Request): string {
   return getCountryFromRequest(request);
 }
 
-/**
- * Country for Dodo checkout billing.
- * User override wins, then local board country, then IP geo.
- */
-export function getCheckoutCountryCode(
-  request: Request,
-  scope: BoardScope,
-  localBoardCountry: string | null,
-  billingCountryOverride?: string | null
-): string {
-  const override = billingCountryOverride?.toUpperCase();
-  if (override && isValidCountryCode(override)) return override;
-  if (scope === "local" && localBoardCountry) return localBoardCountry;
-  return getCountryFromRequest(request);
-}
-
 export function countryDisplayName(code: string): string {
   if (!code || code === "XX") return "your region";
   try {

@@ -25,10 +25,10 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
     throw new Error("DODO_PAYMENTS_API_KEY and DODO_PAYMENTS_PRODUCT_ID are required.");
   }
 
-  // Adaptive currency: Dodo shows INR in India, USD in US, AUD in Australia, etc.
-  // Only override when DODO_BILLING_CURRENCY is explicitly set (e.g. force USD for debugging).
+  // Adaptive currency + billing country are handled entirely on Dodo checkout
+  // (IP detection, country dropdown, Pay in NPR/USD/INR). Do not prefill billing_address
+  // — that can lock the country field and block international cards in test/live mode.
   const billingCurrency = process.env.DODO_BILLING_CURRENCY?.trim();
-  const country = params.countryCode?.toUpperCase();
 
   const payload: Record<string, unknown> = {
     product_cart: [
@@ -48,7 +48,6 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
   };
 
   if (billingCurrency) payload.billing_currency = billingCurrency;
-  if (country) payload.billing_address = { country };
 
   const res = await fetch(`${apiBase()}/checkouts`, {
     method: "POST",

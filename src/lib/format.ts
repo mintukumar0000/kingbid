@@ -53,3 +53,26 @@ export function formatLaunchAge(launchedAt: string): string {
   if (days === 1) return "yesterday";
   return `${days} days ago`;
 }
+
+function ordinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+/** e.g. August 21st, 2026, at 10:06 PM */
+export function formatLaunchDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).formatToParts(d);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  const day = Number(get("day"));
+  return `${get("month")} ${ordinal(day)}, ${get("year")}, at ${get("hour")}:${get("minute")} ${get("dayPeriod")}`;
+}

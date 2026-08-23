@@ -4,14 +4,18 @@ import { prisma } from "@/lib/db";
 const SESSION_COOKIE = "kingbid_uid";
 
 /** Lightweight session user — no password auth yet; email/handle on first action. */
-export async function getOrCreateSessionUser(): Promise<{ id: string; email: string | null }> {
+export async function getOrCreateSessionUser(): Promise<{
+  id: string;
+  email: string | null;
+  handle: string | null;
+}> {
   const jar = await cookies();
   let sessionId = jar.get(SESSION_COOKIE)?.value;
 
   if (sessionId) {
     const existing = await prisma.user.findUnique({
       where: { sessionId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, handle: true },
     });
     if (existing) return existing;
   }
@@ -19,7 +23,7 @@ export async function getOrCreateSessionUser(): Promise<{ id: string; email: str
   sessionId = crypto.randomUUID();
   const user = await prisma.user.create({
     data: { sessionId },
-    select: { id: true, email: true },
+    select: { id: true, email: true, handle: true },
   });
 
   jar.set(SESSION_COOKIE, sessionId, {

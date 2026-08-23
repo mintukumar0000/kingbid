@@ -1,13 +1,56 @@
 import { NextResponse } from "next/server";
-import { syncRoomsFromCategories, requestRoom } from "@/lib/rooms";
+import { syncRoomsFromCategories, requestRoom, getRoomBySlug } from "@/lib/rooms";
 import { getOrCreateSessionUser } from "@/lib/users";
+import { getRoomKeepers, evaluateKeeperLevel } from "@/lib/keepers";
+import { prisma } from "@/lib/db";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const count = await syncRoomsFromCategories();
-  return NextResponse.json({ synced: count });
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  if (searchParams.get("sync") === "1") {
+    await syncRoomsFromCategories();
+  }
+
+  const rooms = await prisma.room.findMany({
+    where: { status: "active" },
+    orderBy: { name: "asc" },
+    include: {
+      category: { select: { slug: true } },
+      _count: { select: { keepers: true, childRooms: true } },
+    },
+  });
+
+  const withCounts = await Promise.all(
+    rooms.map(async (r) => {
+      let listingCount = 0;
+      if (r.categoryId) {
+        const board = await prisma.board.findFirst({
+          where: { categoryId: r.categoryId, region: null },
+          select: { id: true },
+        });
+        if (board) {
+          listingCount = await prisma.listing.count({
+            where: { boardId: board.id, currentBid: { gt: 0 }, status: "active" },
+          });
+        }
+      }
+      return {
+        id: r.id,
+        slug: r.slug,
+        name: r.name,
+        description: r.description,
+        roomType: r.roomType,
+        categorySlug: r.category?.slug ?? null,
+        keeperCount: r._count.keepers,
+        listingCount,
+        enterUrl: r.category?.slug ? `/?room=${r.category.slug}` : `/rooms/${r.slug}`,
+      };
+    })
+  );
+
+  return NextResponse.json({ rooms: withCounts });
 }
 
 const createSchema = z.object({

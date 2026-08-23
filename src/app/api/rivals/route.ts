@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 const MAX_RIVALS = 5;
 
 const schema = z.object({
-  listingId: z.string().uuid(),
-  rivalListingId: z.string().uuid(),
+  listingSlug: z.string().min(1),
+  rivalSlug: z.string().min(1),
 });
 
 export async function GET() {
@@ -27,6 +27,10 @@ export async function GET() {
       yours: r.listing,
       rival: r.rivalListing,
       gap: r.listing.currentBid - r.rivalListing.currentBid,
+      gapLabel:
+        r.listing.currentBid >= r.rivalListing.currentBid
+          ? `You're $${r.listing.currentBid - r.rivalListing.currentBid} ahead`
+          : `You're $${r.rivalListing.currentBid - r.listing.currentBid} away from passing them`,
     })),
   });
 }
@@ -41,11 +45,19 @@ export async function POST(request: Request) {
   }
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid rival data." }, { status: 400 });
+    return NextResponse.json({ error: "listingSlug and rivalSlug required." }, { status: 400 });
+  }
+
+  const [listing, rival] = await Promise.all([
+    prisma.listing.findUnique({ where: { slug: parsed.data.listingSlug.toLowerCase() } }),
+    prisma.listing.findUnique({ where: { slug: parsed.data.rivalSlug.toLowerCase() } }),
+  ]);
+  if (!listing || !rival) {
+    return NextResponse.json({ error: "Listing or rival not found." }, { status: 404 });
   }
 
   const count = await prisma.rival.count({
-    where: { userId: user.id, listingId: parsed.data.listingId },
+    where: { userId: user.id, listingId: listing.id },
   });
   if (count >= MAX_RIVALS) {
     return NextResponse.json({ error: `Max ${MAX_RIVALS} rivals per listing.` }, { status: 400 });
@@ -54,8 +66,8 @@ export async function POST(request: Request) {
   const row = await prisma.rival.create({
     data: {
       userId: user.id,
-      listingId: parsed.data.listingId,
-      rivalListingId: parsed.data.rivalListingId,
+      listingId: listing.id,
+      rivalListingId: rival.id,
     },
   });
   return NextResponse.json({ ok: true, id: row.id });

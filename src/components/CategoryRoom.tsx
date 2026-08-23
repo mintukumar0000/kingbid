@@ -8,6 +8,8 @@ import type { LeaderboardEntry } from "@/lib/leaderboard";
 import { RoomLeaderSpotlight } from "@/components/RoomLeaderSpotlight";
 import { RoomEventFeed } from "@/components/RoomEventFeed";
 import { HeroVillainWidget } from "@/components/HeroVillainWidget";
+import { RoomKeeperBlock } from "@/components/RoomKeeperBlock";
+import { UnderdogRowSection } from "@/components/UnderdogRowSection";
 
 type Props = {
   slug: string;
@@ -173,7 +175,21 @@ export function CategoryRoom({
         </div>
 
         <div className="room-interior-reveal mt-5" style={{ animationDelay: "210ms" }}>
+          <RoomKeeperBlock roomSlug={slug} />
+        </div>
+
+        <div className="room-interior-reveal mt-4 grid gap-4 sm:grid-cols-2" style={{ animationDelay: "215ms" }}>
+          <UnderdogRowSection categorySlug={slug} />
           <RoomEventFeed roomIdOrSlug={slug} />
+        </div>
+
+        <div className="room-interior-reveal mt-4" style={{ animationDelay: "218ms" }}>
+          <Link
+            href="/founders"
+            className="block rounded-xl border border-dashed border-accent/50 bg-accent-soft/20 px-4 py-3 text-center text-[13px] font-medium text-accent hover:bg-accent-soft/40"
+          >
+            Open Founder Hub — Discovery bets, Call It, rivals, request rooms →
+          </Link>
         </div>
 
         <div

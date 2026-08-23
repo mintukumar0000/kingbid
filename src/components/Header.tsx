@@ -44,6 +44,9 @@ export function Header() {
 
         <nav className="flex items-center gap-6 text-[14px]">
           {link("/", "Leaderboard")}
+          {link("/rooms", "Rooms")}
+          {link("/founders", "Founders")}
+          {link("/pricing", "Pricing")}
           {link("/about", "About")}
           {link("/rules", "Rules")}
           <button

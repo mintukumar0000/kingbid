@@ -46,7 +46,13 @@ export default function AdminPage() {
     const res = await fetch("/api/admin", { headers: { "x-admin-password": password } });
     const d = await res.json();
     setLoading(false);
-    if (!res.ok) return setError(d.error ?? "Login failed");
+    if (!res.ok) {
+      return setError(
+        d.error === "Unauthorized"
+          ? "Wrong password — or ADMIN_PASSWORD is not set on Vercel. Check Environment Variables and redeploy."
+          : (d.error ?? "Login failed")
+      );
+    }
     setData(d);
   }
 
@@ -57,7 +63,12 @@ export default function AdminPage() {
         <h1 className="text-3xl font-extrabold tracking-tight">Admin</h1>
 
         {!data ? (
-          <form onSubmit={login} className="mt-8 max-w-sm space-y-3">
+            <p className="mt-2 text-[13px] text-muted">
+              Enter the secret value from Vercel → Settings → Environment Variables →{" "}
+              <code className="text-accent">ADMIN_PASSWORD</code>. Do not type the words
+              &quot;ADMIN_PASSWORD&quot; unless that is literally what you saved there.
+            </p>
+            <form onSubmit={login} className="mt-6 max-w-sm space-y-3">
             <input
               type="password"
               value={password}

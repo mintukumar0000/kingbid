@@ -15,10 +15,7 @@ export function timeAgo(date: Date | string): string {
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return minutes === 1 ? "1 minute ago" : `${minutes} minutes ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "yesterday";
-  return `${days} days ago`;
+  return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
 }
 
 export function faviconFor(url: string): string {
@@ -42,16 +39,12 @@ export function outboundUrl(canonicalUrl: string): string {
   }
 }
 
-/** Human-readable time since platform launch. */
+/** Hours since platform launch — always hour-based, never "yesterday". */
 export function formatLaunchAge(launchedAt: string): string {
   const ms = Date.now() - new Date(launchedAt).getTime();
-  if (ms < 60_000) return "just now";
+  if (ms < 60_000) return "less than 1 hour";
   const hours = Math.floor(ms / 3_600_000);
-  if (hours < 1) return "less than an hour ago";
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "yesterday";
-  return `${days} days ago`;
+  return hours === 1 ? "1 hour" : `${hours} hours`;
 }
 
 function ordinal(n: number): string {

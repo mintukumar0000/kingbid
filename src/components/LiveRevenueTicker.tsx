@@ -31,7 +31,7 @@ export function LiveRevenueTicker() {
         </span>
       </p>
       <p className="mt-4 text-[13px] text-muted">
-        since its launch{data?.launchedAt ? ` ${formatLaunchAge(data.launchedAt)}` : ""}
+        {data?.launchedAt ? `${formatLaunchAge(data.launchedAt)} since launch` : "since launch"}
       </p>
     </section>
   );

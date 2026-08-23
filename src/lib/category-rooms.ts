@@ -1,4 +1,4 @@
-// Luxury room themes — each category board feels like entering a private lounge.
+// Category room metadata — light premium squares, matches site palette.
 
 import { LAUNCH_CATEGORIES } from "@/lib/categories";
 
@@ -6,215 +6,125 @@ export type CategoryRoomTheme = {
   slug: string;
   name: string;
   description: string;
-  /** Short label above the title, e.g. "THE ATrium" */
   roomLabel: string;
-  /** One-line prestige hook */
   motto: string;
   icon: string;
-  preset: keyof typeof LUXURY_PRESETS;
   isMeta?: boolean;
 };
 
-export const LUXURY_PRESETS = {
-  obsidianGold: {
-    bg: "linear-gradient(165deg, #0f0c0a 0%, #1c1612 45%, #2a2118 100%)",
-    glow: "rgba(201, 169, 98, 0.35)",
-    accent: "#c9a962",
-    accentSoft: "rgba(201, 169, 98, 0.15)",
-    text: "#f5efe6",
-    muted: "#a89888",
-    border: "rgba(201, 169, 98, 0.28)",
-    shimmer: "rgba(255, 236, 200, 0.08)",
-  },
-  midnightSapphire: {
-    bg: "linear-gradient(165deg, #060d18 0%, #0f1a2e 50%, #152238 100%)",
-    glow: "rgba(120, 160, 220, 0.3)",
-    accent: "#8eb4e8",
-    accentSoft: "rgba(142, 180, 232, 0.12)",
-    text: "#eef4fc",
-    muted: "#8a9bb0",
-    border: "rgba(142, 180, 232, 0.25)",
-    shimmer: "rgba(200, 220, 255, 0.06)",
-  },
-  burgundyVelvet: {
-    bg: "linear-gradient(165deg, #140810 0%, #2a1018 48%, #3d1824 100%)",
-    glow: "rgba(232, 180, 160, 0.28)",
-    accent: "#e8b4a0",
-    accentSoft: "rgba(232, 180, 160, 0.12)",
-    text: "#faf0ec",
-    muted: "#b09088",
-    border: "rgba(232, 180, 160, 0.22)",
-    shimmer: "rgba(255, 220, 210, 0.07)",
-  },
-  emeraldLounge: {
-    bg: "linear-gradient(165deg, #080f0c 0%, #0f1a14 50%, #1a2e22 100%)",
-    glow: "rgba(180, 200, 160, 0.25)",
-    accent: "#b8c8a8",
-    accentSoft: "rgba(184, 200, 168, 0.12)",
-    text: "#eef5ea",
-    muted: "#889880",
-    border: "rgba(184, 200, 168, 0.22)",
-    shimmer: "rgba(220, 240, 210, 0.06)",
-  },
-  charcoalPlatinum: {
-    bg: "linear-gradient(165deg, #0a0a0a 0%, #141414 50%, #222222 100%)",
-    glow: "rgba(220, 220, 220, 0.2)",
-    accent: "#d4d4d4",
-    accentSoft: "rgba(212, 212, 212, 0.1)",
-    text: "#f5f5f5",
-    muted: "#909090",
-    border: "rgba(212, 212, 212, 0.2)",
-    shimmer: "rgba(255, 255, 255, 0.05)",
-  },
-  deepAmethyst: {
-    bg: "linear-gradient(165deg, #0c0818 0%, #1a1028 50%, #2a1840 100%)",
-    glow: "rgba(180, 140, 220, 0.3)",
-    accent: "#c4a0e8",
-    accentSoft: "rgba(196, 160, 232, 0.12)",
-    text: "#f3eef8",
-    muted: "#9888a8",
-    border: "rgba(196, 160, 232, 0.25)",
-    shimmer: "rgba(230, 210, 255, 0.07)",
-  },
-} as const;
-
-const PRESET_KEYS = Object.keys(LUXURY_PRESETS) as (keyof typeof LUXURY_PRESETS)[];
-
 const ROOM_META: Record<
   string,
-  Pick<CategoryRoomTheme, "roomLabel" | "motto" | "icon" | "preset">
+  Pick<CategoryRoomTheme, "roomLabel" | "motto" | "icon">
 > = {
   "ai-agents": {
-    roomLabel: "The Agent Atrium",
-    motto: "Where autonomous products compete for the crown.",
+    roomLabel: "Agent Atrium",
+    motto: "Autonomous agents and AI tools — ranked by real bids.",
     icon: "◆",
-    preset: "obsidianGold",
   },
   "ai-coding": {
-    roomLabel: "The Dev Sanctum",
-    motto: "Ship faster. Bid harder. Own the terminal.",
+    roomLabel: "Dev Sanctum",
+    motto: "IDE plugins, copilots, and dev infrastructure.",
     icon: "⌘",
-    preset: "midnightSapphire",
   },
   "no-code": {
-    roomLabel: "The Builder Salon",
-    motto: "Visual creators, visual rankings.",
+    roomLabel: "Builder Salon",
+    motto: "Visual builders without writing code.",
     icon: "◫",
-    preset: "emeraldLounge",
   },
   "browser-extensions": {
-    roomLabel: "The Extension Gallery",
-    motto: "Small tools. Big bids.",
+    roomLabel: "Extension Gallery",
+    motto: "Chrome, Firefox, Safari, and Edge extensions.",
     icon: "⬡",
-    preset: "charcoalPlatinum",
   },
   newsletters: {
-    roomLabel: "The Creator Club",
-    motto: "Audiences pay attention. Founders pay to rank.",
+    roomLabel: "Creator Club",
+    motto: "Newsletters, creators, and paid media brands.",
     icon: "✉",
-    preset: "burgundyVelvet",
   },
   "indie-saas": {
-    roomLabel: "The Bootstrap Hall",
-    motto: "Bootstrapped grit meets premium placement.",
+    roomLabel: "Bootstrap Hall",
+    motto: "Bootstrapped SaaS and micro-products.",
     icon: "▣",
-    preset: "obsidianGold",
   },
   "mobile-apps": {
-    roomLabel: "The App Lounge",
-    motto: "Pocket-sized products. Board-sized ambition.",
+    roomLabel: "App Lounge",
+    motto: "iOS and Android from indie studios.",
     icon: "◉",
-    preset: "deepAmethyst",
   },
   "desktop-apps": {
-    roomLabel: "The Native Suite",
-    motto: "Desktop power. Leaderboard prestige.",
+    roomLabel: "Native Suite",
+    motto: "Mac, Windows, and Linux desktop apps.",
     icon: "▢",
-    preset: "charcoalPlatinum",
   },
   design: {
-    roomLabel: "The Design Studio",
-    motto: "Beautiful products deserve beautiful ranks.",
+    roomLabel: "Design Studio",
+    motto: "Design tools, templates, and creative studios.",
     icon: "◈",
-    preset: "burgundyVelvet",
   },
   marketing: {
-    roomLabel: "The Growth Chamber",
-    motto: "Rank is the ultimate growth metric.",
+    roomLabel: "Growth Chamber",
+    motto: "SEO, ads, analytics, and growth tools.",
     icon: "↗",
-    preset: "emeraldLounge",
   },
   ecommerce: {
-    roomLabel: "The Commerce Vault",
-    motto: "Checkout energy. Crown ambition.",
+    roomLabel: "Commerce Vault",
+    motto: "E-commerce, Shopify apps, and marketplaces.",
     icon: "◆",
-    preset: "obsidianGold",
   },
   career: {
-    roomLabel: "The Career Pavilion",
-    motto: "Help people get hired. Get yourself ranked.",
+    roomLabel: "Career Pavilion",
+    motto: "Job search, résumés, and hiring products.",
     icon: "◎",
-    preset: "midnightSapphire",
   },
   fashion: {
-    roomLabel: "The Style Salon",
-    motto: "Runway visibility for digital brands.",
+    roomLabel: "Style Salon",
+    motto: "Fashion, retail, and try-on tech.",
     icon: "✦",
-    preset: "burgundyVelvet",
   },
   fitness: {
-    roomLabel: "The Wellness Wing",
-    motto: "Strong products. Stronger positions.",
+    roomLabel: "Wellness Wing",
+    motto: "Fitness, nutrition, and health apps.",
     icon: "◯",
-    preset: "emeraldLounge",
   },
   fintech: {
-    roomLabel: "The Capital Room",
-    motto: "Money moves markets. Bids move ranks.",
+    roomLabel: "Capital Room",
+    motto: "Personal finance, investing, and B2B fintech.",
     icon: "$",
-    preset: "obsidianGold",
   },
   productivity: {
-    roomLabel: "The Focus Library",
-    motto: "Organize the world. Organize the board.",
+    roomLabel: "Focus Library",
+    motto: "Tasks, notes, and personal OS tools.",
     icon: "☰",
-    preset: "charcoalPlatinum",
   },
   writing: {
-    roomLabel: "The Author's Study",
-    motto: "Words win wars. Bids win rows.",
+    roomLabel: "Author's Study",
+    motto: "Writing assistants and content workflows.",
     icon: "¶",
-    preset: "deepAmethyst",
   },
   video: {
-    roomLabel: "The Creator Stage",
-    motto: "Lights, camera, leaderboard.",
+    roomLabel: "Creator Stage",
+    motto: "Video editing, streaming, and creator tools.",
     icon: "▶",
-    preset: "burgundyVelvet",
   },
   "open-source": {
-    roomLabel: "The Commons Hall",
-    motto: "Free code. Paid prominence.",
+    roomLabel: "Commons Hall",
+    motto: "Open-source libraries and dev tools.",
     icon: "◉",
-    preset: "midnightSapphire",
   },
   agencies: {
-    roomLabel: "The Partner Lounge",
-    motto: "Client work. Crown work.",
+    roomLabel: "Partner Lounge",
+    motto: "Freelancers, agencies, and service studios.",
     icon: "◫",
-    preset: "charcoalPlatinum",
   },
   "local-business": {
-    roomLabel: "The City Room",
-    motto: "Neighborhood names. National ambition.",
+    roomLabel: "City Room",
+    motto: "Local and regional businesses by city.",
     icon: "⌖",
-    preset: "emeraldLounge",
   },
   "trending-lol": {
-    roomLabel: "The .lol Observatory",
-    motto: "The meta-board for the pay-to-rank wave itself.",
+    roomLabel: ".lol Observatory",
+    motto: "Pay-to-rank micro-sites and viral .lol projects.",
     icon: "👑",
-    preset: "obsidianGold",
   },
 };
 
@@ -223,10 +133,9 @@ export function getCategoryRoomTheme(slug: string): CategoryRoomTheme | null {
   if (!cat) return null;
 
   const meta = ROOM_META[slug] ?? {
-    roomLabel: `The ${cat.name} Room`,
+    roomLabel: cat.name,
     motto: cat.description,
     icon: "◆",
-    preset: PRESET_KEYS[LAUNCH_CATEGORIES.indexOf(cat) % PRESET_KEYS.length],
   };
 
   return {
@@ -238,6 +147,7 @@ export function getCategoryRoomTheme(slug: string): CategoryRoomTheme | null {
   };
 }
 
-export function getPreset(theme: CategoryRoomTheme) {
-  return LUXURY_PRESETS[theme.preset];
+export function shortCategoryName(name: string): string {
+  if (name.length <= 18) return name;
+  return name.replace(/ & .+$/, "").slice(0, 16) + "…";
 }

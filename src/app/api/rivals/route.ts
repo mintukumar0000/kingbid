@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getOrCreateSessionUser } from "@/lib/users";
+import { resolveListingInput } from "@/lib/resolve-listing";
 
 export const dynamic = "force-dynamic";
 
@@ -49,11 +50,21 @@ export async function POST(request: Request) {
   }
 
   const [listing, rival] = await Promise.all([
-    prisma.listing.findUnique({ where: { slug: parsed.data.listingSlug.toLowerCase() } }),
-    prisma.listing.findUnique({ where: { slug: parsed.data.rivalSlug.toLowerCase() } }),
+    resolveListingInput(parsed.data.listingSlug),
+    resolveListingInput(parsed.data.rivalSlug),
   ]);
   if (!listing || !rival) {
-    return NextResponse.json({ error: "Listing or rival not found." }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: !listing
+          ? "Your listing not found — use a slug from the leaderboard."
+          : "Rival listing not found — pick a competitor on the board.",
+      },
+      { status: 404 }
+    );
+  }
+  if (listing.id === rival.id) {
+    return NextResponse.json({ error: "Pick a different listing as your rival." }, { status: 400 });
   }
 
   const count = await prisma.rival.count({

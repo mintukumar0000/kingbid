@@ -102,8 +102,10 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
 }
 
 export function dodoProductIdForTier(tier: "founder_pro" | "room_pro"): string | null {
-  if (tier === "founder_pro") return process.env.DODO_FOUNDER_PRO_PRODUCT_ID?.trim() || null;
-  return process.env.DODO_ROOM_PRO_PRODUCT_ID?.trim() || null;
+  const founder = process.env.DODO_FOUNDER_PRO_PRODUCT_ID?.trim() || "pdt_0Nm2z9ZHI8uSMGj2KPzcA";
+  const room = process.env.DODO_ROOM_PRO_PRODUCT_ID?.trim() || "pdt_0Nm2zSAGAeI2UbUtdTKxd";
+  if (tier === "founder_pro") return founder;
+  return room;
 }
 
 export async function createDodoSubscriptionCheckout(params: {

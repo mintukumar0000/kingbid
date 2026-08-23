@@ -17,6 +17,7 @@ import { ScopeToggle } from "@/components/ScopeToggle";
 import { CategoryRoom, CategoryEmptyState } from "@/components/CategoryRoom";
 import { HomeEcosystem } from "@/components/HomeEcosystem";
 import { HowItWorksStrip } from "@/components/HowItWorksStrip";
+import { HashScrollOnLoad } from "@/components/HashScrollOnLoad";
 import { CountryPicker } from "@/components/CountryPicker";
 import { PAGE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
@@ -418,6 +419,7 @@ function HomeClientInner({
 
   return (
     <>
+      <HashScrollOnLoad />
       <div className={`${PAGE} flex flex-col gap-3 pb-2 pt-4 sm:flex-row sm:items-center sm:justify-between`}>
         <StatsBar />
         {!inCategoryRoom && (
@@ -462,7 +464,9 @@ function HomeClientInner({
         </CategoryRoom>
       ) : (
         <>
-          <section className={`${PAGE} pb-2 pt-8`}>{renderHero("home")}</section>
+          <section id="claim" className={`${PAGE} scroll-mt-24 pb-2 pt-8`}>
+            {renderHero("home")}
+          </section>
 
           {scope === "global" && <HomeEcosystem onEnterRoom={enterRoom} />}
 

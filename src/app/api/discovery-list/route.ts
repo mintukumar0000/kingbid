@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getOrCreateSessionUser } from "@/lib/users";
+import { getOrCreateSessionUser, bumpKingbidScore } from "@/lib/users";
 import { addDiscoveryBet, getDiscoveryList } from "@/lib/kingmaker";
-import { bumpKingbidScore } from "@/lib/users";
+import { resolveListingInput } from "@/lib/resolve-listing";
 
 export const dynamic = "force-dynamic";
 
@@ -41,12 +41,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "listingSlug required." }, { status: 400 });
   }
 
-  const listing = await prisma.listing.findUnique({
-    where: { slug: parsed.data.listingSlug.toLowerCase() },
-    select: { id: true },
-  });
+  const listing = await resolveListingInput(parsed.data.listingSlug);
   if (!listing) {
-    return NextResponse.json({ error: "Listing not found." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Listing not found. Use an exact slug from the leaderboard, or claim your product first." },
+      { status: 404 }
+    );
   }
 
   try {

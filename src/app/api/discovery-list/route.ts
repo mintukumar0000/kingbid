@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getOrCreateSessionUser, bumpKingbidScore } from "@/lib/users";
 import { addDiscoveryBet, getDiscoveryList } from "@/lib/kingmaker";
 import { resolveListingInput } from "@/lib/resolve-listing";
+import { evaluateKeeperLevel } from "@/lib/keepers";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,24 @@ export async function POST(request: Request) {
   try {
     await addDiscoveryBet(user.id, listing.id);
     await bumpKingbidScore(user.id, 1, "discovery_bet");
+
+    const listingBoard = await prisma.listing.findUnique({
+      where: { id: listing.id },
+      select: { board: { select: { categoryId: true } } },
+    });
+    if (listingBoard?.board?.categoryId) {
+      const room = await prisma.room.findFirst({
+        where: { categoryId: listingBoard.board.categoryId },
+        select: { id: true },
+      });
+      if (room) await evaluateKeeperLevel(user.id, room.id);
+    }
+    const fallbackRoom = await prisma.room.findFirst({
+      where: { status: "active" },
+      select: { id: true },
+    });
+    if (fallbackRoom) await evaluateKeeperLevel(user.id, fallbackRoom.id);
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 });

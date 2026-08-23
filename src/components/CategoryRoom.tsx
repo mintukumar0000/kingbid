@@ -5,10 +5,10 @@ import { useEffect, useState, type ReactNode } from "react";
 import { getCategoryRoomTheme } from "@/lib/category-rooms";
 import { formatMoney } from "@/lib/format";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
-import { RoomLeaderSpotlight } from "@/components/RoomLeaderSpotlight";
+import { RoomCommunityHeader } from "@/components/RoomCommunityHeader";
 import { RoomEventFeed } from "@/components/RoomEventFeed";
 import { HeroVillainWidget } from "@/components/HeroVillainWidget";
-import { RoomKeeperBlock } from "@/components/RoomKeeperBlock";
+import { RoomKeeperPanel } from "@/components/RoomKeeperPanel";
 import { UnderdogRowSection } from "@/components/UnderdogRowSection";
 
 type Props = {
@@ -30,7 +30,6 @@ export function CategoryRoom({
   topBid,
   foundingPrice,
   onExit,
-  topLeader,
   children,
 }: Props) {
   const theme = getCategoryRoomTheme(slug);
@@ -47,7 +46,6 @@ export function CategoryRoom({
   if (!theme) return <>{children}</>;
 
   const historyHref = boardId ? `/history/${boardId}` : "/history/global";
-  const throneBid = topBid > 0 ? formatMoney(topBid) : formatMoney(foundingPrice);
   const unclaimed = topBid <= 0;
 
   return (
@@ -125,10 +123,15 @@ export function CategoryRoom({
           </div>
         </div>
 
+        {/* Community object — keeper, stats, current king (live from DB) */}
+        <div className="room-interior-reveal" style={{ animationDelay: "120ms" }}>
+          <RoomCommunityHeader roomSlug={slug} />
+        </div>
+
         {/* Invite steps */}
         <div
           className="room-interior-reveal mt-5 overflow-hidden rounded-[20px] border border-[#f0cfc3] bg-accent-soft"
-          style={{ animationDelay: "100ms" }}
+          style={{ animationDelay: "140ms" }}
         >
           <div className="border-b border-[#f0cfc3]/80 bg-peach/60 px-5 py-3 text-center sm:text-left">
             <p className="text-[13px] font-semibold text-accent">🔑 Invite-only · how founders enter</p>
@@ -140,22 +143,6 @@ export function CategoryRoom({
           </div>
         </div>
 
-        {/* Stats — larger premium cards */}
-        <div
-          className="room-interior-reveal mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4"
-          style={{ animationDelay: "160ms" }}
-        >
-          <StatCard label="Listings inside" value={listingCount.toLocaleString()} sub="real, consented" />
-          <StatCard
-            label={unclaimed ? "Throne bid" : "Current #1"}
-            value={throneBid}
-            sub={unclaimed ? "founding price" : "top spot today"}
-            accent
-            featured
-          />
-          <StatCard label="Founding spot" value={formatMoney(foundingPrice)} sub="lowest ever here" />
-        </div>
-
         <div
           className="room-interior-reveal mt-6"
           style={{ animationDelay: "180ms" }}
@@ -163,24 +150,13 @@ export function CategoryRoom({
           <HeroVillainWidget categorySlug={slug} />
         </div>
 
-        <div
-          className="room-interior-reveal mt-6"
-          style={{ animationDelay: "200ms" }}
-        >
-          <RoomLeaderSpotlight
-            leader={topLeader}
-            categorySlug={slug}
-            totalListings={listingCount}
-          />
-        </div>
-
-        <div className="room-interior-reveal mt-5" style={{ animationDelay: "210ms" }}>
-          <RoomKeeperBlock roomSlug={slug} />
-        </div>
-
-        <div className="room-interior-reveal mt-4 grid gap-4 sm:grid-cols-2" style={{ animationDelay: "215ms" }}>
-          <UnderdogRowSection categorySlug={slug} />
+        <div className="room-interior-reveal mt-5 grid gap-4 lg:grid-cols-2" style={{ animationDelay: "200ms" }}>
           <RoomEventFeed roomIdOrSlug={slug} />
+          <RoomKeeperPanel roomSlug={slug} />
+        </div>
+
+        <div className="room-interior-reveal mt-4" style={{ animationDelay: "210ms" }}>
+          <UnderdogRowSection categorySlug={slug} />
         </div>
 
         <div className="room-interior-reveal mt-4" style={{ animationDelay: "218ms" }}>
@@ -211,11 +187,10 @@ export function CategoryRoom({
           style={{ animationDelay: "260ms" }}
         >
           <div className="mb-6 border-b border-border pb-5 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-              Bid in this room
-            </p>
+            <p className="kb-eyebrow">Leaderboard</p>
+            <p className="font-display mt-1 text-[22px] font-semibold">Rank · Product · Bid · Clicks</p>
             <p className="mt-1 text-[13px] text-muted">
-              Have a claim invite? Open your link first, then bid below.
+              Founding spot {formatMoney(foundingPrice)} · {listingCount} live · pay to move up
             </p>
           </div>
           {children}
@@ -233,42 +208,6 @@ function InviteStep({ n, title, text }: { n: number; title: string; text: string
       </span>
       <p className="mt-2 text-[13px] font-semibold text-foreground">{title}</p>
       <p className="mt-1 text-[12px] leading-relaxed text-muted">{text}</p>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  sub,
-  accent,
-  featured,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  accent?: boolean;
-  featured?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-[18px] border px-5 py-5 text-center sm:text-left ${
-        featured
-          ? "border-accent/30 bg-peach shadow-[0_8px_28px_rgba(229,91,60,0.1)]"
-          : accent
-            ? "border-[#f0cfc3] bg-peach"
-            : "border-border bg-surface-2"
-      }`}
-    >
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">{label}</p>
-      <p
-        className={`tabular mt-2 text-[28px] font-bold leading-none sm:text-[32px] ${
-          accent || featured ? "text-accent" : "text-foreground"
-        }`}
-      >
-        {value}
-      </p>
-      <p className="mt-2 text-[12px] text-muted">{sub}</p>
     </div>
   );
 }

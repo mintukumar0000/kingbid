@@ -9,13 +9,7 @@ import { DemoPreview, FOUNDER_FEATURE_DEMOS } from "@/components/FounderHubDemo"
 import { PAGE } from "@/lib/layout";
 import type { LeaderboardData } from "@/lib/leaderboard";
 
-const KEEPER_RULES = [
-  { level: "Member", rule: "Add 1 product to your Discovery list" },
-  { level: "Scout", rule: "3 Discovery list picks — nominate products you believe in" },
-  { level: "Keeper", rule: "Curate 1 approved room + Kingbid Score ≥ 20" },
-  { level: "Senior Keeper", rule: "3 active rooms + Score ≥ 50 — pin listings, run events" },
-  { level: "Legendary Keeper", rule: "5 rooms + Score ≥ 100 — propose homepage spotlights" },
-];
+import { KEEPER_LEVEL_INFO, ROOM_SCARCITY_RULES } from "@/lib/keeper-privileges";
 
 type Msg = { type: "ok" | "err"; text: string } | null;
 
@@ -327,14 +321,31 @@ export default function FoundersPage() {
 
         {/* KEEPER */}
         <section className="mt-6 bracket-card">
-          <h2 className="text-[15px] font-semibold">Room Keeper levels (earned, not bought)</h2>
-          <ul className="mt-3 space-y-2 text-[13px]">
-            {KEEPER_RULES.map((r) => (
-              <li key={r.level}>
-                <strong>{r.level}</strong> — {r.rule}
-              </li>
+          <h2 className="font-display text-[17px] font-semibold">Room Keeper progression</h2>
+          <p className="mt-1 text-[13px] text-muted">
+            Not meaningless XP — each level unlocks real privileges. Status is earned through discovery and curation.
+          </p>
+          <div className="mt-4 space-y-2">
+            {KEEPER_LEVEL_INFO.filter((k) => k.level !== "observer").map((r) => (
+              <div key={r.level} className="rounded-xl border border-border/70 px-3 py-2.5 text-[13px]">
+                <p className="font-semibold">
+                  {r.emoji} {r.label}
+                </p>
+                <p className="mt-0.5 text-[12px] text-muted">{r.privilege}</p>
+                <p className="mt-0.5 text-[11px] text-accent/90">{r.howToEarn}</p>
+              </div>
             ))}
-          </ul>
+          </div>
+          <details className="mt-4 text-[12px] text-muted">
+            <summary className="cursor-pointer font-medium text-foreground">Why rooms stay scarce</summary>
+            <ul className="mt-2 space-y-1">
+              {ROOM_SCARCITY_RULES.map((r) => (
+                <li key={r.type}>
+                  <strong>{r.type}:</strong> {r.rule}
+                </li>
+              ))}
+            </ul>
+          </details>
           {me?.keeperLevels?.length > 0 ? (
             <p className="mt-4 text-[13px] text-muted">
               Your levels:{" "}

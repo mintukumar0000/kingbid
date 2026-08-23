@@ -24,6 +24,8 @@ export async function getRoomByCategorySlug(categorySlug: string) {
     include: {
       category: { select: { slug: true, name: true } },
       curator: { select: { id: true, handle: true, name: true } },
+      parentRoom: { select: { slug: true, name: true } },
+      _count: { select: { keepers: true, childRooms: true } },
     },
   });
 }

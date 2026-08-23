@@ -28,7 +28,11 @@ export function emptyBoardMessage(minBid: number, scope: "global" | "local", lab
 }
 
 export const HERO_TAGLINE = "Compete for attention.";
+export const HERO_TAGLINE_LINE2 = "Build your reputation.";
 export const HERO_BRAND = "KINGBID";
+export const HERO_EYEBROW = "Live Kingdom";
+export const HERO_BODY =
+  "Money buys rank. Conviction buys respect. Momentum buys attention. One kingdom, four ways to win.";
 
 export const REVENUE_TICKER_LINE = "Total raised on Kingbid since launch";
 export const BID_MODAL_NEW = (minBid: number) =>

@@ -14,39 +14,41 @@ interface EcosystemData {
     displayUrl: string;
     title: string;
     currentBid: number;
+    clickCount: number;
+    reignLabel: string | null;
+    gapCents: number | null;
     gapLabel: string | null;
   } | null;
   challenger: { displayUrl: string; currentBid: number; slug: string } | null;
-  leaderboard: {
-    rank: number;
-    slug: string;
-    displayUrl: string;
-    title: string;
-    currentBid: number;
-    id: string;
-  }[];
-  breakout: { displayUrl: string; growthPct24h: number; currentBid: number; slug: string; title?: string }[];
+  breakout: { displayUrl: string; growthPct24h: number; slug: string }[];
   underdogs: {
     displayUrl: string;
     sacrificeScore: number;
     currentBid: number;
     revenueBand: string;
-    revenueVerified: boolean;
     slug: string;
   }[];
-  momentum: { displayUrl: string; growthPct24h: number; slug: string; currentBid?: number }[];
+  momentum: {
+    displayUrl: string;
+    growthPct10h: number;
+    slug: string;
+    bidStart10h: number;
+    bidEnd10h: number;
+  }[];
   featuredRooms: {
     slug: string;
     label: string;
     icon: string;
     name: string;
+    roomLabel: string;
     listingCount: number;
-    enterUrl: string;
   }[];
+  totalRooms: number;
   liveBattles: {
     id: string;
-    listingA: { slug: string; displayUrl: string; currentBid: number };
-    listingB: { slug: string; displayUrl: string; currentBid: number };
+    king: { slug: string; displayUrl: string; currentBid: number };
+    challenger: { slug: string; displayUrl: string; currentBid: number };
+    gapCents: number;
     votes: number;
     url: string;
   }[];
@@ -54,45 +56,40 @@ interface EcosystemData {
     userId: string;
     handle: string;
     score: number;
+    pickCount: number;
     profileUrl: string;
-    picks: { slug: string; displayUrl: string }[];
   }[];
   fallenFund: {
-    weekStart: string | null;
     poolCents: number;
     pct: number;
     status: string;
     grants: { displayUrl: string; slug: string; grantType: string }[];
   };
-  history: { id: string; eventType: string; headline: string; at: string }[];
+  history: { id: string; icon: string; headline: string; at: string }[];
+  minBid?: number;
 }
 
-function SectionHead({
-  emoji,
+function SectionBlock({
+  eyebrow,
   title,
-  subtitle,
   href,
   linkLabel,
 }: {
-  emoji: string;
+  eyebrow: string;
   title: string;
-  subtitle: string;
   href?: string;
   linkLabel?: string;
 }) {
   return (
-    <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h2 className="flex items-center gap-2 text-[15px] font-bold tracking-tight text-foreground sm:text-[17px]">
-          <span aria-hidden className="text-[18px]">
-            {emoji}
-          </span>
+        <p className="kb-eyebrow">{eyebrow}</p>
+        <h2 className="font-display mt-1.5 text-[26px] font-semibold leading-tight text-foreground sm:text-[28px]">
           {title}
         </h2>
-        <p className="mt-0.5 text-[12.5px] text-muted">{subtitle}</p>
       </div>
       {href && linkLabel && (
-        <Link href={href} className="text-[12.5px] font-medium text-accent hover:underline">
+        <Link href={href} className="text-[13px] font-semibold text-accent hover:underline">
           {linkLabel} →
         </Link>
       )}
@@ -100,63 +97,20 @@ function SectionHead({
   );
 }
 
-function LiveDot() {
+function ListingLink({ slug, displayUrl, className = "" }: { slug: string; displayUrl: string; className?: string }) {
   return (
-    <span className="relative inline-flex h-2 w-2 shrink-0" aria-hidden>
-      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green opacity-40" />
-      <span className="relative inline-flex h-2 w-2 rounded-full bg-green" />
-    </span>
-  );
-}
-
-function EmptyLine({ children }: { children: React.ReactNode }) {
-  return <p className="rounded-xl border border-dashed border-border/80 px-4 py-6 text-center text-[13px] text-muted">{children}</p>;
-}
-
-function MetricCard({
-  emoji,
-  title,
-  subtitle,
-  children,
-  accent = "default",
-}: {
-  emoji: string;
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
-  accent?: "default" | "green" | "gold";
-}) {
-  const ring =
-    accent === "green"
-      ? "from-green/8 to-transparent"
-      : accent === "gold"
-        ? "from-accent/10 to-transparent"
-        : "from-accent/6 to-transparent";
-  return (
-    <article className={`eco-card relative overflow-hidden rounded-2xl border border-border bg-surface p-4 sm:p-5`}>
-      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${ring}`} />
-      <div className="relative">
-        <SectionHead emoji={emoji} title={title} subtitle={subtitle} />
-        {children}
-      </div>
-    </article>
-  );
-}
-
-function ListingLink({
-  slug,
-  displayUrl,
-  className = "",
-}: {
-  slug: string;
-  displayUrl: string;
-  className?: string;
-}) {
-  return (
-    <Link href={`/l/${slug}`} className={`font-medium text-foreground hover:text-accent hover:underline ${className}`}>
+    <Link href={`/l/${slug}`} className={`font-medium hover:text-accent hover:underline ${className}`}>
       {displayUrl}
     </Link>
   );
+}
+
+function BracketCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`bracket-card ${className}`}>{children}</div>;
+}
+
+function EmptyCard({ children }: { children: React.ReactNode }) {
+  return <p className="text-[13px] leading-relaxed text-muted">{children}</p>;
 }
 
 export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => void }) {
@@ -164,294 +118,282 @@ export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => 
 
   if (!data) {
     return (
-      <div className={`${PAGE} space-y-6 pb-10`}>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-32 animate-pulse rounded-2xl bg-surface-2" />
-        ))}
+      <div className={`${PAGE} space-y-5 pb-10`}>
+        <div className="h-40 animate-pulse rounded-[18px] bg-surface-2" />
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-44 animate-pulse rounded-[14px] bg-surface-2" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={`${PAGE} space-y-8 pb-12`}>
+    <div className={`${PAGE} pb-14`}>
       {/* GLOBAL KING */}
-      <section id="global-king" className="eco-section">
-        <SectionHead emoji="👑" title="GLOBAL KING" subtitle="Live leaderboard." />
-        <div className="grid gap-3 lg:grid-cols-[1.1fr_1fr]">
-          <div className="eco-king-card relative overflow-hidden rounded-2xl border border-border-strong bg-gradient-to-br from-peach via-surface to-surface p-5 sm:p-6">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-                  <LiveDot />
-                  Reigning now
-                </div>
-                {data.globalKing ? (
-                  <>
-                    <ListingLink
-                      slug={data.globalKing.slug}
-                      displayUrl={data.globalKing.displayUrl}
-                      className="mt-3 block text-[22px] font-bold sm:text-[26px]"
-                    />
-                    <p className="mt-1 text-[13px] text-muted">{data.globalKing.title}</p>
-                    <p className="mt-3 tabular text-[28px] font-bold text-accent sm:text-[32px]">
-                      {formatMoney(data.globalKing.currentBid)}
-                    </p>
-                    {data.globalKing.gapLabel && (
-                      <p className="mt-1 text-[12.5px] text-muted">{data.globalKing.gapLabel}</p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p className="mt-3 text-[20px] font-bold text-foreground">Throne empty</p>
-                    <p className="mt-1 text-[13px] text-muted">Founding #1 is open — first real bid takes the crown.</p>
-                  </>
-                )}
-              </div>
-              <span className="text-[42px] opacity-90" aria-hidden>
-                👑
-              </span>
-            </div>
-            {data.challenger && (
-              <div className="mt-5 rounded-xl border border-border/80 bg-surface/70 px-4 py-3 text-[12.5px]">
-                <span className="text-muted">Next challenger · </span>
-                <ListingLink slug={data.challenger.slug} displayUrl={data.challenger.displayUrl} />
-                <span className="text-muted"> · {formatMoney(data.challenger.currentBid)}</span>
-              </div>
+      <section id="global-king" className="eco-section mb-8">
+        <div className="king-hero-card flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative z-[1] min-w-0">
+            <p className="font-mono-label text-[11.5px] font-semibold uppercase tracking-[0.22em] text-accent">
+              👑 Global King
+            </p>
+            {data.globalKing ? (
+              <>
+                <ListingLink
+                  slug={data.globalKing.slug}
+                  displayUrl={data.globalKing.displayUrl}
+                  className="font-display mt-2 block truncate text-[30px] font-semibold text-[#f7f1e6] sm:text-[34px]"
+                />
+                <p className="mt-1 text-[13.5px] text-[#b9af9c]">
+                  Global board
+                  {data.globalKing.reignLabel ? ` · ${data.globalKing.reignLabel}` : ""}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-display mt-2 text-[30px] font-semibold sm:text-[34px]">Throne empty</p>
+                <p className="mt-1 text-[13.5px] text-[#b9af9c]">Founding #1 is open — first real bid takes the crown.</p>
+              </>
             )}
           </div>
-
-          <div className="rounded-2xl border border-border bg-surface p-4 sm:p-5">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Top ranks</p>
-            <ol className="space-y-2">
-              {data.leaderboard.length === 0 ? (
-                <EmptyLine>No listings yet — scroll up to claim #1.</EmptyLine>
-              ) : (
-                data.leaderboard.map((e) => (
-                  <li
-                    key={e.id}
-                    className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-2"
-                  >
-                    <span
-                      className={`tabular flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[12px] font-bold ${
-                        e.rank === 1
-                          ? "bg-accent text-white"
-                          : e.rank <= 3
-                            ? "bg-accent-soft text-accent"
-                            : "bg-surface-2 text-muted"
-                      }`}
-                    >
-                      {e.rank}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <ListingLink slug={e.slug} displayUrl={e.displayUrl} className="block truncate text-[13px]" />
-                    </div>
-                    <span className="tabular shrink-0 text-[13px] font-semibold text-foreground">
-                      {formatMoney(e.currentBid)}
-                    </span>
-                  </li>
-                ))
-              )}
-            </ol>
+          <div className="relative z-[1] flex flex-wrap gap-6 sm:gap-8">
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-[#b9af9c]">Current bid</p>
+              <p className="font-mono-label mt-1 text-[22px] font-semibold text-accent sm:text-[24px]">
+                {data.globalKing ? formatMoney(data.globalKing.currentBid) : formatMoney(data.minBid ?? 1)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-[#b9af9c]">Clicks</p>
+              <p className="font-mono-label mt-1 text-[22px] font-semibold text-[#f7f1e6] sm:text-[24px]">
+                {data.globalKing?.clickCount ?? 0}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-[#b9af9c]">Challenger gap</p>
+              <p className="font-mono-label mt-1 text-[22px] font-semibold text-accent sm:text-[24px]">
+                {data.globalKing?.gapCents != null ? formatMoney(data.globalKing.gapCents) : "—"}
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* BREAKOUT · UNDERDOGS · MOMENTUM */}
-      <section className="grid gap-3 md:grid-cols-3">
-        <MetricCard emoji="🚀" title="BREAKOUT" subtitle="Fastest rising." accent="green">
+      <section className="mb-10 grid gap-4 md:grid-cols-3" id="underdogs">
+        <BracketCard>
+          <p className="mb-2 text-[20px]" aria-hidden>
+            🚀
+          </p>
+          <p className="font-display text-[17px] font-semibold">Breakout</p>
+          <p className="mb-3.5 text-[12px] text-muted">Fastest rising, last 24h</p>
           {data.breakout.length === 0 ? (
-            <EmptyLine>0 breakouts in the last 24h — bid velocity drives this.</EmptyLine>
+            <EmptyCard>0 breakouts yet — bid velocity drives this.</EmptyCard>
           ) : (
-            <ul className="space-y-3">
-              {data.breakout.slice(0, 4).map((b) => (
-                <li key={b.slug} className="flex items-center justify-between gap-2 text-[13px]">
-                  <ListingLink slug={b.slug} displayUrl={b.displayUrl} className="truncate" />
-                  <span className="shrink-0 font-semibold text-green">+{b.growthPct24h}%</span>
-                </li>
-              ))}
-            </ul>
+            data.breakout.slice(0, 3).map((b) => (
+              <div key={b.slug} className="mini-row">
+                <ListingLink slug={b.slug} displayUrl={b.displayUrl} className="truncate" />
+                <span className="font-mono-label shrink-0 font-semibold text-green">+{b.growthPct24h}%</span>
+              </div>
+            ))
           )}
-        </MetricCard>
+        </BracketCard>
 
-        <MetricCard emoji="🐕" title="UNDERDOGS" subtitle="Biggest conviction." accent="gold">
+        <BracketCard>
+          <p className="mb-2 text-[20px]" aria-hidden>
+            🐕
+          </p>
+          <p className="font-display text-[17px] font-semibold">Underdogs</p>
+          <p className="mb-3.5 text-[12px] text-muted">Biggest conviction — sacrifice score</p>
           {data.underdogs.length === 0 ? (
-            <EmptyLine>Pick a revenue band on claim — sacrifice score ranks conviction.</EmptyLine>
+            <EmptyCard>Pick a revenue band on claim to rank conviction.</EmptyCard>
           ) : (
-            <ul className="space-y-3">
-              {data.underdogs.slice(0, 4).map((u) => (
-                <li key={u.slug} className="text-[13px]">
-                  <div className="flex items-center justify-between gap-2">
-                    <ListingLink slug={u.slug} displayUrl={u.displayUrl} className="truncate" />
-                    <span className="shrink-0 tabular text-[11px] font-semibold text-accent">
-                      {u.sacrificeScore.toFixed(1)}×
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-[11.5px] text-muted">
-                    {formatMoney(u.currentBid)} ·{" "}
-                    {REVENUE_BAND_LABELS[u.revenueBand as RevenueBand] ?? u.revenueBand}
-                    {!u.revenueVerified ? " · unverified" : ""}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            data.underdogs.slice(0, 3).map((u) => (
+              <div key={u.slug} className="mini-row">
+                <ListingLink slug={u.slug} displayUrl={u.displayUrl} className="truncate" />
+                <span className="font-mono-label shrink-0 font-semibold text-accent">
+                  {u.sacrificeScore.toFixed(1)}×
+                </span>
+              </div>
+            ))
           )}
-        </MetricCard>
+        </BracketCard>
 
-        <MetricCard emoji="🔥" title="MOMENTUM" subtitle="Fastest growth.">
+        <BracketCard>
+          <p className="mb-2 text-[20px]" aria-hidden>
+            🔥
+          </p>
+          <p className="font-display text-[17px] font-semibold">Momentum</p>
+          <p className="mb-3.5 text-[12px] text-muted">Bid growth, last 10h</p>
           {data.momentum.length === 0 ? (
-            <EmptyLine>0 movers yet — momentum updates every few hours.</EmptyLine>
+            <EmptyCard>0 movers yet — momentum updates on bid activity.</EmptyCard>
           ) : (
-            <ul className="space-y-3">
-              {data.momentum.slice(0, 4).map((m) => (
-                <li key={m.slug} className="flex items-center justify-between gap-2 text-[13px]">
-                  <ListingLink slug={m.slug} displayUrl={m.displayUrl} className="truncate" />
-                  <span className="shrink-0 text-muted">+{m.growthPct24h}% / 24h</span>
-                </li>
-              ))}
-            </ul>
+            data.momentum.slice(0, 3).map((m) => (
+              <div key={m.slug} className="mini-row">
+                <ListingLink slug={m.slug} displayUrl={m.displayUrl} className="truncate" />
+                <span className="font-mono-label shrink-0 font-semibold text-foreground">
+                  {formatMoney(m.bidStart10h)}→{formatMoney(m.bidEnd10h)}
+                </span>
+              </div>
+            ))
           )}
-        </MetricCard>
+        </BracketCard>
       </section>
 
       {/* ROOMS */}
-      <section id="rooms">
-        <SectionHead
-          emoji="🏰"
-          title="ROOMS"
-          subtitle="Category arenas — compete where your product belongs."
+      <section id="rooms" className="mb-10">
+        <SectionBlock
+          eyebrow="Category Rooms"
+          title="Private squares. Invite to enter."
           href="/rooms"
-          linkLabel="All rooms"
+          linkLabel={`View all ${data.totalRooms}`}
         />
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.featuredRooms.map((room) => (
-            <button
-              key={room.slug}
-              type="button"
-              onClick={() => onEnterRoom(room.slug)}
-              className="eco-room-tile group flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-surface px-3 py-4 text-center transition-all hover:border-accent hover:shadow-[var(--shadow)] active:scale-[0.98]"
-            >
-              <span className="text-[22px] transition-transform group-hover:scale-110" aria-hidden>
-                {room.icon}
+            <BracketCard key={room.slug} className="relative !pb-5">
+              <span className="absolute right-5 top-5 rounded-xl border border-border px-2.5 py-1 text-[10.5px] tracking-wide text-muted">
+                OPEN
               </span>
-              <span className="text-[13px] font-bold text-foreground">{room.label}</span>
-              <span className="text-[11px] text-muted">{room.listingCount} live</span>
-            </button>
+              <div className="room-icon-box">{room.icon}</div>
+              <p className="font-display text-[17px] font-semibold">{room.label}</p>
+              <p className="mt-0.5 text-[12.5px] text-accent">{room.roomLabel}</p>
+              <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5 text-[12.5px] text-muted">
+                <span>
+                  {room.listingCount} founder{room.listingCount === 1 ? "" : "s"}
+                </span>
+                <button type="button" onClick={() => onEnterRoom(room.slug)} className="enter-btn">
+                  Enter →
+                </button>
+              </div>
+            </BracketCard>
           ))}
         </div>
       </section>
 
-      {/* LIVE BATTLES + KINGMAKERS */}
-      <section className="grid gap-3 lg:grid-cols-2">
-        <div className="eco-card rounded-2xl border border-border bg-surface p-4 sm:p-5">
-          <SectionHead emoji="⚔️" title="LIVE BATTLES" subtitle="Current challenges." />
-          {data.liveBattles.length === 0 ? (
-            <EmptyLine>No active matchups — founders can start battles from listing pages.</EmptyLine>
-          ) : (
-            <ul className="space-y-3">
-              {data.liveBattles.map((m) => (
-                <li key={m.id}>
-                  <Link
-                    href={m.url}
-                    className="block rounded-xl border border-border/80 bg-surface-2/50 px-4 py-3 transition-colors hover:border-accent"
-                  >
-                    <div className="flex items-center justify-between gap-2 text-[13px] font-medium">
-                      <span className="truncate">{m.listingA.displayUrl}</span>
-                      <span className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-muted">vs</span>
-                      <span className="truncate text-right">{m.listingB.displayUrl}</span>
-                    </div>
-                    <p className="mt-1.5 text-[11.5px] text-muted">
-                      {m.votes} vote{m.votes === 1 ? "" : "s"} ·{" "}
-                      {formatMoney(m.listingA.currentBid)} vs {formatMoney(m.listingB.currentBid)}
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="eco-card rounded-2xl border border-border bg-surface p-4 sm:p-5">
-          <SectionHead
-            emoji="👑"
-            title="KINGMAKERS"
-            subtitle="People predicting and discovering winners."
-            href="/founders"
-            linkLabel="Founder Hub"
-          />
-          {data.kingmakers.length === 0 ? (
-            <EmptyLine>No kingmaker scores yet — add discovery picks in Founder Hub.</EmptyLine>
-          ) : (
-            <ul className="space-y-3">
-              {data.kingmakers.slice(0, 5).map((k) => (
-                <li key={k.userId} className="rounded-xl border border-border/60 px-3 py-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <Link href={k.profileUrl} className="text-[13px] font-semibold hover:text-accent hover:underline">
-                      @{k.handle}
-                    </Link>
-                    <span className="tabular text-[12px] font-bold text-accent">{k.score} pts</span>
+      {/* LIVE BATTLES */}
+      <section className="mb-10">
+        <SectionBlock eyebrow="⚔️ Right now" title="Live Battles" />
+        {data.liveBattles.length === 0 ? (
+          <BracketCard>
+            <EmptyCard>No active matchups — founders can start battles from listing pages.</EmptyCard>
+          </BracketCard>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {data.liveBattles.map((m) => (
+              <Link key={m.id} href={m.url} className="block">
+                <BracketCard className="flex items-center justify-between gap-3 !py-5">
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] uppercase tracking-wide text-accent">Current King</p>
+                    <p className="font-display mt-1.5 truncate text-[17px] font-semibold">{m.king.displayUrl}</p>
+                    <p className="font-mono-label mt-1 text-[13px] text-muted">{formatMoney(m.king.currentBid)}</p>
                   </div>
-                  {k.picks.length > 0 && (
-                    <p className="mt-1 truncate text-[11.5px] text-muted">
-                      Picks: {k.picks.map((p) => p.displayUrl).join(", ")}
+                  <div className="shrink-0 text-center">
+                    <p className="font-mono-label text-[12px] text-accent">VS</p>
+                    <p className="font-mono-label mt-1 text-[14px] font-bold text-accent">
+                      {formatMoney(m.gapCents)}
                     </p>
-                  )}
-                </li>
-              ))}
-            </ul>
+                    <p className="text-[10px] text-muted">gap</p>
+                  </div>
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] uppercase tracking-wide text-muted">Challenger</p>
+                    <p className="font-display mt-1.5 truncate text-[17px] font-semibold">{m.challenger.displayUrl}</p>
+                    <p className="font-mono-label mt-1 text-[13px] text-muted">
+                      {formatMoney(m.challenger.currentBid)}
+                    </p>
+                  </div>
+                </BracketCard>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* KINGMAKERS */}
+      <section className="mb-10" id="kingmakers">
+        <SectionBlock
+          eyebrow="👑 Discovery"
+          title="Kingmakers"
+          href="/founders"
+          linkLabel="See leaderboard"
+        />
+        <BracketCard className="!py-2">
+          {data.kingmakers.length === 0 ? (
+            <p className="px-1 py-4 text-[13px] text-muted">No kingmaker scores yet — add discovery picks in Founder Hub.</p>
+          ) : (
+            data.kingmakers.slice(0, 5).map((k, i) => (
+              <div key={k.userId} className="km-row px-1">
+                <span className="font-mono-label text-muted">{String(i + 1).padStart(2, "0")}</span>
+                <div className="min-w-0">
+                  <Link href={k.profileUrl} className="font-semibold hover:text-accent hover:underline">
+                    @{k.handle}
+                  </Link>
+                  <p className="text-[11.5px] text-muted">
+                    {k.pickCount} product{k.pickCount === 1 ? "" : "s"} on discovery list
+                  </p>
+                </div>
+                <span className="km-role text-[11.5px] text-muted">Kingmaker</span>
+                <span className="font-mono-label text-right font-semibold text-accent">
+                  {k.score.toLocaleString()}
+                </span>
+              </div>
+            ))
           )}
+        </BracketCard>
+      </section>
+
+      {/* FALLEN FUND */}
+      <section className="mb-10">
+        <SectionBlock eyebrow="🪦 Community" title="Fallen Fund" href="/fallen-fund" linkLabel="How it works" />
+        <div className="fallen-fund-card flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-md">
+            <p className="kb-eyebrow !text-accent">This week</p>
+            <h3 className="font-display mt-1.5 text-[22px] font-semibold leading-snug">
+              Underdogs get discovered, on the house
+            </h3>
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">
+              Funded from {data.fallenFund.pct}% of KingBid revenue — grants publish weekly from community nominations.
+              Status: {data.fallenFund.status}.
+            </p>
+            {data.fallenFund.grants.length > 0 && (
+              <ul className="mt-3 space-y-1 text-[13px]">
+                {data.fallenFund.grants.map((g, i) => (
+                  <li key={`${g.slug}-${i}`}>
+                    <ListingLink slug={g.slug} displayUrl={g.displayUrl} />{" "}
+                    <span className="text-muted">· {g.grantType.replace(/_/g, " ")}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="text-left sm:text-right">
+            <p className="text-[11px] uppercase tracking-wide text-muted">This week&apos;s pool</p>
+            <p className="font-mono-label mt-1 text-[30px] font-semibold text-accent">
+              {formatMoney(Math.round(data.fallenFund.poolCents / 100))}
+            </p>
+            <p className="mt-1 text-[11px] text-muted">Live accrual from platform revenue</p>
+          </div>
         </div>
       </section>
 
-      {/* FALLEN FUND + HISTORY */}
-      <section className="grid gap-3 lg:grid-cols-2">
-        <div className="eco-card rounded-2xl border border-border bg-surface p-4 sm:p-5">
-          <SectionHead
-            emoji="🪦"
-            title="FALLEN FUND"
-            subtitle="This week's community discoveries."
-            href="/fallen-fund"
-            linkLabel="How it works"
-          />
-          <div className="rounded-xl bg-surface-2/80 px-4 py-3">
-            <p className="tabular text-[22px] font-bold text-foreground">
-              {formatMoney(Math.round(data.fallenFund.poolCents / 100))}
-            </p>
-            <p className="mt-1 text-[12px] text-muted">
-              {data.fallenFund.pct}% of platform revenue · status: {data.fallenFund.status}
-            </p>
-          </div>
-          {data.fallenFund.grants.length === 0 ? (
-            <p className="mt-3 text-[12.5px] text-muted">Grants publish weekly from community nominations.</p>
-          ) : (
-            <ul className="mt-3 space-y-2 text-[13px]">
-              {data.fallenFund.grants.map((g, i) => (
-                <li key={`${g.slug}-${i}`}>
-                  <ListingLink slug={g.slug} displayUrl={g.displayUrl} />{" "}
-                  <span className="text-muted">· {g.grantType.replace(/_/g, " ")}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="eco-card rounded-2xl border border-border bg-surface p-4 sm:p-5">
-          <SectionHead emoji="📜" title="RECENT HISTORY" subtitle="Dethronements, comebacks, record reigns." />
+      {/* RECENT HISTORY */}
+      <section id="history">
+        <SectionBlock eyebrow="📜 The record" title="Recent History" />
+        <BracketCard className="!p-0 !py-1">
           {data.history.length === 0 ? (
-            <EmptyLine>History starts with the first crown change.</EmptyLine>
+            <p className="px-6 py-8 text-[13px] text-muted">History starts with the first crown change.</p>
           ) : (
-            <ul className="max-h-[220px] space-y-0 overflow-y-auto pr-1">
-              {data.history.map((e) => (
-                <li
-                  key={e.id}
-                  className="flex gap-3 border-b border-border/60 py-2.5 text-[12.5px] last:border-0"
-                >
-                  <RelativeTime date={e.at} className="shrink-0 tabular text-[11px] text-muted w-[72px]" />
-                  <span className="text-foreground/90">{e.headline}</span>
-                </li>
-              ))}
-            </ul>
+            data.history.map((e) => (
+              <div key={e.id} className="history-row">
+                <span className="text-[16px]" aria-hidden>
+                  {e.icon}
+                </span>
+                <span className="flex-1 text-foreground/90">{e.headline}</span>
+                <RelativeTime date={e.at} className="font-mono-label shrink-0 text-[11.5px] text-muted" />
+              </div>
+            ))
           )}
-        </div>
+        </BracketCard>
       </section>
     </div>
   );

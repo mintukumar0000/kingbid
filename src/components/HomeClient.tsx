@@ -22,7 +22,7 @@ import { PAGE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
 import { COUNTRY_COOKIE } from "@/lib/brand";
-import { emptyBoardMessage, heroSubtext, HERO_BRAND, HERO_TAGLINE } from "@/lib/copy";
+import { emptyBoardMessage, heroSubtext, HERO_TAGLINE, HERO_TAGLINE_LINE2, HERO_EYEBROW, HERO_BODY } from "@/lib/copy";
 
 const PAGE_SIZE = 50;
 
@@ -213,20 +213,24 @@ function HomeClientInner({
       <>
         {variant === "home" ? (
           <>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-accent/80">{HERO_BRAND}</p>
-            <h1 className="mt-2 text-[32px] font-bold tracking-tight text-foreground sm:text-[42px]">{HERO_TAGLINE}</h1>
-            <HowItWorksStrip />
+            <p className="kb-eyebrow">{HERO_EYEBROW}</p>
+            <h1 className="font-display mt-3.5 max-w-2xl text-[40px] font-medium leading-[1.08] text-foreground sm:text-[50px]">
+              {HERO_TAGLINE}
+              <br />
+              {HERO_TAGLINE_LINE2}
+            </h1>
+            <p className="mt-4 max-w-[480px] text-[16px] leading-relaxed text-muted">{HERO_BODY}</p>
           </>
         ) : (
           <>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-accent/80">{HERO_BRAND}</p>
-            <h1 className="mt-2 text-[28px] font-bold tracking-tight text-foreground sm:text-[34px]">
+            <p className="kb-eyebrow">{HERO_EYEBROW}</p>
+            <h1 className="font-display mt-3 text-[28px] font-semibold tracking-tight text-foreground sm:text-[34px]">
               {board.categoryName ?? "Room"}
             </h1>
           </>
         )}
 
-        <div className={`mx-auto max-w-xl ${variant === "home" ? "mt-8" : "mt-6"}`}>
+        <div className={`max-w-xl ${variant === "home" ? "mt-8" : "mt-6"}`}>
           <p className="text-[14px] font-medium text-foreground/90">
             {claimLine}
             <span className="mx-2 inline-flex items-baseline gap-2 align-middle">
@@ -238,7 +242,7 @@ function HomeClientInner({
               >
                 −
               </button>
-              <span className="tabular text-[22px] font-bold text-accent underline decoration-accent/50 underline-offset-[6px] sm:text-[26px]">
+              <span className="font-mono-label text-[22px] font-bold text-accent underline decoration-accent/50 underline-offset-[6px] sm:text-[26px]">
                 {formatMoneyPlain(heroValue)}
               </span>
               <button
@@ -261,7 +265,7 @@ function HomeClientInner({
         </div>
 
         <form
-          className="mx-auto mt-5 flex max-w-2xl items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-[var(--shadow)]"
+          className="mt-5 flex max-w-2xl items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-[var(--shadow)]"
           onSubmit={(e) => {
             e.preventDefault();
             openHeroBid();
@@ -287,11 +291,13 @@ function HomeClientInner({
           </button>
         </form>
 
-        <p className="mt-3 text-[12.5px] text-muted">
+        <p className="mt-3 max-w-2xl text-[12.5px] text-muted">
           {variant === "room"
             ? "Have a claim invite? Submit the same URL after opening your link."
             : "Already on the list? Enter the same URL or @handle and up your bid."}
         </p>
+
+        {variant === "home" && <HowItWorksStrip />}
       </>
     );
   }
@@ -412,30 +418,32 @@ function HomeClientInner({
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4 pt-5 pb-1">
+      <div className={`${PAGE} flex flex-col gap-3 pb-2 pt-4 sm:flex-row sm:items-center sm:justify-between`}>
         <StatsBar />
         {!inCategoryRoom && (
-          <ScopeToggle
-            scope={scope}
-            countryCode={selectedCountry}
-            countryName={countryName}
-            onChange={(next) => {
-              setScope(next);
-              setPage(1);
-              setHeroAmount(null);
-            }}
-          />
-        )}
-        {scope === "local" && !inCategoryRoom && (
-          <CountryPicker
-            value={selectedCountry}
-            detectedCountry={viewerCountry}
-            onChange={(code) => {
-              setSelectedCountry(code);
-              setPage(1);
-              setHeroAmount(null);
-            }}
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <ScopeToggle
+              scope={scope}
+              countryCode={selectedCountry}
+              countryName={countryName}
+              onChange={(next) => {
+                setScope(next);
+                setPage(1);
+                setHeroAmount(null);
+              }}
+            />
+            {scope === "local" && (
+              <CountryPicker
+                value={selectedCountry}
+                detectedCountry={viewerCountry}
+                onChange={(code) => {
+                  setSelectedCountry(code);
+                  setPage(1);
+                  setHeroAmount(null);
+                }}
+              />
+            )}
+          </div>
         )}
       </div>
 
@@ -449,25 +457,24 @@ function HomeClientInner({
           onExit={exitRoom}
           topLeader={topLeader}
         >
-          <div className="text-center">{renderHero("room")}</div>
+          <div className="text-center sm:text-left">{renderHero("room")}</div>
           <div className="mt-8">{listingsBlock}</div>
         </CategoryRoom>
       ) : (
         <>
-          <section className={`${PAGE} pt-6 pb-4 text-center`}>{renderHero("home")}</section>
+          <section className={`${PAGE} pb-2 pt-8`}>{renderHero("home")}</section>
 
           {scope === "global" && <HomeEcosystem onEnterRoom={enterRoom} />}
 
           <section className={`${PAGE} pb-6`}>
-            <div className="mb-4 flex items-end justify-between gap-2 border-t border-border pt-8">
-              <div>
-                <h2 className="text-[15px] font-bold tracking-tight text-foreground sm:text-[17px]">
-                  Full leaderboard
-                </h2>
-                <p className="mt-0.5 text-[12.5px] text-muted">
-                  {scope === "local" ? `${countryName} board` : "Every rank, live — pay to move up."}
-                </p>
-              </div>
+            <div className="mb-6 border-t border-border pt-10">
+              <p className="kb-eyebrow">Full board</p>
+              <h2 className="font-display mt-1.5 text-[26px] font-semibold text-foreground sm:text-[28px]">
+                Leaderboard
+              </h2>
+              <p className="mt-1 text-[13px] text-muted">
+                {scope === "local" ? `${countryName} board` : "Every rank, live — pay to move up."}
+              </p>
             </div>
             {listingsBlock}
           </section>

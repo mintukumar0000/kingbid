@@ -1,5 +1,6 @@
 import { getLeaderboard } from "@/lib/leaderboard";
 import { Header } from "@/components/Header";
+import { EcosystemTicker } from "@/components/EcosystemTicker";
 import { HomeClient } from "@/components/HomeClient";
 import { headers } from "next/headers";
 import { getCountryFromHeaders } from "@/lib/geo";
@@ -12,6 +13,7 @@ export default async function HomePage() {
 
   return (
     <main className="flex-1">
+      <EcosystemTicker />
       <Header />
       <HomeClient initialData={initialData} viewerCountry={countryCode} />
     </main>

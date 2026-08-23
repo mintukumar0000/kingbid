@@ -22,20 +22,17 @@ const STEPS = [
 
 export function HowItWorksStrip() {
   return (
-    <div className="mx-auto mt-10 max-w-3xl">
+    <div className="mt-8">
       <div className="grid gap-3 sm:grid-cols-3">
         {STEPS.map((s) => (
-          <div
-            key={s.n}
-            className="group relative overflow-hidden rounded-2xl border border-border/80 bg-surface/80 px-4 py-4 text-left backdrop-blur-sm transition-colors hover:border-[#f0cfc3]"
-          >
-            <span className="text-[11px] font-bold tabular tracking-[0.2em] text-accent/70">{s.n}</span>
+          <div key={s.n} className="bracket-card !p-4 text-left">
+            <span className="font-mono-label text-[11px] font-semibold tracking-[0.2em] text-accent/80">{s.n}</span>
             <p className="mt-2 text-[13px] font-semibold text-foreground">{s.title}</p>
             <p className="mt-1 text-[12px] leading-relaxed text-muted">{s.body}</p>
           </div>
         ))}
       </div>
-      <p className="mt-4 text-center text-[12px] text-muted">
+      <p className="mt-4 text-[12px] text-muted">
         New here?{" "}
         <Link href="/founders" className="font-medium text-accent hover:underline">
           Open Founder Hub

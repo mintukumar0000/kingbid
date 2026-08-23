@@ -12,6 +12,8 @@ export async function computeMomentum(limit = 5) {
     currentBid: number;
     growthPct24h: number;
     growthPct10h: number;
+    bidStart10h: number;
+    bidEnd10h: number;
   }[] = [];
 
   const listings = await prisma.listing.findMany({
@@ -32,16 +34,22 @@ export async function computeMomentum(limit = 5) {
     });
     if (bids.length < 2) continue;
 
-    const bidAt = (hoursAgo: number) => {
+    const bidRangeAt = (hoursAgo: number) => {
       const cutoff = new Date(now - hoursAgo * 3_600_000);
       const before = bids.filter((b) => b.completedAt && b.completedAt <= cutoff);
       const after = bids.filter((b) => b.completedAt && b.completedAt > cutoff);
       const start = before.at(-1)?.totalAfter ?? bids[0]!.totalAfter;
       const end = after.at(-1)?.totalAfter ?? listing.currentBid;
+      return { start, end };
+    };
+
+    const bidAt = (hoursAgo: number) => {
+      const { start, end } = bidRangeAt(hoursAgo);
       if (start <= 0) return 0;
       return Math.round(((end - start) / start) * 100);
     };
 
+    const range10h = bidRangeAt(WINDOWS_H[0]);
     const growthPct10h = bidAt(WINDOWS_H[0]);
     const growthPct24h = bidAt(WINDOWS_H[1]);
     if (growthPct24h <= 0 && growthPct10h <= 0) continue;
@@ -54,6 +62,8 @@ export async function computeMomentum(limit = 5) {
       currentBid: listing.currentBid,
       growthPct10h,
       growthPct24h,
+      bidStart10h: range10h.start,
+      bidEnd10h: range10h.end,
     });
   }
 
@@ -62,7 +72,13 @@ export async function computeMomentum(limit = 5) {
 }
 
 export async function getBreakoutListings(limit = 5) {
-  return computeMomentum(limit);
+  const rows = await computeMomentum(limit * 2);
+  return rows.sort((a, b) => b.growthPct24h - a.growthPct24h).slice(0, limit);
+}
+
+export async function getMomentumListings(limit = 5) {
+  const rows = await computeMomentum(limit * 2);
+  return rows.sort((a, b) => b.growthPct10h - a.growthPct10h).slice(0, limit);
 }
 
 /** Cron-only: emit breakout events for movers above threshold. */

@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
-import { KingbidLogoMark } from "@/components/KingbidLogo";
-import { SITE_NAME } from "@/lib/brand";
 import { PAGE } from "@/lib/layout";
 
 export function Header() {
@@ -22,9 +20,7 @@ export function Header() {
       <Link
         href={href}
         className={`hidden sm:inline transition-colors ${
-          active
-            ? "font-semibold text-foreground"
-            : "font-normal text-muted hover:text-foreground"
+          active ? "font-semibold text-foreground" : "font-normal text-muted hover:text-foreground"
         }`}
       >
         {label}
@@ -33,27 +29,28 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md">
-      <div className={`${PAGE} flex h-14 items-center justify-between py-3`}>
-        <Link href="/" className="flex items-center gap-2.5">
-          <KingbidLogoMark size="lg" />
-          <span className="text-[17px] font-bold tracking-tight text-foreground sm:text-[18px]">
-            {SITE_NAME}
-          </span>
+    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md">
+      <div className={`${PAGE} flex h-[58px] items-center justify-between`}>
+        <Link href="/" className="font-display text-[22px] font-bold tracking-[0.3px] text-foreground">
+          KING<span className="text-accent">BID</span>
         </Link>
 
-        <nav className="flex items-center gap-6 text-[14px]">
-          {link("/", "Leaderboard")}
+        <nav className="flex items-center gap-5 text-[14px] sm:gap-7">
           {link("/rooms", "Rooms")}
-          {link("/founders", "Founders")}
-          {link("/pricing", "Pricing")}
-          {link("/about", "About")}
-          {link("/rules", "Rules")}
+          {link("/#underdogs", "Underdogs")}
+          {link("/#kingmakers", "Kingmakers")}
+          {link("/#history", "History")}
+          <Link
+            href="/"
+            className="hidden rounded-full bg-accent px-5 py-2 text-[13.5px] font-semibold text-white hover:brightness-110 sm:inline"
+          >
+            Claim a room
+          </Link>
           <button
             type="button"
             onClick={toggle}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="flex h-8 w-8 items-center justify-center text-foreground/80 hover:text-foreground transition-colors"
+            className="flex h-8 w-8 items-center justify-center text-foreground/80 transition-colors hover:text-foreground"
           >
             {theme === "dark" ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">

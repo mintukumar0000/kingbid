@@ -56,7 +56,8 @@ html.dark {
   --color-bronze: var(--bronze);
   --color-peach: var(--peach);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-ibm-mono);
+  --font-display: var(--font-fraunces);
 }
 
 html {
@@ -71,6 +72,202 @@ body {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+.font-mono-label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.kb-eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.bracket-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.bracket-card::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 16px;
+  height: 16px;
+  border-top: 1.5px solid var(--accent);
+  border-left: 1.5px solid var(--accent);
+  border-radius: 3px 0 0 0;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.bracket-card::after {
+  content: "";
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  border-bottom: 1.5px solid var(--accent);
+  border-right: 1.5px solid var(--accent);
+  border-radius: 0 0 3px 0;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.king-hero-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 28px 32px;
+  background: linear-gradient(135deg, #23201b 0%, #35302a 100%);
+  color: #f7f1e6;
+}
+
+.king-hero-card::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  right: -8%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(229, 91, 60, 0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.fallen-fund-card {
+  border-radius: 18px;
+  padding: 28px 32px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.eco-ticker-wrap {
+  background: var(--foreground);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 9px 0;
+}
+
+.eco-ticker-track {
+  display: inline-block;
+  animation: eco-scroll 34s linear infinite;
+}
+
+.eco-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 28px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--background) 72%, var(--muted));
+  border-right: 1px solid color-mix(in srgb, var(--foreground) 75%, transparent);
+}
+
+.eco-ticker-item b {
+  color: var(--background);
+  font-weight: 600;
+}
+
+@keyframes eco-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.mini-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+}
+
+.mini-row:last-child {
+  border-bottom: none;
+}
+
+.room-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  margin-bottom: 14px;
+}
+
+.enter-btn {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+}
+
+.history-row:last-child {
+  border-bottom: none;
+}
+
+.km-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.km-row:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 640px) {
+  .king-hero-card {
+    padding: 22px 20px;
+  }
+
+  .bracket-card {
+    padding: 18px;
+  }
+
+  .km-row {
+    grid-template-columns: 24px 1fr auto;
+  }
+
+  .km-row .km-role {
+    display: none;
+  }
 }
 
 @keyframes pulse-dot {

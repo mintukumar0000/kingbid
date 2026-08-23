@@ -13,9 +13,10 @@ interface Props {
   onClaim: (entry: LeaderboardEntry) => void;
   featured?: boolean;
   scope?: BoardScope;
+  luxury?: boolean;
 }
 
-export function ListingRow({ entry, onClaim, featured, scope = "global" }: Props) {
+export function ListingRow({ entry, onClaim, featured, scope = "global", luxury }: Props) {
   const prevBid = useRef(entry.currentBid);
   const [flash, setFlash] = useState(false);
   const href = `/go/${entry.id}`;
@@ -57,7 +58,7 @@ export function ListingRow({ entry, onClaim, featured, scope = "global" }: Props
         }}
         className={`group relative mb-4 mt-3 cursor-pointer rounded-[20px] border border-[#f0cfc3] bg-peach px-5 py-5 transition-all duration-200 hover:border-accent hover:bg-[#fff0eb] hover:shadow-[0_0_0_1px_var(--accent)] sm:px-6 sm:py-6 ${
           flash ? "flash-row" : ""
-        }`}
+        } ${luxury ? "category-listing-luxury" : ""}`}
       >
         <button
           type="button"
@@ -78,7 +79,7 @@ export function ListingRow({ entry, onClaim, featured, scope = "global" }: Props
         )}
 
         <div className="flex items-start gap-3 sm:gap-4">
-          <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-[13px] font-bold text-white">
+          <span className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-[13px] font-bold text-white ${luxury ? "luxury-rank" : ""}`}>
             #{entry.rank}
           </span>
 

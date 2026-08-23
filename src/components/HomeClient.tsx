@@ -17,6 +17,7 @@ import { LiveRevenueTicker } from "@/components/LiveRevenueTicker";
 import { ReferralTracker } from "@/components/ReferralTracker";
 import { ScopeToggle } from "@/components/ScopeToggle";
 import { CategoryBoardTabs } from "@/components/CategoryBoardTabs";
+import { CategoryRoom, CategoryEmptyState } from "@/components/CategoryRoom";
 import { CountryPicker } from "@/components/CountryPicker";
 import { PAGE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
@@ -26,14 +27,20 @@ import { emptyBoardMessage, heroSubtext } from "@/lib/copy";
 
 const PAGE_SIZE = 50;
 
-function TierDivider({ label }: { label: string }) {
+function TierDivider({ label, luxury }: { label: string; luxury?: boolean }) {
   return (
-    <div className="relative my-5">
+    <div className={`relative my-5 ${luxury ? "category-tier-divider" : ""}`}>
       <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-border" />
+        <div className={`w-full border-t ${luxury ? "border-[var(--room-border)]" : "border-border"}`} />
       </div>
       <div className="relative flex justify-center">
-        <span className="rounded-full bg-accent-soft px-3 py-0.5 text-[11px] font-semibold tracking-wide text-accent">
+        <span
+          className={`rounded-full px-3 py-0.5 text-[11px] font-semibold tracking-wide ${
+            luxury
+              ? "border border-[var(--room-border)] bg-[var(--room-accent-soft)] text-[var(--room-accent)]"
+              : "bg-accent-soft text-accent"
+          }`}
+        >
           {label}
         </span>
       </div>
@@ -86,6 +93,13 @@ function HomeClientInner({
     const match = document.cookie.match(new RegExp(`${COUNTRY_COOKIE}=([A-Za-z]{2})`));
     if (match) setSelectedCountry(match[1].toUpperCase());
   }, []);
+
+  const { data: categoriesData } = useSWR<{ categories: { slug: string; boardId: string | null; listingCount: number }[] }>(
+    "/api/categories",
+    fetcher
+  );
+  const activeCategory = categoriesData?.categories.find((c) => c.slug === categorySlug);
+  const inCategoryRoom = !!categorySlug;
 
   const [page, setPage] = useState(1);
   const listingsUrl = categorySlug
@@ -163,11 +177,254 @@ function HomeClientInner({
 
   function insertDivider(rank: number) {
     if (page !== 1) return null;
-    if (rank === 4) return <TierDivider label="TOP 3" />;
-    if (rank === 11) return <TierDivider label="TOP 10" />;
-    if (rank === 21) return <TierDivider label="TOP 20" />;
+    if (rank === 4) return <TierDivider label={inCategoryRoom ? "THE PODIUM" : "TOP 3"} luxury={inCategoryRoom} />;
+    if (rank === 11) return <TierDivider label="TOP 10" luxury={inCategoryRoom} />;
+    if (rank === 21) return <TierDivider label="TOP 20" luxury={inCategoryRoom} />;
     return null;
   }
+
+  const heroBlock = (
+    <>
+      <h1
+        className={`text-[28px] font-bold tracking-tight sm:text-[36px] ${
+          inCategoryRoom ? "category-hero-text" : "text-foreground"
+        }`}
+      >
+        {scope === "local" ? (
+          <>Claim #{heroRank} in {countryName} for</>
+        ) : board.categoryName ? (
+          <>Claim the #{heroRank} throne for</>
+        ) : (
+          <>Claim #{heroRank} for</>
+        )}
+        <span className="mx-2 inline-flex items-baseline gap-2 align-middle sm:mx-3">
+          <button
+            type="button"
+            onClick={() => setHeroAmount(Math.max(board.minBid, heroValue - 1))}
+            className={`text-[28px] leading-none sm:text-[32px] ${
+              inCategoryRoom ? "category-hero-muted hover:text-[var(--room-text)]" : "text-muted hover:text-foreground"
+            }`}
+            aria-label="Decrease amount"
+          >
+            −
+          </button>
+          <span
+            className={`tabular text-[28px] underline underline-offset-[6px] sm:text-[36px] ${
+              inCategoryRoom
+                ? "category-hero-accent decoration-[var(--room-accent)]/50"
+                : "text-accent decoration-accent/50"
+            }`}
+          >
+            {formatMoneyPlain(heroValue)}
+          </span>
+          <button
+            type="button"
+            onClick={() => setHeroAmount(Math.min(999_999, heroValue + 1))}
+            className={`text-[28px] leading-none sm:text-[32px] ${
+              inCategoryRoom ? "category-hero-muted hover:text-[var(--room-text)]" : "text-muted hover:text-foreground"
+            }`}
+            aria-label="Increase amount"
+          >
+            +
+          </button>
+        </span>
+      </h1>
+
+      <p
+        className={`mx-auto mt-3 max-w-xl text-[13px] leading-relaxed ${
+          inCategoryRoom ? "category-hero-muted" : "text-accent"
+        }`}
+      >
+        {heroSubtext(
+          board.minBid,
+          scope,
+          scope === "local" ? countryName : board.categoryName ?? undefined
+        )}
+      </p>
+
+      <form
+        className={`mx-auto mt-6 flex max-w-2xl items-center gap-1 rounded-full border p-1.5 ${
+          inCategoryRoom
+            ? "category-hero-input"
+            : "border-border bg-surface shadow-[var(--shadow)]"
+        }`}
+        onSubmit={(e) => {
+          e.preventDefault();
+          openHeroBid();
+        }}
+      >
+        <span className={`pl-3.5 ${inCategoryRoom ? "category-hero-muted" : "text-muted"}`} aria-hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" />
+          </svg>
+        </span>
+        <input
+          value={heroUrl}
+          onChange={(e) => setHeroUrl(e.target.value)}
+          placeholder="Your product URL or @handle"
+          className="min-w-0 flex-1 bg-transparent px-2 py-3 text-[14px] outline-none placeholder:text-muted"
+        />
+        <button
+          type="submit"
+          className={`rounded-full px-6 py-2.5 text-[14px] font-semibold transition-all active:scale-[0.98] ${
+            inCategoryRoom
+              ? ""
+              : "bg-accent text-white hover:brightness-110"
+          }`}
+        >
+          Kingbid
+        </button>
+      </form>
+
+      <p className={`mt-3 text-[12.5px] ${inCategoryRoom ? "category-hero-muted" : "text-muted"}`}>
+        Already on the list? Enter the same URL or @handle and up your bid.
+      </p>
+    </>
+  );
+
+  const listingsBlock = (
+    <>
+      {featured.length > 0 && (
+        <div className={inCategoryRoom ? "pt-1" : "pt-3"}>
+          {featured.map((entry) => (
+            <ListingRow
+              key={entry.id}
+              entry={entry}
+              onClaim={openClaim}
+              featured
+              scope={scope}
+              luxury={inCategoryRoom}
+            />
+          ))}
+        </div>
+      )}
+
+      {rest.map((entry) => (
+        <div key={entry.id}>
+          {insertDivider(entry.rank)}
+          <ListingRow
+            entry={entry}
+            onClaim={openClaim}
+            featured={false}
+            scope={scope}
+            luxury={inCategoryRoom}
+          />
+        </div>
+      ))}
+
+      {board.entries.length === 0 &&
+        (inCategoryRoom && categorySlug ? (
+          <CategoryEmptyState slug={categorySlug} minBid={board.minBid} onClaim={openHeroBid} />
+        ) : (
+          <div className="rounded-2xl border border-dashed border-border px-6 py-16 text-center text-muted">
+            <p className="text-[15px] font-medium text-foreground">
+              {emptyBoardMessage(
+                board.minBid,
+                scope,
+                scope === "local" ? countryName : board.categoryName ?? undefined
+              )}
+            </p>
+            <p className="mt-2 text-[13px]">Every listing here opted in with a real payment.</p>
+          </div>
+        ))}
+
+      {board.total > 0 && (
+        <div className={`flex flex-col items-center gap-3 ${inCategoryRoom ? "mt-8" : "mt-10"}`}>
+          <div className="relative w-full max-w-md px-1">
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center">
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                    className={`flex h-8 w-8 items-center justify-center disabled:opacity-30 hover:opacity-80 ${
+                      inCategoryRoom ? "category-hero-accent" : "text-accent"
+                    }`}
+                    aria-label="Previous page"
+                  >
+                    ‹
+                  </button>
+                  {pages.map((p, i) =>
+                    p === "…" ? (
+                      <span key={`e${i}`} className={`px-1.5 ${inCategoryRoom ? "category-hero-accent" : "text-accent"}`}>
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPage(p)}
+                        className={`tabular flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-[13px] font-medium transition-colors ${
+                          p === page
+                            ? inCategoryRoom
+                              ? "bg-[var(--room-accent)] text-[#0a0a0a]"
+                              : "bg-accent text-white"
+                            : inCategoryRoom
+                              ? "category-hero-accent hover:bg-[var(--room-accent-soft)]"
+                              : "text-accent hover:bg-accent-soft"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className={`flex h-8 w-8 items-center justify-center disabled:opacity-30 hover:opacity-80 ${
+                      inCategoryRoom ? "category-hero-accent" : "text-accent"
+                    }`}
+                    aria-label="Next page"
+                  >
+                    ›
+                  </button>
+                </div>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => mutate()}
+              className={`absolute right-0 top-0 hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-medium shadow-sm sm:inline-flex ${
+                inCategoryRoom
+                  ? "category-hero-input category-hero-text hover:border-[var(--room-accent)]"
+                  : "border-border bg-surface text-foreground hover:border-accent"
+              }`}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 1 1-3-6.7" />
+                <path d="M21 3v6h-6" />
+              </svg>
+              Refresh
+            </button>
+          </div>
+          <div className="flex w-full max-w-md items-center justify-between px-1 sm:justify-center">
+            <p className={`tabular text-[12.5px] ${inCategoryRoom ? "category-hero-muted" : "text-muted"}`}>
+              {(page - 1) * PAGE_SIZE + 1} – {Math.min(page * PAGE_SIZE, board.total)} of{" "}
+              {board.total.toLocaleString()}
+            </p>
+            <button
+              type="button"
+              onClick={() => mutate()}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-medium shadow-sm sm:hidden ${
+                inCategoryRoom
+                  ? "category-hero-input category-hero-text"
+                  : "border-border bg-surface text-foreground hover:border-accent"
+              }`}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 1 1-3-6.7" />
+                <path d="M21 3v6h-6" />
+              </svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 
   return (
     <>
@@ -211,192 +468,29 @@ function HomeClientInner({
         )}
       </div>
 
-      <section className={`${PAGE} pt-6 pb-8 text-center`}>
-        <h1 className="text-[28px] font-bold tracking-tight text-foreground sm:text-[36px]">
-          {scope === "local" ? (
-            <>Claim #{heroRank} in {countryName} for</>
-          ) : board.categoryName ? (
-            <>Claim #{heroRank} on {board.categoryName} for</>
-          ) : (
-            <>Claim #{heroRank} for</>
-          )}
-          <span className="mx-2 inline-flex items-baseline gap-2 align-middle sm:mx-3">
-            <button
-              type="button"
-              onClick={() => setHeroAmount(Math.max(board.minBid, heroValue - 1))}
-              className="text-[28px] leading-none text-muted hover:text-foreground sm:text-[32px]"
-              aria-label="Decrease amount"
-            >
-              −
-            </button>
-            <span className="tabular text-[28px] text-accent underline decoration-accent/50 underline-offset-[6px] sm:text-[36px]">
-              {formatMoneyPlain(heroValue)}
-            </span>
-            <button
-              type="button"
-              onClick={() => setHeroAmount(Math.min(999_999, heroValue + 1))}
-              className="text-[28px] leading-none text-muted hover:text-foreground sm:text-[32px]"
-              aria-label="Increase amount"
-            >
-              +
-            </button>
-          </span>
-        </h1>
-
-        <p className="mx-auto mt-3 max-w-xl text-[13px] leading-relaxed text-accent">
-          {heroSubtext(
-            board.minBid,
-            scope,
-            scope === "local" ? countryName : board.categoryName ?? undefined
-          )}
-        </p>
-
-        <form
-          className="mx-auto mt-6 flex max-w-2xl items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-[var(--shadow)]"
-          onSubmit={(e) => {
-            e.preventDefault();
-            openHeroBid();
-          }}
+      {inCategoryRoom && categorySlug ? (
+        <CategoryRoom
+          slug={categorySlug}
+          boardId={activeCategory?.boardId ?? null}
+          listingCount={board.total}
+          topBid={board.topBid}
+          foundingPrice={board.minBid}
         >
-          <span className="pl-3.5 text-muted" aria-hidden>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" />
-            </svg>
-          </span>
-          <input
-            value={heroUrl}
-            onChange={(e) => setHeroUrl(e.target.value)}
-            placeholder="Your product URL or @handle"
-            className="min-w-0 flex-1 bg-transparent px-2 py-3 text-[14px] outline-none placeholder:text-muted"
-          />
-          <button
-            type="submit"
-            className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-semibold text-white hover:brightness-110 active:scale-[0.98] transition-all"
-          >
-            Kingbid
-          </button>
-        </form>
+          <div className="text-center">{heroBlock}</div>
+          <div className="mt-8">{listingsBlock}</div>
+        </CategoryRoom>
+      ) : (
+        <>
+          <section className={`${PAGE} pt-6 pb-8 text-center`}>{heroBlock}</section>
 
-        <p className="mt-3 text-[12.5px] text-muted">
-          Already on the list? Enter the same URL or @handle and up your bid.
-        </p>
-      </section>
+          <section className={`${PAGE} grid grid-cols-1 gap-3 pb-8 sm:grid-cols-2`}>
+            <TrendingSection scope={scope} countryCode={scope === "local" ? selectedCountry : null} />
+            <LiveActivityFeed limit={5} />
+          </section>
 
-      <section className={`${PAGE} grid grid-cols-1 gap-3 pb-8 sm:grid-cols-2`}>
-        <TrendingSection scope={scope} countryCode={scope === "local" ? selectedCountry : null} />
-        <LiveActivityFeed limit={5} />
-      </section>
-
-      <section className={`${PAGE} pb-6`}>
-        {featured.length > 0 && (
-          <div className="pt-3">
-            {featured.map((entry) => (
-              <ListingRow key={entry.id} entry={entry} onClaim={openClaim} featured scope={scope} />
-            ))}
-          </div>
-        )}
-
-        {rest.map((entry) => (
-          <div key={entry.id}>
-            {insertDivider(entry.rank)}
-            <ListingRow entry={entry} onClaim={openClaim} featured={false} scope={scope} />
-          </div>
-        ))}
-
-        {board.entries.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border px-6 py-16 text-center text-muted">
-            <p className="text-[15px] font-medium text-foreground">
-              {emptyBoardMessage(
-                board.minBid,
-                scope,
-                scope === "local" ? countryName : board.categoryName ?? undefined
-              )}
-            </p>
-            <p className="mt-2 text-[13px]">Every listing here opted in with a real payment.</p>
-          </div>
-        )}
-
-        {board.total > 0 && (
-        <div className="mt-10 flex flex-col items-center gap-3">
-          <div className="relative w-full max-w-md px-1">
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center">
-                <div className="flex items-center gap-0.5 sm:gap-1">
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                  className="flex h-8 w-8 items-center justify-center text-accent disabled:opacity-30 hover:opacity-80"
-                  aria-label="Previous page"
-                >
-                  ‹
-                </button>
-                {pages.map((p, i) =>
-                  p === "…" ? (
-                    <span key={`e${i}`} className="px-1.5 text-accent">
-                      …
-                    </span>
-                  ) : (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPage(p)}
-                      className={`tabular flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-[13px] font-medium transition-colors ${
-                        p === page
-                          ? "bg-accent text-white"
-                          : "text-accent hover:bg-accent-soft"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  )
-                )}
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages}
-                  className="flex h-8 w-8 items-center justify-center text-accent disabled:opacity-30 hover:opacity-80"
-                  aria-label="Next page"
-                >
-                  ›
-                </button>
-              </div>
-            </div>
-            )}
-            <button
-              type="button"
-              onClick={() => mutate()}
-              className="absolute right-0 top-0 hidden items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[12.5px] font-medium text-foreground shadow-sm hover:border-accent sm:inline-flex"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12a9 9 0 1 1-3-6.7" />
-                <path d="M21 3v6h-6" />
-              </svg>
-              Refresh
-            </button>
-          </div>
-          <div className="flex w-full max-w-md items-center justify-between px-1 sm:justify-center">
-            <p className="tabular text-[12.5px] text-muted">
-              {(page - 1) * PAGE_SIZE + 1} – {Math.min(page * PAGE_SIZE, board.total)} of{" "}
-              {board.total.toLocaleString()}
-            </p>
-            <button
-              type="button"
-              onClick={() => mutate()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[12.5px] font-medium text-foreground shadow-sm hover:border-accent sm:hidden"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12a9 9 0 1 1-3-6.7" />
-                <path d="M21 3v6h-6" />
-              </svg>
-              Refresh
-            </button>
-          </div>
-        </div>
-        )}
-
-      </section>
+          <section className={`${PAGE} pb-6`}>{listingsBlock}</section>
+        </>
+      )}
 
       <LiveRevenueTicker />
 

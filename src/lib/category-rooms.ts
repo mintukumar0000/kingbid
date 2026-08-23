@@ -148,6 +148,5 @@ export function getCategoryRoomTheme(slug: string): CategoryRoomTheme | null {
 }
 
 export function shortCategoryName(name: string): string {
-  if (name.length <= 18) return name;
-  return name.replace(/ & .+$/, "").slice(0, 16) + "…";
+  return name;
 }

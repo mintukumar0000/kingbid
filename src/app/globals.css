@@ -161,6 +161,27 @@ body {
   border-radius: 16px;
 }
 
+.eco-section {
+  scroll-margin-top: 5rem;
+}
+
+.eco-king-card {
+  box-shadow: var(--shadow);
+}
+
+.eco-card {
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.03);
+}
+
+.eco-room-tile {
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.04);
+}
+
+html.dark .eco-card,
+html.dark .eco-room-tile {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
 ::selection {
   background: color-mix(in srgb, var(--accent) 28%, transparent);
 }

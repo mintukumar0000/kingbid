@@ -147,6 +147,30 @@ export function getCategoryRoomTheme(slug: string): CategoryRoomTheme | null {
   };
 }
 
-export function shortCategoryName(name: string): string {
-  return name;
+export function shortCategoryName(slug: string, name: string): string {
+  const SHORT: Record<string, string> = {
+    "ai-agents": "AI",
+    "ai-coding": "Dev AI",
+    "indie-saas": "SaaS",
+    "no-code": "No-code",
+    newsletters: "Media",
+    fintech: "Fintech",
+    "open-source": "Open source",
+    "local-business": "Local",
+    agencies: "Agencies",
+    productivity: "Productivity",
+    "mobile-apps": "Mobile",
+    design: "Design",
+    marketing: "Marketing",
+    ecommerce: "E‑commerce",
+    career: "Career",
+    fitness: "Fitness",
+    fashion: "Fashion",
+    writing: "Writing",
+    video: "Video",
+    "browser-extensions": "Extensions",
+    "desktop-apps": "Desktop",
+    "trending-lol": "Trending",
+  };
+  return SHORT[slug] ?? name.split(/[\s&]/)[0] ?? name;
 }

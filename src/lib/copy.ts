@@ -27,6 +27,9 @@ export function emptyBoardMessage(minBid: number, scope: "global" | "local", lab
   return `0 listings yet — founding #1 is ${formatMoney(minBid)}. Cheapest it will ever be.`;
 }
 
+export const HERO_TAGLINE = "Compete for attention.";
+export const HERO_BRAND = "KINGBID";
+
 export const REVENUE_TICKER_LINE = "Total raised on Kingbid since launch";
 export const BID_MODAL_NEW = (minBid: number) =>
   `Minimum ${formatMoney(minBid)}. Rank is set only by how much you pay — nothing else.`;

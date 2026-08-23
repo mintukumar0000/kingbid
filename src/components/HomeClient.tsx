@@ -9,22 +9,20 @@ import { formatMoney, formatMoneyPlain } from "@/lib/format";
 import { estimateRankForNewBid } from "@/lib/pricing";
 import { BidModal, type BidPrefill } from "@/components/BidModal";
 import { ListingRow } from "@/components/ListingRow";
-import { TrendingSection } from "@/components/TrendingSection";
-import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 import { StatsBar } from "@/components/StatsBar";
 import { useLiveUpdates } from "@/hooks/useLiveUpdates";
 import { LiveRevenueTicker } from "@/components/LiveRevenueTicker";
 import { ReferralTracker } from "@/components/ReferralTracker";
 import { ScopeToggle } from "@/components/ScopeToggle";
-import { CategoryRoomGrid } from "@/components/CategoryRoomGrid";
 import { CategoryRoom, CategoryEmptyState } from "@/components/CategoryRoom";
-import { HomeSections } from "@/components/HomeSections";
+import { HomeEcosystem } from "@/components/HomeEcosystem";
+import { HowItWorksStrip } from "@/components/HowItWorksStrip";
 import { CountryPicker } from "@/components/CountryPicker";
 import { PAGE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
 import { COUNTRY_COOKIE } from "@/lib/brand";
-import { emptyBoardMessage, heroSubtext } from "@/lib/copy";
+import { emptyBoardMessage, heroSubtext, HERO_BRAND, HERO_TAGLINE } from "@/lib/copy";
 
 const PAGE_SIZE = 50;
 
@@ -201,81 +199,102 @@ function HomeClientInner({
     return null;
   }
 
-  const heroBlock = (
-    <>
-      <h1 className="text-[28px] font-bold tracking-tight text-foreground sm:text-[36px]">
-        {scope === "local" ? (
-          <>Claim #{heroRank} in {countryName} for</>
-        ) : board.categoryName ? (
-          <>Claim #{heroRank} in this room for</>
+  function renderHero(variant: "home" | "room") {
+    const claimLine =
+      scope === "local" ? (
+        <>Claim #{heroRank} in {countryName} for</>
+      ) : variant === "room" && board.categoryName ? (
+        <>Claim #{heroRank} in {board.categoryName} for</>
+      ) : (
+        <>Claim #{heroRank} for</>
+      );
+
+    return (
+      <>
+        {variant === "home" ? (
+          <>
+            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-accent/80">{HERO_BRAND}</p>
+            <h1 className="mt-2 text-[32px] font-bold tracking-tight text-foreground sm:text-[42px]">{HERO_TAGLINE}</h1>
+            <HowItWorksStrip />
+          </>
         ) : (
-          <>Claim #{heroRank} for</>
+          <>
+            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-accent/80">{HERO_BRAND}</p>
+            <h1 className="mt-2 text-[28px] font-bold tracking-tight text-foreground sm:text-[34px]">
+              {board.categoryName ?? "Room"}
+            </h1>
+          </>
         )}
-        <span className="mx-2 inline-flex items-baseline gap-2 align-middle sm:mx-3">
-          <button
-            type="button"
-            onClick={() => setHeroAmount(Math.max(board.minBid, heroValue - 1))}
-            className="text-[28px] leading-none text-muted hover:text-foreground sm:text-[32px]"
-            aria-label="Decrease amount"
-          >
-            −
-          </button>
-          <span className="tabular text-[28px] text-accent underline decoration-accent/50 underline-offset-[6px] sm:text-[36px]">
-            {formatMoneyPlain(heroValue)}
-          </span>
-          <button
-            type="button"
-            onClick={() => setHeroAmount(Math.min(999_999, heroValue + 1))}
-            className="text-[28px] leading-none text-muted hover:text-foreground sm:text-[32px]"
-            aria-label="Increase amount"
-          >
-            +
-          </button>
-        </span>
-      </h1>
 
-      <p className="mx-auto mt-3 max-w-xl text-[13px] leading-relaxed text-accent">
-        {heroSubtext(
-          board.minBid,
-          scope,
-          scope === "local" ? countryName : board.categoryName ?? undefined
-        )}
-      </p>
+        <div className={`mx-auto max-w-xl ${variant === "home" ? "mt-8" : "mt-6"}`}>
+          <p className="text-[14px] font-medium text-foreground/90">
+            {claimLine}
+            <span className="mx-2 inline-flex items-baseline gap-2 align-middle">
+              <button
+                type="button"
+                onClick={() => setHeroAmount(Math.max(board.minBid, heroValue - 1))}
+                className="text-[20px] leading-none text-muted hover:text-foreground"
+                aria-label="Decrease amount"
+              >
+                −
+              </button>
+              <span className="tabular text-[22px] font-bold text-accent underline decoration-accent/50 underline-offset-[6px] sm:text-[26px]">
+                {formatMoneyPlain(heroValue)}
+              </span>
+              <button
+                type="button"
+                onClick={() => setHeroAmount(Math.min(999_999, heroValue + 1))}
+                className="text-[20px] leading-none text-muted hover:text-foreground"
+                aria-label="Increase amount"
+              >
+                +
+              </button>
+            </span>
+          </p>
+          <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+            {heroSubtext(
+              board.minBid,
+              scope,
+              scope === "local" ? countryName : board.categoryName ?? undefined
+            )}
+          </p>
+        </div>
 
-      <form
-        className="mx-auto mt-6 flex max-w-2xl items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-[var(--shadow)]"
-        onSubmit={(e) => {
-          e.preventDefault();
-          openHeroBid();
-        }}
-      >
-        <span className="pl-3.5 text-muted" aria-hidden>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" />
-          </svg>
-        </span>
-        <input
-          value={heroUrl}
-          onChange={(e) => setHeroUrl(e.target.value)}
-          placeholder="Your product URL or @handle"
-          className="min-w-0 flex-1 bg-transparent px-2 py-3 text-[14px] outline-none placeholder:text-muted"
-        />
-        <button
-          type="submit"
-          className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-semibold text-white hover:brightness-110 active:scale-[0.98] transition-all"
+        <form
+          className="mx-auto mt-5 flex max-w-2xl items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-[var(--shadow)]"
+          onSubmit={(e) => {
+            e.preventDefault();
+            openHeroBid();
+          }}
         >
-          Kingbid
-        </button>
-      </form>
+          <span className="pl-3.5 text-muted" aria-hidden>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" />
+            </svg>
+          </span>
+          <input
+            value={heroUrl}
+            onChange={(e) => setHeroUrl(e.target.value)}
+            placeholder="Your product URL or @handle"
+            className="min-w-0 flex-1 bg-transparent px-2 py-3 text-[14px] outline-none placeholder:text-muted"
+          />
+          <button
+            type="submit"
+            className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+          >
+            Kingbid
+          </button>
+        </form>
 
-      <p className="mt-3 text-[12.5px] text-muted">
-        {inCategoryRoom
-          ? "Have a claim invite? Submit the same URL after opening your link."
-          : "Already on the list? Enter the same URL or @handle and up your bid."}
-      </p>
-    </>
-  );
+        <p className="mt-3 text-[12.5px] text-muted">
+          {variant === "room"
+            ? "Have a claim invite? Submit the same URL after opening your link."
+            : "Already on the list? Enter the same URL or @handle and up your bid."}
+        </p>
+      </>
+    );
+  }
 
   const listingsBlock = (
     <>
@@ -430,25 +449,28 @@ function HomeClientInner({
           onExit={exitRoom}
           topLeader={topLeader}
         >
-          <div className="text-center">{heroBlock}</div>
+          <div className="text-center">{renderHero("room")}</div>
           <div className="mt-8">{listingsBlock}</div>
         </CategoryRoom>
       ) : (
         <>
-          <section className={`${PAGE} pt-6 pb-8 text-center`}>{heroBlock}</section>
+          <section className={`${PAGE} pt-6 pb-4 text-center`}>{renderHero("home")}</section>
 
-          <section className={`${PAGE} grid grid-cols-1 gap-3 pb-8 sm:grid-cols-2`}>
-            <TrendingSection scope={scope} countryCode={scope === "local" ? selectedCountry : null} />
-            <LiveActivityFeed limit={5} />
+          {scope === "global" && <HomeEcosystem onEnterRoom={enterRoom} />}
+
+          <section className={`${PAGE} pb-6`}>
+            <div className="mb-4 flex items-end justify-between gap-2 border-t border-border pt-8">
+              <div>
+                <h2 className="text-[15px] font-bold tracking-tight text-foreground sm:text-[17px]">
+                  Full leaderboard
+                </h2>
+                <p className="mt-0.5 text-[12.5px] text-muted">
+                  {scope === "local" ? `${countryName} board` : "Every rank, live — pay to move up."}
+                </p>
+              </div>
+            </div>
+            {listingsBlock}
           </section>
-
-          <HomeSections />
-
-          <section className={`${PAGE} pb-10`}>
-            <CategoryRoomGrid activeSlug={null} onEnter={enterRoom} />
-          </section>
-
-          <section className={`${PAGE} pb-6`}>{listingsBlock}</section>
         </>
       )}
 

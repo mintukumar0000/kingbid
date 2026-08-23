@@ -115,7 +115,7 @@ function RoomSquare({
 
         <div className="mt-auto pt-4">
           <p className="line-clamp-2 text-[14px] font-bold leading-snug text-foreground sm:text-[15px]">
-            {shortCategoryName(cat.name)}
+            {shortCategoryName(cat.slug, cat.name)}
           </p>
           <p className="mt-1.5 line-clamp-1 text-[11px] font-medium text-accent sm:text-[12px]">
             {theme?.roomLabel}

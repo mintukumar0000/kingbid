@@ -5,10 +5,11 @@ import { Header } from "@/components/Header";
 import { RankHistoryChart } from "@/components/RankHistoryChart";
 import { ShareButtons } from "@/components/ShareButtons";
 import { getListingBySlug, getRankHistory } from "@/lib/listing-page";
-import { formatMoney, outboundUrl } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import { BRAND_LABEL, SITE_NAME } from "@/lib/brand";
-import { ogClaimUrl, siteUrl } from "@/lib/site";
+import { ogClaimUrl } from "@/lib/site";
 import { RelativeTime } from "@/components/RelativeTime";
+import { BadgeEmbedSnippet } from "@/components/BadgeEmbedSnippet";
 import { PAGE } from "@/lib/layout";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ export default async function ListingPage({ params }: Props) {
 
   const history = await getRankHistory(listing.id);
   const shareText = `${listing.displayUrl} is #${listing.rank} on ${SITE_NAME} with a ${formatMoney(listing.currentBid)} bid. Think you can take our spot?`;
-  const embedCode = `<script src="${siteUrl()}/widget.js" data-slug="${listing.slug}"></script>`;
+  const clickUrl = `/go/${listing.id}`;
 
   return (
     <main className="flex-1">
@@ -62,13 +63,19 @@ export default async function ListingPage({ params }: Props) {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
-              href={outboundUrl(listing.url)}
+              href={clickUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:brightness-110"
             >
               Visit site →
             </a>
+            <Link
+              href={`/stats/${listing.id}`}
+              className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold hover:border-accent hover:text-accent"
+            >
+              Click stats
+            </Link>
             <Link
               href={`/?claim=${encodeURIComponent(listing.slug)}&amount=${listing.claimPrice}`}
               className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold hover:border-accent hover:text-accent"
@@ -99,11 +106,11 @@ export default async function ListingPage({ params }: Props) {
         <section className="mt-8 rounded-[20px] border border-border bg-surface p-6 shadow-[var(--shadow)]">
           <h2 className="text-[15px] font-semibold">Embed badge</h2>
           <p className="mt-2 text-[13px] text-muted">
-            Paste on your site — updates live from the leaderboard.
+            Paste on your site — rank updates every 5 minutes from live board data.
           </p>
-          <pre className="mt-3 overflow-x-auto rounded-xl bg-surface-2 p-4 text-[12px] text-muted">
-            {embedCode}
-          </pre>
+          <div className="mt-3">
+            <BadgeEmbedSnippet listingId={listing.id} slug={listing.slug} />
+          </div>
           <p className="mt-3 text-[13px]">
             <Link href={`/embed/${listing.slug}`} className="text-accent hover:underline">
               Preview embed →

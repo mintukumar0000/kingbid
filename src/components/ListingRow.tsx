@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
-import { faviconFor, formatMoney, outboundUrl } from "@/lib/format";
+import { faviconFor, formatMoney } from "@/lib/format";
+import { ReignIndicator } from "@/components/ReignIndicator";
 import { RelativeTime } from "@/components/RelativeTime";
 import { countryFlagEmoji } from "@/lib/geo";
 import type { BoardScope } from "@/lib/geo";
@@ -17,7 +18,7 @@ interface Props {
 export function ListingRow({ entry, onClaim, featured, scope = "global" }: Props) {
   const prevBid = useRef(entry.currentBid);
   const [flash, setFlash] = useState(false);
-  const href = outboundUrl(entry.url);
+  const href = `/go/${entry.id}`;
   const isFeatured = featured ?? entry.rank <= 3;
   const flag = entry.countryCode ? countryFlagEmoji(entry.countryCode) : null;
 
@@ -116,10 +117,11 @@ export function ListingRow({ entry, onClaim, featured, scope = "global" }: Props
               <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">{entry.description}</p>
             )}
 
-            <p className="mt-2.5 flex items-center gap-1.5 text-[12px] text-muted">
+            <p className="mt-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] text-muted">
               <RelativeTime date={entry.lastBidAt} />
               <span className="text-accent">●</span>
               <span className="tabular">{entry.clickCount.toLocaleString()} clicks</span>
+              <ReignIndicator listingId={entry.id} rank={entry.rank} />
             </p>
           </div>
         </div>

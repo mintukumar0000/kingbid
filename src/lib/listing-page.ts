@@ -27,12 +27,12 @@ export interface RankHistoryPoint {
 
 export async function getListingBySlug(slug: string): Promise<ListingDetail | null> {
   const listing = await prisma.listing.findFirst({
-    where: { slug: slug.toLowerCase(), currentBid: { gt: 0 } },
+    where: { slug: slug.toLowerCase(), currentBid: { gt: 0 }, status: "active" },
   });
   if (!listing) return null;
 
   const all = await prisma.listing.findMany({
-    where: { currentBid: { gt: 0 } },
+    where: { currentBid: { gt: 0 }, status: "active" },
     orderBy: [{ currentBid: "desc" }, { lastBidAt: "asc" }, { createdAt: "asc" }],
   });
 
@@ -83,7 +83,7 @@ export async function getRankHistory(listingId: string): Promise<RankHistoryPoin
 
 export async function getRankForListing(listingId: string): Promise<number | null> {
   const all = await prisma.listing.findMany({
-    where: { currentBid: { gt: 0 } },
+    where: { currentBid: { gt: 0 }, status: "active" },
     orderBy: [{ currentBid: "desc" }, { lastBidAt: "asc" }, { createdAt: "asc" }],
     select: { id: true, takeoverUntil: true },
   });

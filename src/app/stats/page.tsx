@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { PAGE } from "@/lib/layout";
 import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
+import { liveStat } from "@/lib/copy";
 import type { LeaderboardData } from "@/lib/leaderboard";
 import { useLiveUpdates } from "@/hooks/useLiveUpdates";
 
@@ -80,7 +81,7 @@ export default function StatsPage() {
   const perHour =
     stats && stats.hoursSinceLaunch > 0
       ? formatMoney(Math.round(stats.totalRevenue / Math.max(1, stats.hoursSinceLaunch)))
-      : "—";
+      : formatMoney(0);
 
   return (
     <main className="flex-1">
@@ -102,27 +103,27 @@ export default function StatsPage() {
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
           <StatCard
             label="Total revenue"
-            value={stats ? formatMoney(stats.totalRevenue) : "—"}
-            hint={stats ? `${perHour}/hour since launch` : undefined}
+            value={formatMoney(stats?.totalRevenue ?? 0)}
+            hint={`${perHour}/hour since launch`}
             accent
           />
           <StatCard
             label="Completed bids"
-            value={stats ? stats.totalBids.toLocaleString() : "—"}
-            hint={stats ? `${stats.bidsLastHour} in the last hour` : undefined}
+            value={liveStat(stats?.totalBids)}
+            hint={`${stats?.bidsLastHour ?? 0} in the last hour`}
           />
-          <StatCard label="Listings on board" value={stats ? stats.totalListings.toLocaleString() : "—"} />
+          <StatCard label="Listings on board" value={liveStat(stats?.totalListings)} />
           <StatCard
             label="Online now"
-            value={stats ? stats.online.toLocaleString() : "—"}
+            value={liveStat(stats?.online)}
             hint="open tabs + recent visitors"
           />
           <StatCard
             label="Visitors since launch"
-            value={stats ? stats.totalVisitors.toLocaleString() : "—"}
+            value={liveStat(stats?.totalVisitors)}
             hint="unique IPs, not pageviews"
           />
-          <StatCard label="Outbound clicks" value={stats ? stats.totalClicks.toLocaleString() : "—"} />
+          <StatCard label="Outbound clicks" value={liveStat(stats?.totalClicks)} />
         </div>
 
         {stats?.hourly && <div className="mt-4"><HourlyChart hourly={stats.hourly} /></div>}

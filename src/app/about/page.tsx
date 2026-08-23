@@ -60,10 +60,9 @@ export default async function AboutPage() {
           </h1>
 
           <p className="mt-5 text-[15px] leading-relaxed text-muted">
-            <span className="text-accent">{SITE_NAME}</span> started as a{" "}
-            <span className="text-accent">simple side project</span>: no ads, no algorithm, no
-            upvote rings. Just pay to rank — bid globally or on your country board. That&apos;s
-            it.
+            <span className="text-accent">{SITE_NAME}</span> is a pay-to-rank public leaderboard: no
+            ads, no algorithm, no upvote rings. Bid globally or on your country board — rank follows
+            payment, and every stat on this site is real.
           </p>
 
           <h2 className="mt-8 text-[15px] font-bold text-foreground">Then it went live</h2>

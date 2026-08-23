@@ -68,7 +68,8 @@ export function LiveActivityFeed({ limit = 5 }: { limit?: number }) {
                   <span className="text-muted">locked #1</span>
                 ) : (
                   <span className="text-muted">
-                    at #{item.rank ?? "—"} · {formatMoney(item.totalAfter)}
+                    {item.rank != null ? <>at #{item.rank} · </> : null}
+                    {formatMoney(item.totalAfter)}
                   </span>
                 )}
               </p>

@@ -5,6 +5,7 @@ import type { LeaderboardData } from "@/lib/leaderboard";
 import { formatMoney } from "@/lib/format";
 import { REF_COOKIE } from "@/lib/brand";
 import type { BoardScope } from "@/lib/geo";
+import { BID_MODAL_NEW } from "@/lib/copy";
 
 export interface BidPrefill {
   mode: "new" | "claim" | "takeover";
@@ -104,6 +105,7 @@ export function BidModal({
           referralSlug: referralSlugFromCookie(),
           scope,
           countryCode: scope === "local" ? countryCode : undefined,
+          categorySlug: board.categorySlug ?? undefined,
         }),
       });
       const data = await res.json();
@@ -151,7 +153,7 @@ export function BidModal({
               ? `This bid counts on the ${countryName} board only. Payment claims your rank instantly.`
               : prefill.targetTitle
                 ? `Outbid “${prefill.targetTitle}”. Payment claims the rank — instantly.`
-                : `New spots start at ${formatMoney(board.minBid)}. The only ranking factor is your bid.`}
+                : BID_MODAL_NEW(board.minBid)}
         </p>
 
         <form onSubmit={submit} className="space-y-4">

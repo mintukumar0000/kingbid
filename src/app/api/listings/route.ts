@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "50", 10) || 50));
   const scope = parseScope(searchParams.get("scope"));
   const countryCode = scope === "local" ? resolveCountryCode(request) : null;
-  const data = await getLeaderboard(page, limit, scope, countryCode);
+  const categorySlug = searchParams.get("category") || null;
+  const data = await getLeaderboard(page, limit, scope, countryCode, categorySlug);
   return NextResponse.json(data, {
     headers: { "Cache-Control": "public, s-maxage=5, stale-while-revalidate=15" },
   });

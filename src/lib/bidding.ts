@@ -21,6 +21,7 @@ import {
 import { cleanTarget, UrlPolicyError } from "@/lib/url-cleaner";
 import { slugFromDisplayUrl, uniqueSlug } from "@/lib/slug";
 import { countryDisplayName, type BoardScope } from "@/lib/geo";
+import { assertConsentedListing } from "@/lib/guardrails";
 
 const IS_POSTGRES = (process.env.DATABASE_URL ?? "").startsWith("postgres");
 
@@ -56,6 +57,7 @@ export interface BidIntentInput {
   referralListingId?: string | null;
   scope?: BoardScope;
   countryCode?: string | null;
+  boardId?: string | null;
 }
 
 export interface BidIntent {
@@ -72,6 +74,7 @@ export interface BidIntent {
 
 
 export async function createBidIntent(input: BidIntentInput): Promise<BidIntent> {
+  assertConsentedListing("owner_submit");
   const scope: BoardScope = input.scope ?? "global";
   const countryCode = input.countryCode ?? null;
 
@@ -175,6 +178,10 @@ export async function createBidIntent(input: BidIntentInput): Promise<BidIntent>
           title: input.title?.trim() || target.displayUrl,
           description: input.description?.trim() ?? "",
           ownerEmail: input.email?.trim() || null,
+          ownerContact: input.email?.trim() || null,
+          boardId: input.boardId ?? null,
+          status: "active",
+          claimedAt: new Date(),
           currentBid: 0, // hidden until first payment completes
         },
       });
@@ -217,6 +224,7 @@ export interface ConfirmResult {
   newTotal: number;
   becameTop: boolean;
   tookTopSpot: boolean;
+  previousTopListingId: string | null;
   outbidOwnerEmail: string | null;
   outbidListingTitle: string | null;
   outbidListingSlug: string | null;
@@ -261,6 +269,7 @@ async function applyConfirmedBid(paymentId: string): Promise<ConfirmResult | nul
           newTotal: bid.totalAfter,
           becameTop: false,
           tookTopSpot: false,
+          previousTopListingId: null,
           outbidOwnerEmail: null,
           outbidListingTitle: null,
           outbidListingSlug: null,
@@ -382,6 +391,8 @@ async function applyConfirmedBid(paymentId: string): Promise<ConfirmResult | nul
         becameTop: tookTopSpot,
         tookTopSpot:
           tookTopSpot && !!previousTop && previousTop.id !== listing.id,
+        previousTopListingId:
+          previousTop && previousTop.id !== listing.id ? previousTop.id : null,
         outbidOwnerEmail:
           tookTopSpot && previousTop && previousTop.id !== listing.id
             ? previousTop.ownerEmail

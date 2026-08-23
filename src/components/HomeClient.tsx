@@ -16,11 +16,13 @@ import { useLiveUpdates } from "@/hooks/useLiveUpdates";
 import { LiveRevenueTicker } from "@/components/LiveRevenueTicker";
 import { ReferralTracker } from "@/components/ReferralTracker";
 import { ScopeToggle } from "@/components/ScopeToggle";
+import { CategoryBoardTabs } from "@/components/CategoryBoardTabs";
 import { CountryPicker } from "@/components/CountryPicker";
 import { PAGE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
 import { COUNTRY_COOKIE } from "@/lib/brand";
+import { emptyBoardMessage, heroSubtext } from "@/lib/copy";
 
 const PAGE_SIZE = 50;
 
@@ -76,6 +78,7 @@ function HomeClientInner({
   useLiveUpdates();
   const searchParams = useSearchParams();
   const [scope, setScope] = useState<BoardScope>("global");
+  const [categorySlug, setCategorySlug] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState(viewerCountry);
   const countryName = countryDisplayName(selectedCountry);
 
@@ -85,8 +88,9 @@ function HomeClientInner({
   }, []);
 
   const [page, setPage] = useState(1);
-  const listingsUrl =
-    scope === "local"
+  const listingsUrl = categorySlug
+    ? `/api/listings?page=${page}&limit=${PAGE_SIZE}&category=${encodeURIComponent(categorySlug)}`
+    : scope === "local"
       ? `/api/listings?page=${page}&limit=${PAGE_SIZE}&scope=local&country=${encodeURIComponent(selectedCountry)}`
       : `/api/listings?page=${page}&limit=${PAGE_SIZE}&scope=global`;
 
@@ -177,6 +181,21 @@ function HomeClientInner({
             setScope(next);
             setPage(1);
             setHeroAmount(null);
+            setCategorySlug(null);
+          }}
+        />
+        <CategoryBoardTabs
+          scope={scope}
+          categorySlug={categorySlug}
+          onScopeChange={(next) => {
+            setScope(next);
+            setPage(1);
+            setHeroAmount(null);
+          }}
+          onCategoryChange={(slug) => {
+            setCategorySlug(slug);
+            setPage(1);
+            setHeroAmount(null);
           }}
         />
         {scope === "local" && (
@@ -196,6 +215,8 @@ function HomeClientInner({
         <h1 className="text-[28px] font-bold tracking-tight text-foreground sm:text-[36px]">
           {scope === "local" ? (
             <>Claim #{heroRank} in {countryName} for</>
+          ) : board.categoryName ? (
+            <>Claim #{heroRank} on {board.categoryName} for</>
           ) : (
             <>Claim #{heroRank} for</>
           )}
@@ -223,16 +244,10 @@ function HomeClientInner({
         </h1>
 
         <p className="mx-auto mt-3 max-w-xl text-[13px] leading-relaxed text-accent">
-          {scope === "local" ? (
-            <>
-              Compete on the {countryName} board only. Same rules — {formatMoney(board.minBid)} minimum,
-              outbid rivals on this board.
-            </>
-          ) : (
-            <>
-              New spots start at {formatMoney(board.minBid)}. Paying less than the #1 price still puts
-              you on the board at whatever place that bid can take.
-            </>
+          {heroSubtext(
+            board.minBid,
+            scope,
+            scope === "local" ? countryName : board.categoryName ?? undefined
           )}
         </p>
 
@@ -291,14 +306,14 @@ function HomeClientInner({
 
         {board.entries.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border px-6 py-16 text-center text-muted">
-            {scope === "local" ? (
-              <>
-                No one on the {countryName} board yet. Claim #1 for {formatMoney(board.minBid)} — be
-                the first in your country.
-              </>
-            ) : (
-              <>The board is empty. Claim #1 for {formatMoney(board.minBid)} — cheapest it will ever be.</>
-            )}
+            <p className="text-[15px] font-medium text-foreground">
+              {emptyBoardMessage(
+                board.minBid,
+                scope,
+                scope === "local" ? countryName : board.categoryName ?? undefined
+              )}
+            </p>
+            <p className="mt-2 text-[13px]">Every listing here opted in with a real payment.</p>
           </div>
         )}
 

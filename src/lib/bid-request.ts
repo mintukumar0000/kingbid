@@ -20,6 +20,7 @@ const bidSchema = z.object({
   referralSlug: z.string().max(100).optional(),
   scope: z.enum(["global", "local"]).optional(),
   countryCode: z.string().length(2).optional(),
+  categorySlug: z.string().max(80).optional(),
 });
 
 function referralFromRequest(request: Request, bodySlug?: string): string | null {
@@ -60,6 +61,15 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
       ? (parsed.data.countryCode?.toUpperCase() ?? resolveCountryCode(request))
       : null;
 
+  let boardId: string | null = null;
+  if (parsed.data.categorySlug) {
+    const { getBoardIdForCategorySlug } = await import("@/lib/boards");
+    boardId = await getBoardIdForCategorySlug(parsed.data.categorySlug);
+    if (!boardId) {
+      return NextResponse.json({ error: "Unknown category." }, { status: 404 });
+    }
+  }
+
   try {
     const intent = await createBidIntent({
       rawUrl: parsed.data.url,
@@ -71,6 +81,7 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
       referralListingId,
       scope,
       countryCode,
+      boardId,
     });
 
     const checkoutUrl = await createCheckout({

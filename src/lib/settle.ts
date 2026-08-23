@@ -9,6 +9,7 @@ import { emitLive } from "@/lib/events";
 import { getRankForListing } from "@/lib/listing-page";
 import { priceForTopSpot } from "@/lib/pricing";
 import { tweetTopSpotChange } from "@/lib/twitter";
+import { getGlobalBoardId, recordReignChange } from "@/lib/reign";
 
 export async function settlePayment(paymentId: string): Promise<void> {
   const result = await confirmBid(paymentId);
@@ -68,6 +69,8 @@ export async function settlePayment(paymentId: string): Promise<void> {
   }
 
   if (result.tookTopSpot && bid?.scope === "global" && bid.listing.displayUrl) {
+    const boardId = await getGlobalBoardId();
+    await recordReignChange(boardId, result.listingId, result.previousTopListingId ?? null);
     await tweetTopSpotChange(bid.listing.displayUrl, result.newTotal);
   }
 }

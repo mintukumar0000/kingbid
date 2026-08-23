@@ -1,6 +1,5 @@
 // Pay-to-rank leaderboard schema.
-// Local dev uses SQLite (zero setup). For production (Vercel + Supabase/Neon),
-// change provider to "postgresql" and set DATABASE_URL accordingly.
+// Guardrail: listings only go live after owner submit or invite claim (status = active).
 
 generator client {
   provider = "prisma-client-js"
@@ -11,50 +10,90 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Category {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String   @default("")
+  isMeta      Boolean  @default(false) @map("is_meta")
+  createdAt   DateTime @default(now()) @map("created_at")
+  boards      Board[]
+  invites     Invite[]
+
+  @@map("categories")
+}
+
+model Board {
+  id           String         @id @default(uuid())
+  categoryId   String?        @map("category_id")
+  category     Category?      @relation(fields: [categoryId], references: [id])
+  region       String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  listings     Listing[]
+  reignHistory ReignHistory[]
+
+  @@unique([categoryId, region])
+  @@map("boards")
+}
+
 model Listing {
-  id            String    @id @default(uuid())
-  url           String    @unique // canonical cleaned URL (no query params / hash)
-  slug          String    @unique // shareable slug, e.g. "orynth.dev"
-  displayUrl    String // human-friendly label, e.g. "orynth.dev" or "@handle on X"
-  kind          String    @default("website") // website | x_handle
-  handle        String? // X/Twitter handle if applicable
-  title         String
-  description   String    @default("")
-  currentBid    Int       @default(0) // global board bid; 0 = hidden until first global payment
-  localBid      Int       @default(0) // country board bid; 0 = not on local board
-  countryCode   String? // ISO country for local board (set on first local bid)
+  id             String    @id @default(uuid())
+  boardId        String?   @map("board_id")
+  board          Board?    @relation(fields: [boardId], references: [id])
+  url            String    @unique
+  slug           String    @unique
+  displayUrl     String
+  kind           String    @default("website")
+  handle         String?
+  title          String
+  description    String    @default("")
+  faviconUrl     String?   @map("favicon_url")
+  ownerContact   String?   @map("owner_contact")
+  status         String    @default("active") // pending_invite | active | removed
+  claimedAt      DateTime? @map("claimed_at")
+  currentBid     Int       @default(0)
+  localBid       Int       @default(0)
+  currentRank    Int?      @map("current_rank")
+  countryCode    String?
   localLastBidAt DateTime?
-  ownerEmail    String?
-  creditBalance Int       @default(0) // referral credits ($1 each) applied on next raise
-  clickCount    Int       @default(0)
-  lastBidAt     DateTime  @default(now()) // tie-break: equal bids -> earlier lastBidAt ranks higher
-  takeoverUntil DateTime? // active #1 lock expiry
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  bids          Bid[]
-  clicks        Click[]
-  referrals     Bid[]     @relation("ReferralListing")
+  ownerEmail     String?
+  creditBalance  Int       @default(0)
+  clickCount     Int       @default(0)
+  lastBidAt      DateTime  @default(now())
+  takeoverUntil  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  bids           Bid[]
+  clicks         Click[]
+  referrals      Bid[]              @relation("ReferralListing")
+  reignHistory   ReignHistory[]
+  matchupsAsA    Matchup[]          @relation("MatchupA")
+  matchupsAsB    Matchup[]          @relation("MatchupB")
+  badgeEmbeds    BadgeEmbed[]
+  alertSubs      AlertSubscription[]
 
   @@index([currentBid(sort: Desc), lastBidAt])
   @@index([countryCode, localBid(sort: Desc), localLastBidAt])
+  @@index([boardId, currentBid(sort: Desc)])
+  @@index([status])
   @@map("listings")
 }
 
 model Bid {
   id                String    @id @default(uuid())
   listingId         String
-  amount            Int // dollars actually paid at checkout (after credits)
-  creditApplied     Int       @default(0) // referral credits applied to this payment
-  bidIncrease       Int       @default(0) // total added to listing bid (amount + creditApplied)
-  totalAfter        Int       @default(0) // listing total bid after this payment completed
-  paymentId         String    @unique // Polar payment/checkout ID (or mock id locally)
-  status            String    @default("pending") // pending | completed | failed
+  amount            Int
+  creditApplied     Int       @default(0)
+  bidIncrease       Int       @default(0)
+  totalAfter        Int       @default(0)
+  paymentId         String    @unique
+  status            String    @default("pending")
   isTakeover        Boolean   @default(false)
-  takeoverEnd       DateTime? // when the 3h takeover lock expires
+  takeoverEnd       DateTime?
   email             String?
-  scope             String    @default("global") // global | local
-  countryCode       String? // bidder country when scope=local
-  referralListingId String? // listing slug owner who referred this bidder
+  scope             String    @default("global")
+  countryCode       String?
+  referralListingId String?
   createdAt         DateTime  @default(now())
   completedAt       DateTime?
   listing           Listing   @relation(fields: [listingId], references: [id])
@@ -69,6 +108,7 @@ model Click {
   id        String   @id @default(cuid())
   listingId String
   ipHash    String
+  referrer  String?
   createdAt DateTime @default(now())
   listing   Listing  @relation(fields: [listingId], references: [id])
 
@@ -77,11 +117,84 @@ model Click {
   @@map("clicks")
 }
 
+model ReignHistory {
+  id        String    @id @default(uuid())
+  listingId String    @map("listing_id")
+  listing   Listing   @relation(fields: [listingId], references: [id])
+  boardId   String    @map("board_id")
+  board     Board     @relation(fields: [boardId], references: [id])
+  rank      Int       @default(1)
+  startedAt DateTime  @default(now()) @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+
+  @@index([boardId, startedAt(sort: Desc)])
+  @@map("reign_history")
+}
+
+model Matchup {
+  id              String        @id @default(uuid())
+  listingAId      String        @map("listing_a_id")
+  listingBId      String        @map("listing_b_id")
+  listingA        Listing       @relation("MatchupA", fields: [listingAId], references: [id])
+  listingB        Listing       @relation("MatchupB", fields: [listingBId], references: [id])
+  status          String        @default("pending")
+  ownerAConfirmed Boolean       @default(false) @map("owner_a_confirmed")
+  ownerBConfirmed Boolean       @default(false) @map("owner_b_confirmed")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  votes           MatchupVote[]
+
+  @@map("matchups")
+}
+
+model MatchupVote {
+  id                String   @id @default(uuid())
+  matchupId         String   @map("matchup_id")
+  matchup           Matchup  @relation(fields: [matchupId], references: [id])
+  voterSessionId    String   @map("voter_session_id")
+  votedForListingId String   @map("voted_for_listing_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@unique([matchupId, voterSessionId])
+  @@map("matchup_votes")
+}
+
+model Invite {
+  id             String    @id @default(uuid())
+  categoryId     String?   @map("category_id")
+  category       Category? @relation(fields: [categoryId], references: [id])
+  invitedContact String    @map("invited_contact")
+  claimToken     String    @unique @map("claim_token")
+  status         String    @default("sent")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@map("invites")
+}
+
+model BadgeEmbed {
+  id         String   @id @default(uuid())
+  listingId  String   @map("listing_id")
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  embedToken String   @unique @map("embed_token")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("badge_embeds")
+}
+
+model AlertSubscription {
+  id            String   @id @default(uuid())
+  listingId     String   @map("listing_id")
+  listing       Listing  @relation(fields: [listingId], references: [id])
+  contactMethod String   @map("contact_method")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("alert_subscriptions")
+}
+
 model Analytics {
   id        String   @id @default(cuid())
-  event     String // click | view | bid | share
+  event     String
   listingId String?
-  metadata  String   @default("{}") // JSON string (SQLite-safe; jsonb on Postgres if desired)
+  metadata  String   @default("{}")
   createdAt DateTime @default(now())
 
   @@index([event, createdAt])
@@ -98,7 +211,6 @@ model Visitor {
   @@map("visitors")
 }
 
-// Platform metadata (launch timestamp, etc.)
 model Meta {
   key       String   @id
   value     String

@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { ShareButtons } from "@/components/ShareButtons";
 import { SuccessConfetti } from "@/components/SuccessConfetti";
 import { SuccessPaymentStatus } from "@/components/SuccessPaymentStatus";
+import { BadgeEmbedSnippet } from "@/components/BadgeEmbedSnippet";
 import { prisma } from "@/lib/db";
 import { failBid } from "@/lib/bidding";
 import { formatMoney } from "@/lib/format";
@@ -146,6 +147,14 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
             <div className="mt-8">
               <ShareButtons text={shareText} slug={bid.listing.slug} />
             </div>
+
+            <section className="mt-8 rounded-2xl border border-border bg-surface p-5 text-left">
+              <h2 className="text-[15px] font-semibold">Embed your rank badge</h2>
+              <p className="mt-1 text-[13px] text-muted">Share proof of your spot on your site.</p>
+              <div className="mt-3">
+                <BadgeEmbedSnippet listingId={bid.listingId} slug={bid.listing.slug} />
+              </div>
+            </section>
 
             <p className="mt-4 text-[13px] text-muted">
               Share your link with <code className="text-accent">?ref={bid.listing.slug}</code> —

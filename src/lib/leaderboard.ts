@@ -40,6 +40,8 @@ export interface LeaderboardData {
   scope: BoardScope;
   countryCode: string | null;
   countryName: string | null;
+  categorySlug?: string | null;
+  categoryName?: string | null;
 }
 
 function bidForScope(
@@ -56,15 +58,112 @@ export async function getLeaderboard(
   page = 1,
   pageSize = 50,
   scope: BoardScope = "global",
-  countryCode?: string | null
+  countryCode?: string | null,
+  categorySlug?: string | null
 ): Promise<LeaderboardData> {
   const now = new Date();
   const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+  if (categorySlug) {
+    const { getBoardIdForCategorySlug } = await import("@/lib/boards");
+    const boardId = await getBoardIdForCategorySlug(categorySlug);
+    if (!boardId) {
+      return {
+        entries: [],
+        bidSnapshot: [],
+        total: 0,
+        page,
+        pageSize,
+        topBid: 0,
+        claimTopPrice: MIN_BID,
+        takeoverPrice: 0,
+        takeoverActiveUntil: null,
+        minBid: MIN_BID,
+        scope: "global",
+        countryCode: null,
+        countryName: null,
+        categorySlug,
+        categoryName: null,
+      };
+    }
+
+    const category = await prisma.category.findUnique({
+      where: { slug: categorySlug },
+      select: { name: true },
+    });
+
+    const where = { boardId, currentBid: { gt: 0 }, status: "active" as const };
+    const orderBy = [
+      { currentBid: "desc" as const },
+      { lastBidAt: "asc" as const },
+      { createdAt: "asc" as const },
+    ] as const;
+
+    const [listings, total, hourClicks] = await Promise.all([
+      prisma.listing.findMany({ where, orderBy: [...orderBy] }),
+      prisma.listing.count({ where }),
+      prisma.click.groupBy({
+        by: ["listingId"],
+        where: { createdAt: { gte: oneHourAgo }, listing: { boardId } },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const clicksByListing = new Map(hourClicks.map((c) => [c.listingId, c._count._all]));
+    const topBid = listings[0]?.currentBid ?? 0;
+    const start = (page - 1) * pageSize;
+
+    const entries: LeaderboardEntry[] = listings.slice(start, start + pageSize).map((l, i) => {
+      const rank = start + i + 1;
+      return {
+        id: l.id,
+        rank,
+        slug: l.slug,
+        url: l.url,
+        displayUrl: l.displayUrl,
+        kind: l.kind,
+        handle: l.handle,
+        title: l.title,
+        description: l.description,
+        currentBid: l.currentBid,
+        creditBalance: l.creditBalance,
+        clickCount: l.clickCount,
+        clicksPerHour: clicksByListing.get(l.id) ?? 0,
+        claimPrice: priceForRank(rank, l.currentBid, topBid),
+        lastBidAt: l.lastBidAt.toISOString(),
+        takeoverActive: false,
+        takeoverUntil: null,
+        countryCode: l.countryCode,
+      };
+    });
+
+    return {
+      entries,
+      bidSnapshot: listings.map((l) => ({
+        currentBid: l.currentBid,
+        lastBidAt: l.lastBidAt.toISOString(),
+      })),
+      total,
+      page,
+      pageSize,
+      topBid,
+      claimTopPrice: priceForTopSpot(topBid),
+      takeoverPrice: takeoverPrice(topBid),
+      takeoverActiveUntil: null,
+      minBid: MIN_BID,
+      scope: "global",
+      countryCode: null,
+      countryName: null,
+      categorySlug,
+      categoryName: category?.name ?? null,
+    };
+  }
+
   const isLocal = scope === "local" && !!countryCode;
 
   const where = isLocal
-    ? { countryCode: countryCode!, localBid: { gt: 0 } }
-    : { currentBid: { gt: 0 } };
+    ? { countryCode: countryCode!, localBid: { gt: 0 }, status: "active" }
+    : { currentBid: { gt: 0 }, status: "active" };
 
   const orderBy = isLocal
     ? ([

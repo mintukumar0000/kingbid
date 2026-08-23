@@ -6,7 +6,7 @@ import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
 import { REVENUE_BAND_LABELS, type RevenueBand } from "@/lib/revenue-bands";
 import { RelativeTime } from "@/components/RelativeTime";
-import { PAGE } from "@/lib/layout";
+import { PAGE_WIDE } from "@/lib/layout";
 
 interface EcosystemData {
   globalKing: {
@@ -118,7 +118,7 @@ export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => 
 
   if (!data) {
     return (
-      <div className={`${PAGE} space-y-5 pb-10`}>
+      <div className={`${PAGE_WIDE} space-y-5 pb-10`}>
         <div className="h-40 animate-pulse rounded-[18px] bg-surface-2" />
         <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
@@ -130,7 +130,7 @@ export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => 
   }
 
   return (
-    <div className={`${PAGE} pb-14`}>
+    <div className={`${PAGE_WIDE} pb-14`}>
       {/* GLOBAL KING */}
       <section id="global-king" className="eco-section mb-8">
         <div className="king-hero-card flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">

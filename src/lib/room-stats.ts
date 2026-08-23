@@ -2,6 +2,9 @@ import { prisma } from "@/lib/db";
 import { getRoomBySlug, getRoomByCategorySlug } from "@/lib/rooms";
 import { getRoomKeepers } from "@/lib/keepers";
 import { reignDuration } from "@/lib/reign";
+import { getRoomMemberCount, isFollowingRoom } from "@/lib/follows";
+import { getRoomPins } from "@/lib/room-pins";
+import { canManageRoom } from "@/lib/room-keeper-auth";
 
 export async function resolveRoomRecord(slugOrCategory: string) {
   const bySlug = await getRoomBySlug(slugOrCategory);
@@ -78,12 +81,18 @@ export async function getRoomBoardStats(categoryId: string | null) {
   };
 }
 
-export async function getRoomCommunityPayload(slugOrCategory: string) {
+export async function getRoomCommunityPayload(slugOrCategory: string, userId?: string) {
   const room = await resolveRoomRecord(slugOrCategory);
   if (!room) return null;
 
   const stats = await getRoomBoardStats(room.categoryId);
   const keepers = await getRoomKeepers(room.id);
+  const [memberCount, pins, following, canManage] = await Promise.all([
+    getRoomMemberCount(room.id),
+    getRoomPins(room.id),
+    userId ? isFollowingRoom(userId, room.id) : Promise.resolve(false),
+    userId ? canManageRoom(userId, room.id) : Promise.resolve(false),
+  ]);
 
   const primaryKeeper =
     keepers.find((k) => k.level === "keeper" || k.level === "senior_keeper" || k.level === "legendary_keeper") ??
@@ -108,6 +117,15 @@ export async function getRoomCommunityPayload(slugOrCategory: string) {
         }
       : null;
 
+  const breadcrumbs: { slug: string; name: string; href: string }[] = [];
+  if (room.parentRoom) {
+    breadcrumbs.push({
+      slug: room.parentRoom.slug,
+      name: room.parentRoom.name,
+      href: `/rooms/${room.parentRoom.slug}`,
+    });
+  }
+
   return {
     room: {
       id: room.id,
@@ -121,12 +139,16 @@ export async function getRoomCommunityPayload(slugOrCategory: string) {
       listingCount: stats.listingCount,
       founderCount: stats.listingCount,
       productCount: stats.listingCount,
+      memberCount,
       totalBidCents: stats.totalBidCents,
       totalClicks: stats.totalClicks,
       keeperCount: room._count.keepers,
+      followCount: room._count.follows,
       childRoomCount: room._count.childRooms,
+      childRooms: "childRooms" in room ? (room as { childRooms: { slug: string; name: string; roomType: string }[] }).childRooms : [],
       enterUrl: room.category?.slug ? `/?room=${room.category.slug}` : null,
       parent: room.parentRoom,
+      breadcrumbs,
       createdAt: room.createdAt.toISOString(),
     },
     headKeeper,
@@ -137,5 +159,8 @@ export async function getRoomCommunityPayload(slugOrCategory: string) {
       level: k.level,
       profileUrl: `/profile/${k.user.id}`,
     })),
+    pins,
+    isFollowing: following,
+    canManage,
   };
 }

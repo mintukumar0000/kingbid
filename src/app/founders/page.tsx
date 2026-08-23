@@ -9,7 +9,7 @@ import { DemoPreview, FOUNDER_FEATURE_DEMOS } from "@/components/FounderHubDemo"
 import { PAGE } from "@/lib/layout";
 import type { LeaderboardData } from "@/lib/leaderboard";
 
-import { KEEPER_LEVEL_INFO, ROOM_SCARCITY_RULES } from "@/lib/keeper-privileges";
+import { ROOM_SCARCITY_RULES } from "@/lib/keeper-privileges";
 
 type Msg = { type: "ok" | "err"; text: string } | null;
 
@@ -121,18 +121,24 @@ export default function FoundersPage() {
   return (
     <main className="flex-1">
       <Header />
-      <div className={`${PAGE} mx-auto max-w-3xl py-10`}>
+      <div className={`${PAGE} py-10`}>
         <p className="kb-eyebrow">Founder tools</p>
         <h1 className="font-display mt-2 text-[32px] font-semibold tracking-tight">Founder Hub</h1>
-        <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted">
-          Reputation features live here — discovery bets, rivals, Call It, keeper levels, and Pro tools.
-          Rank is always pay-to-rank on the board; nothing here buys placement.
+        <p className="mt-2 max-w-2xl text-[15px] text-muted">
+          Discovery bets, rivals, Call It, and keeper levels — reputation only, never buys rank.
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <Stat label="Kingbid Score" value={me?.kingbidScore ?? 0} />
-          <Stat label="Discovery bets" value={`${me?.discoveryBets ?? 0}/10`} />
-          <Stat label="Pro tier" value={me?.subscription?.tier ?? "Free"} />
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <Stat label="Score" value={me?.kingbidScore ?? 0} />
+          <Stat label="Discovery" value={`${me?.discoveryBets ?? 0}/10`} />
+          <Stat label="Tier" value={me?.subscription?.tier ?? "Free"} />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3 text-[12px]">
+          <Link href="/#claim" className="text-accent hover:underline">Claim a spot</Link>
+          <Link href="/rooms" className="text-accent hover:underline">Rooms</Link>
+          <Link href="/pricing" className="text-accent hover:underline">Pro</Link>
+          <Link href="/feed" className="text-accent hover:underline">Feed</Link>
         </div>
 
         {listings.length === 0 && (
@@ -162,22 +168,11 @@ export default function FoundersPage() {
           </p>
         )}
 
-        <section className="mt-10 space-y-4">
-          <h2 className="font-display text-xl font-semibold">Quick paths</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <PathCard href="/#claim" title="Claim a spot" desc="Paste your URL on the homepage — pay to rank globally or in a room." />
-            <PathCard href="/rooms" title="Browse rooms" desc="22 category rooms. Enter one and bid where your product belongs." />
-            <PathCard href="/pricing" title="Founder Pro / Room Pro" desc="Analytics & rival alerts via Dodo — never buys rank." />
-            <PathCard href="/verify" title="Verification checklist" desc="Click-through guide to confirm every v2 feature matches spec." />
-          </div>
-        </section>
-
+        <div className="mt-8 grid gap-4 lg:grid-cols-2">
         {/* DISCOVERY */}
-        <section className="mt-10 bracket-card">
-          <h2 className="text-[15px] font-semibold">Kingmaker — Discovery list (10 bets)</h2>
-          <p className="mt-1 text-[13px] text-muted">
-            Pick founders you believe will hit #1. When you&apos;re right, your Kingbid Score rises. No money involved.
-          </p>
+        <section className="luxury-card p-5">
+          <h2 className="font-display text-[16px] font-semibold">Discovery bets</h2>
+          <p className="mt-1 text-[12px] text-muted">Pick founders you think hit #1 — raises your score.</p>
           <form onSubmit={addBet} className="mt-4 flex flex-wrap gap-2">
             {listings.length > 0 ? (
               <select
@@ -219,18 +214,16 @@ export default function FoundersPage() {
                 </li>
               ))}
             </ul>
-          ) : (
+          ) : listings.length === 0 ? (
             <DemoPreview {...FOUNDER_FEATURE_DEMOS.discovery} />
-          )}
-          <p className="mt-2 text-[12px] text-muted">{discovery?.remaining ?? 10} slots left</p>
+          ) : null}
+          <p className="mt-2 text-[11px] text-muted">{discovery?.remaining ?? 10} slots left</p>
         </section>
 
         {/* RIVALS */}
-        <section className="mt-6 bracket-card">
-          <h2 className="text-[15px] font-semibold">Rivals dashboard</h2>
-          <p className="mt-1 text-[13px] text-muted">
-            Track competitors — get game-style alerts when they close the gap (daily cron).
-          </p>
+        <section className="luxury-card p-5">
+          <h2 className="font-display text-[16px] font-semibold">Rivals</h2>
+          <p className="mt-1 text-[12px] text-muted">Track competitors — daily gap alerts.</p>
           <form onSubmit={addRival} className="mt-4 grid gap-2 sm:grid-cols-2">
             {listings.length > 0 ? (
               <>
@@ -276,17 +269,15 @@ export default function FoundersPage() {
                 </li>
               ))}
             </ul>
-          ) : (
+          ) : listings.length === 0 ? (
             <DemoPreview {...FOUNDER_FEATURE_DEMOS.rivals} />
-          )}
+          ) : null}
         </section>
 
         {/* CALL IT */}
-        <section className="mt-6 bracket-card">
-          <h2 className="text-[15px] font-semibold">Call It — free nightly prediction</h2>
-          <p className="mt-1 text-[13px] text-muted">
-            Predict a room&apos;s #1 at midnight UTC. Correct calls boost Kingmaker score — never opens a payment screen.
-          </p>
+        <section className="luxury-card p-5 lg:col-span-2">
+          <h2 className="font-display text-[16px] font-semibold">Call It</h2>
+          <p className="mt-1 text-[12px] text-muted">Free nightly #1 prediction — correct calls boost score.</p>
           <form onSubmit={submitCallIt} className="mt-4 grid gap-2 sm:grid-cols-2">
             <select className={field} value={callBoardId} onChange={(e) => setCallBoardId(e.target.value)} required>
               <option value="">Select room board</option>
@@ -316,28 +307,29 @@ export default function FoundersPage() {
               {loading === "call" ? "Locking…" : "Call It for tonight"}
             </button>
           </form>
-          <DemoPreview {...FOUNDER_FEATURE_DEMOS.callIt} />
         </section>
 
-        {/* KEEPER */}
-        <section className="mt-6 bracket-card">
-          <h2 className="font-display text-[17px] font-semibold">Room Keeper progression</h2>
-          <p className="mt-1 text-[13px] text-muted">
-            Not meaningless XP — each level unlocks real privileges. Status is earned through discovery and curation.
-          </p>
-          <div className="mt-4 space-y-2">
-            {KEEPER_LEVEL_INFO.filter((k) => k.level !== "observer").map((r) => (
-              <div key={r.level} className="rounded-xl border border-border/70 px-3 py-2.5 text-[13px]">
-                <p className="font-semibold">
-                  {r.emoji} {r.label}
-                </p>
-                <p className="mt-0.5 text-[12px] text-muted">{r.privilege}</p>
-                <p className="mt-0.5 text-[11px] text-accent/90">{r.howToEarn}</p>
-              </div>
-            ))}
+        {/* KEEPER — compact */}
+        <section className="luxury-card p-5 lg:col-span-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-[16px] font-semibold">Keeper levels</h2>
+            <Link href="/rooms" className="text-[12px] font-medium text-accent hover:underline">
+              Browse rooms →
+            </Link>
           </div>
-          <details className="mt-4 text-[12px] text-muted">
-            <summary className="cursor-pointer font-medium text-foreground">Why rooms stay scarce</summary>
+          <p className="mt-1 text-[12px] text-muted">
+            Observer → Member → Scout → Keeper → Senior Keeper → Legendary. Earn through discovery and curation.
+          </p>
+          {me?.keeperLevels?.length > 0 ? (
+            <p className="mt-3 text-[13px]">
+              Your levels:{" "}
+              {me.keeperLevels.map((k: { room: string; level: string }) => `${k.room} (${k.level})`).join(", ")}
+            </p>
+          ) : (
+            <p className="mt-3 text-[13px] text-muted">Add a Discovery bet to start climbing.</p>
+          )}
+          <details className="mt-3 text-[12px] text-muted">
+            <summary className="cursor-pointer font-medium text-foreground">Room scarcity rules</summary>
             <ul className="mt-2 space-y-1">
               {ROOM_SCARCITY_RULES.map((r) => (
                 <li key={r.type}>
@@ -346,35 +338,8 @@ export default function FoundersPage() {
               ))}
             </ul>
           </details>
-          {me?.keeperLevels?.length > 0 ? (
-            <p className="mt-4 text-[13px] text-muted">
-              Your levels:{" "}
-              {me.keeperLevels.map((k: { room: string; level: string }) => `${k.room} (${k.level})`).join(", ")}
-            </p>
-          ) : (
-            <DemoPreview {...FOUNDER_FEATURE_DEMOS.keeper} />
-          )}
         </section>
-
-        {/* UNDERDOG + FALLEN FUND previews */}
-        <section className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="bracket-card">
-            <h2 className="text-[15px] font-semibold">Underdog Row</h2>
-            <p className="mt-1 text-[12px] text-muted">Sacrifice score on the homepage — bands only, never exact revenue.</p>
-            <DemoPreview {...FOUNDER_FEATURE_DEMOS.underdog} />
-            <Link href="/#underdogs" className="mt-3 inline-block text-[12px] font-medium text-accent hover:underline">
-              See live Underdogs →
-            </Link>
-          </div>
-          <div className="bracket-card">
-            <h2 className="text-[15px] font-semibold">Fallen Fund</h2>
-            <p className="mt-1 text-[12px] text-muted">Visibility grants for dethroned underdogs — never cash.</p>
-            <DemoPreview {...FOUNDER_FEATURE_DEMOS.fallenFund} />
-            <Link href="/fallen-fund" className="mt-3 inline-block text-[12px] font-medium text-accent hover:underline">
-              Read how it works →
-            </Link>
-          </div>
-        </section>
+        </div>
 
         {me?.userId && (
           <p className="mt-8 text-[12px] text-muted">
@@ -390,18 +355,9 @@ export default function FoundersPage() {
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bracket-card !p-4 text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</p>
+    <div className="luxury-card p-4 text-center">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</p>
       <p className="font-mono-label mt-1 text-xl font-bold">{value}</p>
     </div>
-  );
-}
-
-function PathCard({ href, title, desc }: { href: string; title: string; desc: string }) {
-  return (
-    <Link href={href} className="bracket-card block !p-4 transition-colors hover:border-accent">
-      <p className="font-semibold text-[14px]">{title}</p>
-      <p className="mt-1 text-[12px] text-muted">{desc}</p>
-    </Link>
   );
 }

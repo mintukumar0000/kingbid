@@ -18,7 +18,8 @@ export async function GET(request: Request) {
     orderBy: { name: "asc" },
     include: {
       category: { select: { slug: true } },
-      _count: { select: { keepers: true, childRooms: true } },
+      parentRoom: { select: { slug: true } },
+      _count: { select: { keepers: true, childRooms: true, follows: true } },
     },
   });
 
@@ -42,8 +43,10 @@ export async function GET(request: Request) {
         name: r.name,
         description: r.description,
         roomType: r.roomType,
+        parentSlug: r.parentRoom?.slug ?? null,
         categorySlug: r.category?.slug ?? null,
         keeperCount: r._count.keepers,
+        memberCount: r._count.follows,
         listingCount,
         enterUrl: r.category?.slug ? `/?room=${r.category.slug}` : `/rooms/${r.slug}`,
       };

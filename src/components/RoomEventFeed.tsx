@@ -2,7 +2,6 @@
 
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
-import { EventShareButton } from "@/components/EventShareButton";
 import { RelativeTime } from "@/components/RelativeTime";
 
 function eventIcon(eventType: string): string {
@@ -11,18 +10,16 @@ function eventIcon(eventType: string): string {
       return "🔥";
     case "new_reign":
       return "👑";
-    case "comeback":
-      return "🔁";
-    case "milestone_reign":
-      return "👑";
     case "breakout":
       return "🚀";
     case "new_founder":
       return "✨";
-    case "kingmaker_called_it":
-      return "🎯";
+    case "room_weekly_event":
+      return "📅";
+    case "room_pin":
+      return "📌";
     default:
-      return "📜";
+      return "·";
   }
 }
 
@@ -32,26 +29,19 @@ export function RoomEventFeed({ roomIdOrSlug }: { roomIdOrSlug: string }) {
   }>(`/api/rooms/${encodeURIComponent(roomIdOrSlug)}/events`, fetcher, { refreshInterval: 20_000 });
 
   return (
-    <div className="bracket-card !p-5">
-      <h3 className="font-display text-[17px] font-semibold">This week&apos;s events</h3>
-      <p className="mt-1 text-[12px] text-muted">The room produces its own story — dethronements, breakouts, new founders.</p>
-
+    <div className="luxury-card p-5">
+      <h3 className="font-display text-[16px] font-semibold">This week</h3>
       {!data?.events.length ? (
-        <p className="mt-4 rounded-xl border border-dashed border-border px-4 py-6 text-[13px] text-muted">
-          0 events yet — activity appears when founders bid, dethrone, or break out.
+        <p className="mt-3 text-[13px] leading-relaxed text-muted">
+          No events yet — shows up when founders bid or take the crown.
         </p>
       ) : (
-        <ul className="mt-4 space-y-0">
-          {data.events.slice(0, 8).map((e) => (
-            <li key={e.at + e.headline} className="history-row !px-0">
-              <span className="text-[16px]" aria-hidden>
-                {eventIcon(e.eventType)}
-              </span>
-              <span className="flex-1 text-[13px]">{e.headline}</span>
-              <RelativeTime date={e.at} className="font-mono-label shrink-0 text-[11px] text-muted" />
-              {(e.eventType === "dethronement" || e.eventType === "milestone_reign") && (
-                <EventShareButton headline={e.headline} eventType={e.eventType} room={roomIdOrSlug} />
-              )}
+        <ul className="mt-3 space-y-2">
+          {data.events.slice(0, 5).map((e) => (
+            <li key={e.at + e.headline} className="flex items-start gap-2 text-[13px]">
+              <span className="shrink-0">{eventIcon(e.eventType)}</span>
+              <span className="min-w-0 flex-1 text-foreground/90">{e.headline}</span>
+              <RelativeTime date={e.at} className="font-mono-label shrink-0 text-[10px] text-muted" />
             </li>
           ))}
         </ul>

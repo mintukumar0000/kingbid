@@ -88,6 +88,7 @@ model Listing {
   fallenFundGrants FallenFundGrant[]
   migrationClaim MigrationClaim?
   nominationsReceived DethronementNomination[] @relation("Nominee")
+  roomPins       RoomPin[]
   nominationsMade     DethronementNomination[] @relation("Nominator")
 
   @@index([currentBid(sort: Desc), lastBidAt])
@@ -258,6 +259,11 @@ model User {
   rivals            Rival[]
   subscriptions     Subscription[]
   roomRequests      Room[]              @relation("RoomRequester")
+  roomFollows       RoomFollow[]
+  following         FounderFollow[]     @relation("Following")
+  followers         FounderFollow[]     @relation("Followers")
+  roomPins          RoomPin[]
+  weeklyEvents      RoomWeeklyEvent[]
 
   @@map("users")
 }
@@ -283,6 +289,9 @@ model Room {
 
   keepers        RoomKeeper[]
   platformEvents PlatformEvent[]
+  follows        RoomFollow[]
+  pins           RoomPin[]
+  weeklyEvents   RoomWeeklyEvent[]
 
   @@index([parentRoomId])
   @@index([status])
@@ -301,6 +310,63 @@ model RoomKeeper {
 
   @@unique([userId, roomId])
   @@map("room_keepers")
+}
+
+model RoomFollow {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  roomId    String   @map("room_id")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, roomId])
+  @@index([roomId])
+  @@map("room_follows")
+}
+
+model FounderFollow {
+  id          String   @id @default(uuid())
+  followerId  String   @map("follower_id")
+  follower    User     @relation("Following", fields: [followerId], references: [id])
+  followingId String   @map("following_id")
+  following   User     @relation("Followers", fields: [followingId], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+  @@map("founder_follows")
+}
+
+model RoomPin {
+  id             String   @id @default(uuid())
+  roomId         String   @map("room_id")
+  room           Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  listingId      String   @map("listing_id")
+  listing        Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  pinnedByUserId String   @map("pinned_by_user_id")
+  pinnedBy       User     @relation(fields: [pinnedByUserId], references: [id])
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([roomId, listingId])
+  @@index([roomId, sortOrder])
+  @@map("room_pins")
+}
+
+model RoomWeeklyEvent {
+  id              String   @id @default(uuid())
+  roomId          String   @map("room_id")
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  title           String
+  description     String   @default("")
+  createdByUserId String   @map("created_by_user_id")
+  createdBy       User     @relation(fields: [createdByUserId], references: [id])
+  weekStart       DateTime @map("week_start")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([roomId, weekStart(sort: Desc)])
+  @@map("room_weekly_events")
 }
 
 model Dethronement {

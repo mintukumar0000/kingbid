@@ -6,6 +6,7 @@ import { getKeeperProfileStats } from "@/lib/keeper-profile";
 import { keeperLevelLabel, keeperLevelRank } from "@/lib/keeper-privileges";
 import { formatMoney } from "@/lib/format";
 import { Header } from "@/components/Header";
+import { FollowFounderButton } from "@/components/FollowFounderButton";
 import { PAGE } from "@/lib/layout";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   return (
     <main className="flex-1">
       <Header />
-      <div className={`${PAGE} mx-auto max-w-3xl py-10`}>
+      <div className={`${PAGE} py-10`}>
         <p className="kb-eyebrow">Kingmaker profile</p>
         <h1 className="font-display mt-2 text-[32px] font-semibold">{displayName}</h1>
         {topLevel && (
@@ -50,12 +51,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         <p className="mt-1 text-[13px] text-muted">
           Founded {user.createdAt.toLocaleDateString(undefined, { month: "short", year: "numeric" })}
         </p>
+        <FollowFounderButton userId={user.id} />
 
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <ProfileStat label="Kingbid Score" value={String(score?.score ?? 0)} />
-          <ProfileStat label="Members" value={keeperStats.membersInRooms.toLocaleString()} />
-          <ProfileStat label="Products discovered" value={keeperStats.productsDiscovered.toLocaleString()} />
-          <ProfileStat label="Called #1" value={keeperStats.successfulProducts.toLocaleString()} />
+          <ProfileStat label="Room members" value={keeperStats.membersInRooms.toLocaleString()} hint="Followers across your rooms" />
+          <ProfileStat label="Discovery picks" value={keeperStats.productsDiscovered.toLocaleString()} />
+          <ProfileStat label="Successful calls" value={keeperStats.successfulProducts.toLocaleString()} hint="Picks that hit #1" />
         </div>
 
         {keeperStats.rooms.length > 0 && (
@@ -130,11 +132,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   );
 }
 
-function ProfileStat({ label, value }: { label: string; value: string }) {
+function ProfileStat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="rounded-xl border border-border bg-surface px-3 py-4 text-center">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</p>
       <p className="font-mono-label mt-1 text-[18px] font-bold">{value}</p>
+      {hint && <p className="mt-1 text-[10px] text-muted">{hint}</p>}
     </div>
   );
 }

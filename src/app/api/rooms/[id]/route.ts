@@ -12,10 +12,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const payload = await getRoomCommunityPayload(id);
+  const user = await getOrCreateSessionUser();
+  const payload = await getRoomCommunityPayload(id, user.id);
   if (!payload) return NextResponse.json({ error: "Room not found" }, { status: 404 });
 
-  const user = await getOrCreateSessionUser();
   await evaluateKeeperLevel(user.id, payload.room.id);
 
   const myLevel = await prisma.roomKeeper.findUnique({

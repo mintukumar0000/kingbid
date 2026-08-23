@@ -1,14 +1,36 @@
 import { prisma } from "@/lib/db";
 import { canRequestRoom } from "@/lib/keepers";
 
+export async function resolveRoomByPath(segments: string[]) {
+  if (segments.length === 0) return null;
+  let parentId: string | null = null;
+  let room = null;
+  for (const segment of segments) {
+    room = await prisma.room.findFirst({
+      where: { slug: segment, parentRoomId: parentId, status: "active" },
+      include: {
+        category: { select: { slug: true, name: true } },
+        curator: { select: { id: true, handle: true, name: true } },
+        parentRoom: { select: { slug: true, name: true } },
+        childRooms: { where: { status: "active" }, select: { slug: true, name: true, roomType: true } },
+        _count: { select: { keepers: true, childRooms: true, follows: true } },
+      },
+    });
+    if (!room) return null;
+    parentId = room.id;
+  }
+  return room;
+}
+
 export async function getRoomBySlug(slug: string) {
   return prisma.room.findUnique({
     where: { slug },
     include: {
       category: { select: { slug: true, name: true } },
       curator: { select: { id: true, handle: true, name: true } },
-      parentRoom: { select: { slug: true, name: true } },
-      _count: { select: { keepers: true, childRooms: true } },
+      parentRoom: { select: { slug: true, name: true, id: true } },
+      childRooms: { where: { status: "active" }, select: { slug: true, name: true, roomType: true } },
+      _count: { select: { keepers: true, childRooms: true, follows: true } },
     },
   });
 }
@@ -24,8 +46,9 @@ export async function getRoomByCategorySlug(categorySlug: string) {
     include: {
       category: { select: { slug: true, name: true } },
       curator: { select: { id: true, handle: true, name: true } },
-      parentRoom: { select: { slug: true, name: true } },
-      _count: { select: { keepers: true, childRooms: true } },
+      parentRoom: { select: { slug: true, name: true, id: true } },
+      childRooms: { where: { status: "active" }, select: { slug: true, name: true, roomType: true } },
+      _count: { select: { keepers: true, childRooms: true, follows: true } },
     },
   });
 }

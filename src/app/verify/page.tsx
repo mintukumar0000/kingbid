@@ -80,7 +80,7 @@ export default function VerifyPage() {
   return (
     <main className="flex-1">
       <Header />
-      <div className={`${PAGE} mx-auto max-w-3xl py-10`}>
+      <div className={`${PAGE} py-10`}>
         <p className="kb-eyebrow">Quality assurance</p>
         <h1 className="font-display mt-2 text-[32px] font-semibold">Verification checklist</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted">

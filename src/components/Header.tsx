@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { HashLink } from "@/components/HashLink";
-import { PAGE } from "@/lib/layout";
+import { PAGE_WIDE } from "@/lib/layout";
 
 export function Header() {
   const pathname = usePathname();
@@ -38,7 +38,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md">
-      <div className={`${PAGE} flex h-[58px] items-center justify-between`}>
+      <div className={`${PAGE_WIDE} flex h-[58px] items-center justify-between`}>
         <Link href="/" className="font-display text-[22px] font-bold tracking-[0.3px] text-foreground">
           KING<span className="text-accent">BID</span>
         </Link>
@@ -47,6 +47,7 @@ export function Header() {
           {link("/rooms", "Rooms")}
           {link("/#underdogs", "Underdogs", true)}
           {link("/founders", "Kingmakers")}
+          {link("/feed", "Feed")}
           {link("/#history", "History", true)}
           {link("/pricing", "Pricing")}
           <HashLink

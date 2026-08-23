@@ -11,6 +11,8 @@ export const PLATFORM_EVENT_TYPES = [
   "breakout",
   "new_founder",
   "kingmaker_called_it",
+  "room_weekly_event",
+  "room_pin",
 ] as const;
 
 export type PlatformEventType = (typeof PLATFORM_EVENT_TYPES)[number];
@@ -35,13 +37,52 @@ export async function writePlatformEvent(input: WritePlatformEventInput) {
   });
 }
 
-export async function getRoomEvents(roomId: string, limit = 30) {
+export async function getRoomEvents(roomId: string, limit = 30, thisWeekOnly = true) {
+  const where: { roomId: string; createdAt?: { gte: Date } } = { roomId };
+  if (thisWeekOnly) {
+    const weekStart = startOfWeekUtc();
+    where.createdAt = { gte: weekStart };
+  }
   const rows = await prisma.platformEvent.findMany({
-    where: { roomId },
+    where,
     orderBy: { createdAt: "desc" },
     take: limit,
   });
-  return rows.map(formatEvent);
+
+  const weeklyEvents = await prisma.roomWeeklyEvent.findMany({
+    where: { roomId, ...(thisWeekOnly ? { weekStart: { gte: startOfWeekUtc() } } : {}) },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    include: { createdBy: { select: { handle: true, name: true } } },
+  });
+
+  const platformFormatted = rows.map(formatEvent);
+  const weeklyFormatted = weeklyEvents.map((w) => ({
+    id: w.id,
+    eventType: "room_weekly_event",
+    boardId: null,
+    roomId: w.roomId,
+    listingId: null,
+    metadata: {
+      title: w.title,
+      description: w.description,
+      createdBy: w.createdBy.handle ?? w.createdBy.name ?? "keeper",
+    },
+    at: w.createdAt.toISOString(),
+  }));
+
+  return [...weeklyFormatted, ...platformFormatted]
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+    .slice(0, limit);
+}
+
+function startOfWeekUtc(d = new Date()): Date {
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const day = date.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setUTCDate(date.getUTCDate() + diff);
+  date.setUTCHours(0, 0, 0, 0);
+  return date;
 }
 
 export async function getBoardEvents(boardId: string, limit = 30) {
@@ -106,6 +147,10 @@ export function eventHeadline(
       return `${metadata.displayUrl ?? "A new founder"} joined the board`;
     case "kingmaker_called_it":
       return `${metadata.userHandle ?? "Someone"} called it on ${metadata.displayUrl ?? "a listing"}`;
+    case "room_weekly_event":
+      return `📅 ${metadata.title ?? "Weekly event"} — ${metadata.createdBy ?? "keeper"}`;
+    case "room_pin":
+      return `📌 Pinned ${metadata.displayUrl ?? "a listing"}`;
     default:
       return "Activity on KingBid";
   }

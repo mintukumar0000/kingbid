@@ -96,8 +96,23 @@ body {
   position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 22px;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.luxury-card {
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, var(--accent));
+  background: linear-gradient(180deg, var(--surface) 0%, color-mix(in srgb, var(--surface-2) 40%, var(--surface)) 100%);
+  box-shadow: 0 1px 0 color-mix(in srgb, white 60%, transparent) inset, 0 12px 40px rgba(28, 25, 23, 0.04);
+}
+
+.luxury-card-dark {
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  background: linear-gradient(135deg, #23201b 0%, #35302a 100%);
+  color: #f7f1e6;
+  box-shadow: 0 16px 48px rgba(28, 25, 23, 0.18);
 }
 
 .bracket-card::before {
@@ -105,12 +120,12 @@ body {
   position: absolute;
   top: 8px;
   left: 8px;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-top: 1.5px solid var(--accent);
   border-left: 1.5px solid var(--accent);
   border-radius: 3px 0 0 0;
-  opacity: 0.55;
+  opacity: 0.35;
   pointer-events: none;
 }
 

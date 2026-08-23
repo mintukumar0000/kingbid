@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FOUNDER_HANDLE, FOUNDER_X_URL } from "@/lib/brand";
-import { PAGE } from "@/lib/layout";
+import { PAGE_WIDE } from "@/lib/layout";
 
 export function Footer() {
   const handle = FOUNDER_HANDLE.replace(/^@/, "");
@@ -8,7 +8,7 @@ export function Footer() {
   return (
     <footer className="mt-20 border-t border-border">
       <div
-        className={`${PAGE} flex flex-col items-center justify-center gap-2 py-8 text-[13px] text-muted sm:flex-row sm:gap-3`}
+        className={`${PAGE_WIDE} flex flex-col items-center justify-center gap-2 py-8 text-[13px] text-muted sm:flex-row sm:gap-3`}
       >
         <p>
           Built by{" "}

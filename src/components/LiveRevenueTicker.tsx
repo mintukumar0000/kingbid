@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { formatLaunchAge } from "@/lib/format";
 import { REVENUE_TICKER_LINE, liveStat } from "@/lib/copy";
+import { PAGE_WIDE } from "@/lib/layout";
 import type { PlatformStats } from "@/components/StatsBar";
 
 /** Revenue counter — real completed payments only. */
@@ -19,7 +20,7 @@ export function LiveRevenueTicker() {
   const amount = data?.totalRevenue ?? 0;
 
   return (
-    <section className="mx-auto max-w-4xl px-4 pb-20 pt-10 text-center sm:px-6">
+    <section className={`${PAGE_WIDE} pb-20 pt-10 text-center`}>
       <p className="text-[15px] text-muted">{REVENUE_TICKER_LINE}</p>
       <p
         key={data?.totalRevenue ?? 0}

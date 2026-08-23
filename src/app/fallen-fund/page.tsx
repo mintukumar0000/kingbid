@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { FALLEN_FUND_SELECTION_RULE, FALLEN_FUND_REVENUE_PCT } from "@/lib/fallen-fund";
 import { formatMoney } from "@/lib/format";
 
+import { PAGE } from "@/lib/layout";
+
 export const dynamic = "force-dynamic";
 
 export default async function FallenFundPage() {
@@ -19,7 +21,7 @@ export default async function FallenFundPage() {
   const pct = Math.round(FALLEN_FUND_REVENUE_PCT * 100);
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-4 py-12 sm:px-6">
+    <main className={`${PAGE} min-h-screen py-12`}>
       <h1 className="text-2xl font-bold tracking-tight">Fallen Fund</h1>
       <p className="mt-2 text-[15px] text-muted">
         {pct}% of KingBid&apos;s own platform revenue funds visibility grants — never cash, never from

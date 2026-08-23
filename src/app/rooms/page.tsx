@@ -16,12 +16,12 @@ export default function RoomsIndexPage() {
   return (
     <main className="flex-1">
       <Header />
-      <div className={`${PAGE} mx-auto max-w-4xl px-4 py-10 sm:px-6`}>
+      <div className={`${PAGE} py-10`}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Rooms</h1>
             <p className="mt-2 text-[15px] text-muted">
-              Category boards + community rooms. Each has a leaderboard, keepers, event feed, and Underdog row.
+              Pick a category room — bid, climb ranks, earn keeper status.
             </p>
           </div>
           <Link

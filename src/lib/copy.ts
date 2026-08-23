@@ -32,7 +32,7 @@ export const HERO_TAGLINE_LINE2 = "Build your reputation.";
 export const HERO_BRAND = "KINGBID";
 export const HERO_EYEBROW = "Live Kingdom";
 export const HERO_BODY =
-  "Money buys rank. Conviction buys respect. Momentum buys attention. One kingdom, four ways to win.";
+  "Pay to rank. Earn reputation through rooms, discovery bets, and keeper status.";
 
 export const REVENUE_TICKER_LINE = "Total raised on Kingbid since launch";
 export const BID_MODAL_NEW = (minBid: number) =>

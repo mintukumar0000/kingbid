@@ -22,7 +22,7 @@ async function PricingPageInner({
   return (
     <main className="flex-1">
       <Header />
-      <div className={`${PAGE} mx-auto max-w-3xl py-12`}>
+      <div className={`${PAGE} py-12`}>
       <h1 className="text-2xl font-bold tracking-tight">Pricing</h1>
       <p className="mt-2 text-[15px] text-muted">
         Rank is always pay-to-rank. Pro tiers add analytics and tools — they never buy placement on the

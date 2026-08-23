@@ -2,8 +2,25 @@ import { prisma } from "@/lib/db";
 import { getDiscoveryList } from "@/lib/kingmaker";
 import { keeperLevelLabel } from "@/lib/keeper-privileges";
 
+/** Discovery picks that reached #1 at any point after the bet was placed. */
+async function countSuccessfulDiscoveryCalls(userId: string, discovery: Awaited<ReturnType<typeof getDiscoveryList>>) {
+  let count = 0;
+  for (const pick of discovery) {
+    const reachedOne = await prisma.reignHistory.findFirst({
+      where: {
+        listingId: pick.listingId,
+        rank: 1,
+        startedAt: { gte: pick.calledAt },
+      },
+      select: { id: true },
+    });
+    if (reachedOne) count++;
+  }
+  return count;
+}
+
 export async function getKeeperProfileStats(userId: string) {
-  const [curatedRooms, keeperRows, discovery] = await Promise.all([
+  const [curatedRooms, keeperRows, discovery, followStats] = await Promise.all([
     prisma.room.findMany({
       where: { curatorUserId: userId, status: "active" },
       select: { id: true, slug: true, name: true, categoryId: true, createdAt: true },
@@ -13,11 +30,28 @@ export async function getKeeperProfileStats(userId: string) {
       include: { room: { select: { slug: true, name: true, categoryId: true } } },
     }),
     getDiscoveryList(userId),
+    Promise.all([
+      prisma.roomFollow.count({
+        where: {
+          room: {
+            OR: [
+              { curatorUserId: userId },
+              { keepers: { some: { userId, level: { in: ["keeper", "senior_keeper", "legendary_keeper"] } } } },
+            ],
+          },
+        },
+      }),
+      prisma.founderFollow.count({ where: { followingId: userId } }),
+    ]),
   ]);
+
+  const [membersInRooms, founderFollowers] = followStats;
 
   const roomIds = new Set([
     ...curatedRooms.map((r) => r.id),
-    ...keeperRows.filter((k) => k.level === "keeper" || k.level === "senior_keeper" || k.level === "legendary_keeper").map((k) => k.roomId),
+    ...keeperRows
+      .filter((k) => k.level === "keeper" || k.level === "senior_keeper" || k.level === "legendary_keeper")
+      .map((k) => k.roomId),
   ]);
 
   let productsInRooms = 0;
@@ -41,15 +75,7 @@ export async function getKeeperProfileStats(userId: string) {
     clicksInRooms += agg._sum.clickCount ?? 0;
   }
 
-  let successfulProducts = 0;
-  for (const pick of discovery) {
-    const top = await prisma.listing.findFirst({
-      where: { boardId: pick.listing.boardId, currentBid: { gt: 0 }, status: "active" },
-      orderBy: [{ currentBid: "desc" }, { lastBidAt: "asc" }],
-      select: { id: true },
-    });
-    if (top?.id === pick.listingId) successfulProducts++;
-  }
+  const successfulProducts = await countSuccessfulDiscoveryCalls(userId, discovery);
 
   const roomsListed = [
     ...curatedRooms.map((r) => ({ slug: r.slug, name: r.name, role: "Curator" as const })),
@@ -63,7 +89,9 @@ export async function getKeeperProfileStats(userId: string) {
     keeperRoomCount: roomIds.size,
     productsDiscovered: discovery.length,
     successfulProducts,
-    membersInRooms: productsInRooms,
+    membersInRooms,
+    founderFollowers,
+    productsInCuratedRooms: productsInRooms,
     totalClicksCurated: clicksInRooms,
     bidVolumeCurated: bidVolumeCents,
     rooms: roomsListed,

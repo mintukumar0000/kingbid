@@ -1,15 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { PAGE } from "@/lib/layout";
+import { fetcher } from "@/lib/fetcher";
 
 export default function RequestRoomPage() {
+  const { data: roomsData } = useSWR<{ rooms: { id: string; slug: string; name: string; roomType: string }[] }>(
+    "/api/rooms",
+    fetcher
+  );
+  const geoParents = (roomsData?.rooms ?? []).filter((r) => r.roomType === "geo");
+
   const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [roomType, setRoomType] = useState("founder_type");
+  const [parentRoomId, setParentRoomId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ slug: string; status: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,6 +38,7 @@ export default function RequestRoomPage() {
         name,
         description,
         roomType,
+        ...(parentRoomId ? { parentRoomId } : {}),
       }),
     });
     const data = await res.json();
@@ -40,14 +50,13 @@ export default function RequestRoomPage() {
   return (
     <main className="flex-1">
       <Header />
-      <div className={`${PAGE} mx-auto max-w-lg px-4 py-10 sm:px-6`}>
+      <div className={`${PAGE} mx-auto max-w-lg py-10`}>
         <Link href="/founders" className="text-[13px] text-accent hover:underline">
           ← Founder Hub
         </Link>
         <h1 className="mt-4 text-2xl font-bold">Request a room</h1>
         <p className="mt-2 text-[14px] text-muted">
-          New rooms need Kingbid Score ≥ 30 for instant approval, otherwise they go to admin review. This
-          prevents spam like &quot;Best Startup Ever&quot; boards.
+          Score ≥ 30 for instant approval. Geo sub-rooms nest under a parent (e.g. india → saas).
         </p>
 
         {success ? (
@@ -57,11 +66,13 @@ export default function RequestRoomPage() {
             </p>
             <p className="mt-2 text-[13px] text-muted">
               Slug: <code>{success.slug}</code>
-              {success.status === "pending" && " — Mintu will approve in /admin."}
               {success.status === "active" && (
                 <>
                   {" "}
-                  — <Link href={`/?room=${success.slug}`} className="text-accent hover:underline">Enter room</Link>
+                  —{" "}
+                  <Link href={`/rooms/${success.slug}`} className="text-accent hover:underline">
+                    Open room
+                  </Link>
                 </>
               )}
             </p>
@@ -70,7 +81,7 @@ export default function RequestRoomPage() {
           <form onSubmit={submit} className="mt-8 space-y-4">
             <div>
               <label className="mb-1 block text-xs font-medium text-muted">URL slug (lowercase)</label>
-              <input className={field} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="india-saas" required />
+              <input className={field} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="saas" required />
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-muted">Room name</label>
@@ -84,11 +95,24 @@ export default function RequestRoomPage() {
               <label className="mb-1 block text-xs font-medium text-muted">Room type</label>
               <select className={field} value={roomType} onChange={(e) => setRoomType(e.target.value)}>
                 <option value="founder_type">Founder type</option>
-                <option value="geo">Geo / region</option>
-                <option value="tech">Tech stack</option>
+                <option value="geo">Geo / region (parent hub)</option>
+                <option value="tech">Tech stack (sub-room)</option>
                 <option value="category">Category</option>
               </select>
             </div>
+            {(roomType === "tech" || roomType === "category") && geoParents.length > 0 && (
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Parent geo room (optional)</label>
+                <select className={field} value={parentRoomId} onChange={(e) => setParentRoomId(e.target.value)}>
+                  <option value="">No parent</option>
+                  {geoParents.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name} ({r.slug})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {error && <p className="text-sm text-red">{error}</p>}
             <button
               type="submit"

@@ -19,7 +19,7 @@ import { HomeEcosystem } from "@/components/HomeEcosystem";
 import { HowItWorksStrip } from "@/components/HowItWorksStrip";
 import { HashScrollOnLoad } from "@/components/HashScrollOnLoad";
 import { CountryPicker } from "@/components/CountryPicker";
-import { PAGE } from "@/lib/layout";
+import { PAGE_WIDE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
 import { COUNTRY_COOKIE } from "@/lib/brand";
@@ -420,7 +420,7 @@ function HomeClientInner({
   return (
     <>
       <HashScrollOnLoad />
-      <div className={`${PAGE} flex flex-col gap-3 pb-2 pt-4 sm:flex-row sm:items-center sm:justify-between`}>
+      <div className={`${PAGE_WIDE} flex flex-col gap-3 pb-2 pt-4 sm:flex-row sm:items-center sm:justify-between`}>
         <StatsBar />
         {!inCategoryRoom && (
           <div className="flex flex-wrap items-center gap-3">
@@ -464,13 +464,13 @@ function HomeClientInner({
         </CategoryRoom>
       ) : (
         <>
-          <section id="claim" className={`${PAGE} scroll-mt-24 pb-2 pt-8`}>
+          <section id="claim" className={`${PAGE_WIDE} scroll-mt-24 pb-2 pt-8`}>
             {renderHero("home")}
           </section>
 
           {scope === "global" && <HomeEcosystem onEnterRoom={enterRoom} />}
 
-          <section className={`${PAGE} pb-6`}>
+          <section className={`${PAGE_WIDE} pb-6`}>
             <div className="mb-6 border-t border-border pt-10">
               <p className="kb-eyebrow">Full board</p>
               <h2 className="font-display mt-1.5 text-[26px] font-semibold text-foreground sm:text-[28px]">

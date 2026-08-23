@@ -388,6 +388,8 @@ function HomeClientInner({
     </>
   );
 
+  const topLeader = board.entries.find((e) => e.rank === 1) ?? board.entries[0] ?? null;
+
   return (
     <>
       <div className="flex flex-col items-center gap-4 pt-5 pb-1">
@@ -425,6 +427,7 @@ function HomeClientInner({
           topBid={board.topBid}
           foundingPrice={board.minBid}
           onExit={exitRoom}
+          topLeader={topLeader}
         >
           <div className="text-center">{heroBlock}</div>
           <div className="mt-8">{listingsBlock}</div>

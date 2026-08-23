@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { getCategoryRoomTheme } from "@/lib/category-rooms";
 import { formatMoney } from "@/lib/format";
+import type { LeaderboardEntry } from "@/lib/leaderboard";
+import { RoomLeaderSpotlight } from "@/components/RoomLeaderSpotlight";
 
 type Props = {
   slug: string;
@@ -12,6 +14,7 @@ type Props = {
   topBid: number;
   foundingPrice: number;
   onExit: () => void;
+  topLeader: LeaderboardEntry | null;
   children: ReactNode;
 };
 
@@ -23,6 +26,7 @@ export function CategoryRoom({
   topBid,
   foundingPrice,
   onExit,
+  topLeader,
   children,
 }: Props) {
   const theme = getCategoryRoomTheme(slug);
@@ -149,8 +153,19 @@ export function CategoryRoom({
         </div>
 
         <div
+          className="room-interior-reveal mt-6"
+          style={{ animationDelay: "180ms" }}
+        >
+          <RoomLeaderSpotlight
+            leader={topLeader}
+            categorySlug={slug}
+            totalListings={listingCount}
+          />
+        </div>
+
+        <div
           className="room-interior-reveal mt-5 flex flex-wrap items-center justify-center gap-4 text-[13px]"
-          style={{ animationDelay: "200ms" }}
+          style={{ animationDelay: "220ms" }}
         >
           <Link
             href={historyHref}
@@ -164,7 +179,7 @@ export function CategoryRoom({
         {/* Bid + leaderboard frame */}
         <div
           className="room-interior-reveal room-content-frame mt-8 rounded-[24px] border-2 border-[#f0cfc3] bg-surface p-6 shadow-[0_12px_48px_rgba(229,91,60,0.08)] sm:p-8"
-          style={{ animationDelay: "240ms" }}
+          style={{ animationDelay: "260ms" }}
         >
           <div className="mb-6 border-b border-border pb-5 text-center">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">

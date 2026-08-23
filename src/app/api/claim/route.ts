@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleBidRequest } from "@/lib/bid-request";
-import { getInviteByToken, markInviteClaimed, validateInviteClaim } from "@/lib/invites";
+import { getInviteByToken, markInviteClaimed, validateInviteClaim, inviteIsUsable } from "@/lib/invites";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -31,11 +31,8 @@ export async function POST(request: Request) {
   }
 
   const invite = await getInviteByToken(parsed.data.token);
-  if (!invite || invite.status === "expired") {
+  if (!invite || !inviteIsUsable(invite)) {
     return NextResponse.json({ error: "Invite not found or expired." }, { status: 404 });
-  }
-  if (invite.status === "claimed") {
-    return NextResponse.json({ error: "Invite already used." }, { status: 409 });
   }
 
   validateInviteClaim();

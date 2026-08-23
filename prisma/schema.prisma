@@ -165,8 +165,10 @@ model Invite {
   invitedContact String    @map("invited_contact")
   claimToken     String    @unique @map("claim_token")
   status         String    @default("sent")
+  reusable       Boolean   @default(false)
   createdAt      DateTime  @default(now()) @map("created_at")
 
+  @@index([categoryId, reusable])
   @@map("invites")
 }
 

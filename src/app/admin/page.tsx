@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { formatMoney } from "@/lib/format";
 import { RelativeTime } from "@/components/RelativeTime";
+import { AdminInvitesPanel } from "@/components/AdminInvitesPanel";
 
 interface AdminBid {
   id: string;
@@ -127,6 +128,8 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+
+            <AdminInvitesPanel password={password} />
           </>
         )}
       </div>

@@ -69,7 +69,3 @@ export async function getKeeperProfileStats(userId: string) {
     rooms: roomsListed,
   };
 }
-
-function keeperLevelLabel(level: string): string {
-  return level.replace(/_/g, " ");
-}

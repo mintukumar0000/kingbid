@@ -63,27 +63,30 @@ export default function AdminPage() {
         <h1 className="text-3xl font-extrabold tracking-tight">Admin</h1>
 
         {!data ? (
+          <>
             <p className="mt-2 text-[13px] text-muted">
               Enter the secret value from Vercel → Settings → Environment Variables →{" "}
               <code className="text-accent">ADMIN_PASSWORD</code>. Do not type the words
               &quot;ADMIN_PASSWORD&quot; unless that is literally what you saved there.
             </p>
             <form onSubmit={login} className="mt-6 max-w-sm space-y-3">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Admin password"
-              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-accent transition-colors"
-            />
-            {error && <p className="text-sm text-red">{error}</p>}
-            <button
-              disabled={loading}
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-60 transition-all"
-            >
-              {loading ? "Checking…" : "Unlock"}
-            </button>
-          </form>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Admin password"
+                className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-accent transition-colors"
+              />
+              {error && <p className="text-sm text-red">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-60 transition-all"
+              >
+                {loading ? "Checking…" : "Unlock"}
+              </button>
+            </form>
+          </>
         ) : (
           <>
             <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">

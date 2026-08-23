@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/momentum",
-      "schedule": "0 * * * *"
+      "schedule": "0 1 * * *"
     },
     {
       "path": "/api/cron/call-it",
@@ -14,7 +14,7 @@
     },
     {
       "path": "/api/cron/notifications",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/cron/fallen-fund",

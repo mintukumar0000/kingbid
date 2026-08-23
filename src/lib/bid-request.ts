@@ -21,6 +21,7 @@ const bidSchema = z.object({
   scope: z.enum(["global", "local"]).optional(),
   countryCode: z.string().length(2).optional(),
   categorySlug: z.string().max(80).optional(),
+  revenueBand: z.string().max(20).optional(),
 });
 
 function referralFromRequest(request: Request, bodySlug?: string): string | null {
@@ -82,6 +83,7 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
       scope,
       countryCode,
       boardId,
+      revenueBand: parsed.data.revenueBand ?? null,
     });
 
     const checkoutUrl = await createCheckout({

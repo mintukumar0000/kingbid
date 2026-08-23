@@ -14,6 +14,7 @@ const schema = z.object({
   amount: z.number().int().min(5),
   alerts: z.boolean().optional(),
   categorySlug: z.string().nullable().optional(),
+  revenueBand: z.string().max(20).optional(),
 });
 
 /** Invite claim → owner-submitted listing → checkout. Consent-only path. */
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
         email: parsed.data.email,
         amount: parsed.data.amount,
         scope: "global",
+        revenueBand: parsed.data.revenueBand,
         ...(categorySlug ? { categorySlug } : {}),
       }),
     })

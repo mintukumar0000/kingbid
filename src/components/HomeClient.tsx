@@ -18,6 +18,7 @@ import { ReferralTracker } from "@/components/ReferralTracker";
 import { ScopeToggle } from "@/components/ScopeToggle";
 import { CategoryRoomGrid } from "@/components/CategoryRoomGrid";
 import { CategoryRoom, CategoryEmptyState } from "@/components/CategoryRoom";
+import { HomeSections } from "@/components/HomeSections";
 import { CountryPicker } from "@/components/CountryPicker";
 import { PAGE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
@@ -440,6 +441,8 @@ function HomeClientInner({
             <TrendingSection scope={scope} countryCode={scope === "local" ? selectedCountry : null} />
             <LiveActivityFeed limit={5} />
           </section>
+
+          <HomeSections />
 
           <section className={`${PAGE} pb-10`}>
             <CategoryRoomGrid activeSlug={null} onEnter={enterRoom} />

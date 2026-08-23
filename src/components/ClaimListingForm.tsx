@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { formatMoney } from "@/lib/format";
+import { RevenueBandSelect } from "@/components/RevenueBandSelect";
+import type { RevenueBand } from "@/lib/revenue-bands";
 
 export function ClaimListingForm({
   token,
@@ -14,19 +16,33 @@ export function ClaimListingForm({
   const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState(5);
+  const [revenueBand, setRevenueBand] = useState<RevenueBand | "">("");
   const [alerts, setAlerts] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!revenueBand) {
+      setError("Pick a revenue band for Underdog rank.");
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, url, title, email, amount, alerts, categorySlug }),
+        body: JSON.stringify({
+          token,
+          url,
+          title,
+          email,
+          amount,
+          alerts,
+          categorySlug,
+          revenueBand,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -64,6 +80,7 @@ export function ClaimListingForm({
           required
         />
       </div>
+      <RevenueBandSelect value={revenueBand} onChange={setRevenueBand} required />
       <div>
         <label className="mb-1.5 block text-xs font-medium text-muted">Opening bid (USD)</label>
         <input

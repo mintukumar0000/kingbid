@@ -1,35 +1,16 @@
 import { prisma } from "@/lib/db";
+import { recordReignChangeWithEvents } from "@/lib/reign-events";
 
-/** Close prior #1 reign row and open a new one when top spot changes. */
+export { getGlobalBoardId } from "@/lib/boards";
+
+/** Close prior #1 reign, record dethronement, open new reign, emit platform events. */
 export async function recordReignChange(
   boardId: string,
   newTopListingId: string,
   previousTopListingId: string | null
 ): Promise<void> {
-  if (previousTopListingId === newTopListingId) return;
-
-  const now = new Date();
-
-  await prisma.$transaction(async (tx) => {
-    if (previousTopListingId) {
-      await tx.reignHistory.updateMany({
-        where: { boardId, listingId: previousTopListingId, endedAt: null, rank: 1 },
-        data: { endedAt: now },
-      });
-    }
-
-    await tx.reignHistory.create({
-      data: {
-        boardId,
-        listingId: newTopListingId,
-        rank: 1,
-        startedAt: now,
-      },
-    });
-  });
+  await recordReignChangeWithEvents(boardId, newTopListingId, previousTopListingId);
 }
-
-export { getGlobalBoardId } from "@/lib/boards";
 
 export async function reignDuration(listingId: string, boardId: string): Promise<string | null> {
   const open = await prisma.reignHistory.findFirst({
@@ -54,6 +35,46 @@ export async function getBoardHistory(boardId: string, limit = 50) {
     take: limit,
     include: {
       listing: { select: { slug: true, displayUrl: true, title: true, currentBid: true } },
+    },
+  });
+}
+
+export async function getCurrentKing(boardId: string) {
+  const reign = await prisma.reignHistory.findFirst({
+    where: { boardId, endedAt: null, rank: 1 },
+    orderBy: { startedAt: "desc" },
+    include: {
+      listing: {
+        select: {
+          id: true,
+          slug: true,
+          displayUrl: true,
+          title: true,
+          currentBid: true,
+          lastBidAt: true,
+        },
+      },
+    },
+  });
+  return reign?.listing ?? null;
+}
+
+export async function getNextChallenger(boardId: string, kingId: string | null) {
+  const where = {
+    boardId,
+    currentBid: { gt: 0 },
+    status: "active" as const,
+    ...(kingId ? { id: { not: kingId } } : {}),
+  };
+  return prisma.listing.findFirst({
+    where,
+    orderBy: [{ currentBid: "desc" }, { lastBidAt: "asc" }],
+    select: {
+      id: true,
+      slug: true,
+      displayUrl: true,
+      title: true,
+      currentBid: true,
     },
   });
 }

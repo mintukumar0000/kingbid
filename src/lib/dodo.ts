@@ -40,10 +40,10 @@ export function dodoCheckoutUserMessage(status: number, body: string): string {
 }
 
 export async function createDodoCheckout(params: CheckoutParams): Promise<string> {
-  const productId = process.env.DODO_PAYMENTS_PRODUCT_ID;
+  const productId = params.productId ?? process.env.DODO_PAYMENTS_PRODUCT_ID;
   const apiKey = process.env.DODO_PAYMENTS_API_KEY;
   if (!productId || !apiKey) {
-    throw new Error("DODO_PAYMENTS_API_KEY and DODO_PAYMENTS_PRODUCT_ID are required.");
+    throw new Error("DODO_PAYMENTS_API_KEY and product ID are required.");
   }
 
   if (params.amount < 1) {
@@ -64,11 +64,12 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
       },
     ],
     allowed_payment_method_types: ["credit", "debit"],
-    return_url: `${siteUrl()}/success/${encodeURIComponent(params.paymentId)}`,
+    return_url: params.returnUrl ?? `${siteUrl()}/success/${encodeURIComponent(params.paymentId)}`,
     customer: params.email ? { email: params.email } : undefined,
     metadata: {
       paymentId: params.paymentId,
       listingUrl: params.listingUrl,
+      ...params.metadata,
     },
   };
 
@@ -98,6 +99,42 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
   const url = session.checkout_url ?? session.checkoutUrl;
   if (!url) throw new Error("Dodo checkout response missing checkout_url");
   return url;
+}
+
+export function dodoProductIdForTier(tier: "founder_pro" | "room_pro"): string | null {
+  if (tier === "founder_pro") return process.env.DODO_FOUNDER_PRO_PRODUCT_ID?.trim() || null;
+  return process.env.DODO_ROOM_PRO_PRODUCT_ID?.trim() || null;
+}
+
+export async function createDodoSubscriptionCheckout(params: {
+  paymentId: string;
+  tier: "founder_pro" | "room_pro";
+  amountDollars: number;
+  email?: string;
+  userId: string;
+}): Promise<string> {
+  const productId = dodoProductIdForTier(params.tier);
+  if (!productId) {
+    throw new Error(
+      `Dodo product ID missing for ${params.tier}. Set DODO_FOUNDER_PRO_PRODUCT_ID or DODO_ROOM_PRO_PRODUCT_ID on Vercel.`
+    );
+  }
+  return createDodoCheckout({
+    paymentId: params.paymentId,
+    amount: params.amountDollars,
+    listingUrl: "https://kingbid.lol/pricing",
+    displayUrl: "KingBid Pro",
+    email: params.email,
+    productId,
+    returnUrl: `${siteUrl()}/pricing?subscribed=${params.tier}`,
+    metadata: {
+      type: "subscription",
+      tier: params.tier,
+      userId: params.userId,
+      subscriptionPaymentId: params.paymentId,
+      paymentId: params.paymentId,
+    },
+  });
 }
 
 /** Standard Webhooks signature verification (same scheme as Polar). */

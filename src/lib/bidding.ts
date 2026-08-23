@@ -58,6 +58,7 @@ export interface BidIntentInput {
   scope?: BoardScope;
   countryCode?: string | null;
   boardId?: string | null;
+  revenueBand?: string | null;
 }
 
 export interface BidIntent {
@@ -180,10 +181,16 @@ export async function createBidIntent(input: BidIntentInput): Promise<BidIntent>
           ownerEmail: input.email?.trim() || null,
           ownerContact: input.email?.trim() || null,
           boardId: input.boardId ?? null,
+          revenueBand: input.revenueBand ?? null,
           status: "active",
           claimedAt: new Date(),
           currentBid: 0, // hidden until first payment completes
         },
+      });
+    } else if (input.revenueBand && !listing.revenueBand) {
+      listing = await tx.listing.update({
+        where: { id: listing.id },
+        data: { revenueBand: input.revenueBand },
       });
     }
     return tx.bid.create({

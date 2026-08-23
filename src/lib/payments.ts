@@ -13,6 +13,9 @@ export interface CheckoutParams {
   listingUrl: string;
   displayUrl: string;
   email?: string;
+  productId?: string;
+  metadata?: Record<string, string>;
+  returnUrl?: string;
 }
 
 export function isMockPayments(): boolean {

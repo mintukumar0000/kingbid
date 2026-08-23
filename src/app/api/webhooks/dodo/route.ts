@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { failBid } from "@/lib/bidding";
 import { verifyDodoSignature } from "@/lib/dodo";
 import { settlePayment } from "@/lib/settle";
+import { activateSubscriptionFromPayment } from "@/lib/subscriptions";
+import type { SubscriptionTier } from "@/lib/subscriptions";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +41,23 @@ export async function POST(request: Request) {
   }
 
   const paymentId = payload.data?.metadata?.paymentId;
+  const metadata = payload.data?.metadata ?? {};
+
+  if (payload.type === "payment.succeeded" && metadata.type === "subscription") {
+    const subPaymentId = metadata.subscriptionPaymentId ?? paymentId;
+    const userId = metadata.userId;
+    const tier = metadata.tier as SubscriptionTier;
+    if (subPaymentId && userId && tier) {
+      try {
+        await activateSubscriptionFromPayment(subPaymentId, userId, tier);
+      } catch (e) {
+        console.error("subscription activation failed:", e);
+        return new NextResponse("Processing error", { status: 500 });
+      }
+    }
+    return new NextResponse("OK", { status: 200 });
+  }
+
   if (!paymentId) return new NextResponse("OK (no paymentId)", { status: 200 });
 
   try {

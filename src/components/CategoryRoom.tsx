@@ -6,6 +6,8 @@ import { getCategoryRoomTheme } from "@/lib/category-rooms";
 import { formatMoney } from "@/lib/format";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
 import { RoomLeaderSpotlight } from "@/components/RoomLeaderSpotlight";
+import { RoomEventFeed } from "@/components/RoomEventFeed";
+import { HeroVillainWidget } from "@/components/HeroVillainWidget";
 
 type Props = {
   slug: string;
@@ -156,11 +158,22 @@ export function CategoryRoom({
           className="room-interior-reveal mt-6"
           style={{ animationDelay: "180ms" }}
         >
+          <HeroVillainWidget categorySlug={slug} />
+        </div>
+
+        <div
+          className="room-interior-reveal mt-6"
+          style={{ animationDelay: "200ms" }}
+        >
           <RoomLeaderSpotlight
             leader={topLeader}
             categorySlug={slug}
             totalListings={listingCount}
           />
+        </div>
+
+        <div className="room-interior-reveal mt-5" style={{ animationDelay: "210ms" }}>
+          <RoomEventFeed roomIdOrSlug={slug} />
         </div>
 
         <div

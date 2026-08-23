@@ -17,6 +17,8 @@ export interface ListingDetail {
   topBid: number;
   lastBidAt: string;
   takeoverActive: boolean;
+  boardId: string | null;
+  revenueBand: string | null;
 }
 
 export interface RankHistoryPoint {
@@ -63,6 +65,8 @@ export async function getListingBySlug(slug: string): Promise<ListingDetail | nu
     topBid,
     lastBidAt: listing.lastBidAt.toISOString(),
     takeoverActive: isTakeoverActive(listing, now),
+    boardId: listing.boardId,
+    revenueBand: listing.revenueBand,
   };
 }
 

@@ -10,6 +10,7 @@ import { BRAND_LABEL, SITE_NAME } from "@/lib/brand";
 import { ogClaimUrl } from "@/lib/site";
 import { RelativeTime } from "@/components/RelativeTime";
 import { BadgeEmbedSnippet } from "@/components/BadgeEmbedSnippet";
+import { FounderToolsPanel } from "@/components/FounderToolsPanel";
 import { PAGE } from "@/lib/layout";
 
 export const dynamic = "force-dynamic";
@@ -100,6 +101,21 @@ export default async function ListingPage({ params }: Props) {
           </p>
           <div className="mt-4">
             <ShareButtons text={shareText} slug={listing.slug} />
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-[20px] border border-border bg-surface p-6 shadow-[var(--shadow)]">
+          <h2 className="text-[15px] font-semibold">Founder tools</h2>
+          <p className="mt-1 text-[13px] text-muted">
+            Underdog rank, rivals, Call It predictions, migration badge — reputation features only.
+          </p>
+          <div className="mt-4">
+            <FounderToolsPanel
+              listingId={listing.id}
+              boardId={listing.boardId}
+              slug={listing.slug}
+              revenueBand={listing.revenueBand}
+            />
           </div>
         </section>
 

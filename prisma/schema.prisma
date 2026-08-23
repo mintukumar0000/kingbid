@@ -19,6 +19,7 @@ model Category {
   createdAt   DateTime @default(now()) @map("created_at")
   boards      Board[]
   invites     Invite[]
+  room        Room?
 
   @@map("categories")
 }
@@ -31,6 +32,9 @@ model Board {
   createdAt    DateTime       @default(now()) @map("created_at")
   listings     Listing[]
   reignHistory ReignHistory[]
+  dethronements Dethronement[]
+  platformEvents PlatformEvent[]
+  callItPredictions CallItPrediction[]
 
   @@unique([categoryId, region])
   @@map("boards")
@@ -71,6 +75,20 @@ model Listing {
   matchupsAsB    Matchup[]          @relation("MatchupB")
   badgeEmbeds    BadgeEmbed[]
   alertSubs      AlertSubscription[]
+  revenueBand    String?            @map("revenue_band")
+  verifications  Verification[]
+  underdogScores UnderdogScore[]
+  dethronements  Dethronement[]     @relation("DethronedListing")
+  dethronedOthers Dethronement[]    @relation("DethronerListing")
+  discoveryLists DiscoveryList[]
+  callItTargets  CallItPrediction[]
+  rivalsAsSelf   Rival[]            @relation("RivalSelf")
+  rivalsAsTarget Rival[]            @relation("RivalTarget")
+  notificationPrefs NotificationPreference[]
+  fallenFundGrants FallenFundGrant[]
+  migrationClaim MigrationClaim?
+  nominationsReceived DethronementNomination[] @relation("Nominee")
+  nominationsMade     DethronementNomination[] @relation("Nominator")
 
   @@index([currentBid(sort: Desc), lastBidAt])
   @@index([countryCode, localBid(sort: Desc), localLastBidAt])
@@ -126,6 +144,7 @@ model ReignHistory {
   rank      Int       @default(1)
   startedAt DateTime  @default(now()) @map("started_at")
   endedAt   DateTime? @map("ended_at")
+  isComeback Boolean  @default(false) @map("is_comeback")
 
   @@index([boardId, startedAt(sort: Desc)])
   @@map("reign_history")
@@ -219,4 +238,260 @@ model Meta {
   updatedAt DateTime @updatedAt
 
   @@map("meta")
+}
+
+// ─── v2 Production Spec ─────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String?  @unique
+  handle    String?  @unique
+  name      String?
+  sessionId String?  @unique @map("session_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  roomKeepers       RoomKeeper[]
+  curatedRooms      Room[]              @relation("RoomCurator")
+  kingbidScores     KingbidScore[]
+  discoveryLists    DiscoveryList[]
+  callItPredictions CallItPrediction[]
+  rivals            Rival[]
+  subscriptions     Subscription[]
+  roomRequests      Room[]              @relation("RoomRequester")
+
+  @@map("users")
+}
+
+model Room {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  name          String
+  description   String   @default("")
+  icon          String?
+  parentRoomId  String?  @map("parent_room_id")
+  parentRoom    Room?    @relation("RoomNesting", fields: [parentRoomId], references: [id])
+  childRooms    Room[]   @relation("RoomNesting")
+  categoryId    String?  @unique @map("category_id")
+  category      Category? @relation(fields: [categoryId], references: [id])
+  roomType      String   @default("category") @map("room_type")
+  curatorUserId String?  @map("curator_user_id")
+  curator       User?    @relation("RoomCurator", fields: [curatorUserId], references: [id])
+  requesterId   String?  @map("requester_id")
+  requester     User?    @relation("RoomRequester", fields: [requesterId], references: [id])
+  status        String   @default("active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  keepers        RoomKeeper[]
+  platformEvents PlatformEvent[]
+
+  @@index([parentRoomId])
+  @@index([status])
+  @@map("rooms")
+}
+
+model RoomKeeper {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  roomId      String   @map("room_id")
+  room        Room     @relation(fields: [roomId], references: [id])
+  level       String   @default("observer")
+  leveledUpAt DateTime @default(now()) @map("leveled_up_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, roomId])
+  @@map("room_keepers")
+}
+
+model Dethronement {
+  id                  String   @id @default(uuid())
+  listingId           String   @map("listing_id")
+  listing             Listing  @relation("DethronedListing", fields: [listingId], references: [id])
+  boardId             String   @map("board_id")
+  board               Board    @relation(fields: [boardId], references: [id])
+  dethronedByListingId String  @map("dethroned_by_listing_id")
+  dethronedBy         Listing  @relation("DethronerListing", fields: [dethronedByListingId], references: [id])
+  occurredAt          DateTime @default(now()) @map("occurred_at")
+  nominations         DethronementNomination[]
+
+  @@index([boardId, occurredAt(sort: Desc)])
+  @@map("dethronements")
+}
+
+model DethronementNomination {
+  id             String       @id @default(uuid())
+  dethronementId String       @map("dethronement_id")
+  dethronement   Dethronement @relation(fields: [dethronementId], references: [id])
+  nominatorListingId String   @map("nominator_listing_id")
+  nominator      Listing      @relation("Nominator", fields: [nominatorListingId], references: [id])
+  nomineeListingId   String @map("nominee_listing_id")
+  nominee        Listing      @relation("Nominee", fields: [nomineeListingId], references: [id])
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@unique([dethronementId, nominatorListingId])
+  @@map("dethronement_nominations")
+}
+
+model PlatformEvent {
+  id        String   @id @default(uuid())
+  eventType String   @map("event_type")
+  boardId   String?  @map("board_id")
+  board     Board?   @relation(fields: [boardId], references: [id])
+  roomId    String?  @map("room_id")
+  room      Room?    @relation(fields: [roomId], references: [id])
+  listingId String?  @map("listing_id")
+  metadata  String   @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([boardId, createdAt(sort: Desc)])
+  @@index([roomId, createdAt(sort: Desc)])
+  @@index([eventType, createdAt(sort: Desc)])
+  @@map("platform_events")
+}
+
+model KingbidScore {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id])
+  score      Int      @default(0)
+  components String   @default("{}")
+  computedAt DateTime @default(now()) @map("computed_at")
+
+  @@index([userId, computedAt(sort: Desc)])
+  @@map("kingbid_scores")
+}
+
+model Verification {
+  id               String   @id @default(uuid())
+  listingId        String   @map("listing_id")
+  listing          Listing  @relation(fields: [listingId], references: [id])
+  verificationType String   @map("verification_type")
+  provider         String?
+  verifiedAt       DateTime? @map("verified_at")
+  revenueBand      String?  @map("revenue_band")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([listingId])
+  @@map("verifications")
+}
+
+model UnderdogScore {
+  id             String   @id @default(uuid())
+  listingId      String   @map("listing_id")
+  listing        Listing  @relation(fields: [listingId], references: [id])
+  boardId        String?  @map("board_id")
+  bidAmountCents Int      @map("bid_amount_cents")
+  revenueBand    String   @map("revenue_band")
+  sacrificeScore Float    @map("sacrifice_score")
+  computedAt     DateTime @default(now()) @map("computed_at")
+
+  @@index([boardId, sacrificeScore(sort: Desc)])
+  @@index([listingId, computedAt(sort: Desc)])
+  @@map("underdog_scores")
+}
+
+model DiscoveryList {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  listingId String   @map("listing_id")
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  calledAt  DateTime @default(now()) @map("called_at")
+
+  @@unique([userId, listingId])
+  @@map("discovery_lists")
+}
+
+model CallItPrediction {
+  id                  String   @id @default(uuid())
+  userId              String   @map("user_id")
+  user                User     @relation(fields: [userId], references: [id])
+  boardId             String   @map("board_id")
+  board               Board    @relation(fields: [boardId], references: [id])
+  predictedListingId  String   @map("predicted_listing_id")
+  predictedListing    Listing  @relation(fields: [predictedListingId], references: [id])
+  resolvesAt          DateTime @map("resolves_at")
+  resolved            Boolean  @default(false)
+  correct             Boolean?
+
+  @@index([boardId, resolvesAt])
+  @@map("call_it_predictions")
+}
+
+model Rival {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  user            User     @relation(fields: [userId], references: [id])
+  listingId       String   @map("listing_id")
+  listing         Listing  @relation("RivalSelf", fields: [listingId], references: [id])
+  rivalListingId  String   @map("rival_listing_id")
+  rivalListing    Listing  @relation("RivalTarget", fields: [rivalListingId], references: [id])
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, listingId, rivalListingId])
+  @@map("rivals")
+}
+
+model NotificationPreference {
+  id            String   @id @default(uuid())
+  listingId     String   @map("listing_id")
+  listing       Listing  @relation(fields: [listingId], references: [id])
+  notifyOn      String   @map("notify_on")
+  contactMethod String   @map("contact_method")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([listingId, notifyOn, contactMethod])
+  @@map("notification_preferences")
+}
+
+model FallenFundPool {
+  id              String   @id @default(uuid())
+  weekStart       DateTime @map("week_start")
+  totalPoolCents  Int      @default(0) @map("total_pool_cents")
+  status          String   @default("accruing")
+  createdAt       DateTime @default(now()) @map("created_at")
+  grants          FallenFundGrant[]
+
+  @@unique([weekStart])
+  @@map("fallen_fund_pools")
+}
+
+model FallenFundGrant {
+  id                 String         @id @default(uuid())
+  poolId             String         @map("pool_id")
+  pool               FallenFundPool @relation(fields: [poolId], references: [id])
+  recipientListingId String         @map("recipient_listing_id")
+  recipient          Listing        @relation(fields: [recipientListingId], references: [id])
+  grantType          String         @map("grant_type")
+  selectionRuleUsed  String         @map("selection_rule_used")
+  awardedAt          DateTime       @default(now()) @map("awarded_at")
+
+  @@map("fallen_fund_grants")
+}
+
+model Subscription {
+  id                   String   @id @default(uuid())
+  userId               String   @map("user_id")
+  user                 User     @relation(fields: [userId], references: [id])
+  tier                 String
+  stripeSubscriptionId String?  @unique @map("stripe_subscription_id")
+  dodoPaymentId        String?  @unique @map("dodo_payment_id")
+  status               String   @default("pending")
+  renewsAt             DateTime? @map("renews_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  @@index([userId, status])
+  @@map("subscriptions")
+}
+
+model MigrationClaim {
+  id                    String   @id @default(uuid())
+  listingId             String   @unique @map("listing_id")
+  listing               Listing  @relation(fields: [listingId], references: [id])
+  claimedPreviousPlatform String @map("claimed_previous_platform")
+  evidenceUrl           String?  @map("evidence_url")
+  badge                 String
+  claimedAt             DateTime @default(now()) @map("claimed_at")
+
+  @@map("migration_claims")
 }

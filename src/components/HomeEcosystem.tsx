@@ -271,6 +271,44 @@ export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => 
         </div>
       </section>
 
+      {/* LIVE BATTLES */}
+      <section className="mb-10">
+        <SectionBlock eyebrow="⚔️ Right now" title="Live Battles" />
+        {data.liveBattles.length === 0 ? (
+          <BracketCard>
+            <EmptyCard>No active matchups — founders can start battles from listing pages.</EmptyCard>
+          </BracketCard>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {data.liveBattles.map((m) => (
+              <Link key={m.id} href={m.url} className="block">
+                <BracketCard className="flex items-center justify-between gap-3 !py-5">
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] uppercase tracking-wide text-accent">Current King</p>
+                    <p className="font-display mt-1.5 truncate text-[17px] font-semibold">{m.king.displayUrl}</p>
+                    <p className="font-mono-label mt-1 text-[13px] text-muted">{formatMoney(m.king.currentBid)}</p>
+                  </div>
+                  <div className="shrink-0 text-center">
+                    <p className="font-mono-label text-[12px] text-accent">VS</p>
+                    <p className="font-mono-label mt-1 text-[14px] font-bold text-accent">
+                      {formatMoney(m.gapCents)}
+                    </p>
+                    <p className="text-[10px] text-muted">gap</p>
+                  </div>
+                  <div className="min-w-0 text-center">
+                    <p className="text-[10px] uppercase tracking-wide text-muted">Challenger</p>
+                    <p className="font-display mt-1.5 truncate text-[17px] font-semibold">{m.challenger.displayUrl}</p>
+                    <p className="font-mono-label mt-1 text-[13px] text-muted">
+                      {formatMoney(m.challenger.currentBid)}
+                    </p>
+                  </div>
+                </BracketCard>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* KINGMAKERS */}
       <section className="mb-10" id="kingmakers">
         <SectionBlock

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
+import { keeperLevelLabel } from "@/lib/keeper-privileges";
 import type { LeaderboardData } from "@/lib/leaderboard";
 
 type Pin = {
@@ -49,11 +50,12 @@ export function RoomKeeperTools({
     canManage: boolean;
     isCurator?: boolean;
     myKeeperLevel: string;
-    room: { boardId: string | null; categorySlug?: string | null };
+    room: { boardId: string | null; categorySlug?: string | null; listingCount?: number; name?: string };
   }>(`/api/rooms/${encodeURIComponent(roomSlug)}`, fetcher);
 
-  const listingsUrl = categorySlug
-    ? `/api/listings?limit=30&category=${encodeURIComponent(categorySlug)}`
+  const effectiveCategory = categorySlug ?? data?.room?.categorySlug ?? null;
+  const listingsUrl = effectiveCategory
+    ? `/api/listings?limit=30&category=${encodeURIComponent(effectiveCategory)}`
     : "/api/listings?limit=30";
   const { data: board } = useSWR<LeaderboardData>(listingsUrl, fetcher);
 
@@ -68,9 +70,18 @@ export function RoomKeeperTools({
   const [loading, setLoading] = useState<string | null>(null);
 
   const canUse = data?.canManage || data?.isCurator;
-  if (!canUse) return null;
-
   const listings = board?.entries ?? [];
+  const field =
+    "w-full rounded-lg border border-border bg-surface px-3 py-2 text-[12px] outline-none focus:border-accent";
+
+  if (!data) {
+    return (
+      <div className="luxury-card mt-4 p-5">
+        <p className="font-display text-[15px] font-semibold">Keeper tools</p>
+        <p className="mt-2 text-[12px] text-muted">Loading…</p>
+      </div>
+    );
+  }
 
   async function pin(e: React.FormEvent) {
     e.preventDefault();
@@ -122,14 +133,38 @@ export function RoomKeeperTools({
     }
   }
 
-  const field =
-    "w-full rounded-lg border border-border bg-surface px-3 py-2 text-[12px] outline-none focus:border-accent";
+  if (!canUse) {
+    return (
+      <div className="luxury-card mt-4 p-5">
+        <p className="font-display text-[15px] font-semibold">Keeper tools</p>
+        <p className="mt-2 text-[12px] text-muted">
+          Pin & weekly events unlock for the <strong>curator</strong> of this room or a{" "}
+          <strong>Senior Keeper</strong>. You&apos;re currently{" "}
+          <strong>{keeperLevelLabel(data.myKeeperLevel)}</strong> in {data.room.name ?? "this room"}.
+        </p>
+        <p className="mt-2 text-[12px] text-muted">
+          Curator shortcut: open <strong>your</strong> room at{" "}
+          <Link href="/rooms" className="text-accent hover:underline">
+            /rooms
+          </Link>{" "}
+          (e.g. india-saas) where you curate — Keeper tools appear there immediately.
+        </p>
+        <p className="mt-2 text-[12px] text-muted">
+          For category rooms like Trending .lol, level up to Senior Keeper on{" "}
+          <Link href="/founders" className="text-accent hover:underline">
+            /founders
+          </Link>
+          .
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="luxury-card mt-4 p-5">
       <p className="font-display text-[15px] font-semibold">Keeper tools</p>
       <p className="mt-1 text-[12px] text-muted">
-        {data?.isCurator ? "Curator" : "Senior Keeper"} — pin up to 3 products · run weekly events
+        {data.isCurator ? "Curator" : "Senior Keeper"} — pin up to 3 products · run weekly events
       </p>
 
       {msg && <p className="mt-2 text-[12px] text-accent">{msg}</p>}
@@ -158,11 +193,24 @@ export function RoomKeeperTools({
         </form>
       ) : (
         <p className="mt-3 text-[12px] text-muted">
-          No listings to pin yet —{" "}
-          <Link href="/#claim" className="text-accent hover:underline">
-            claim #1
-          </Link>{" "}
-          first.
+          {effectiveCategory ? (
+            <>
+              No listings on this room board yet. Products claimed on the homepage stay global until you{" "}
+              <strong>rebid from this room</strong> ($1+). Open{" "}
+              <Link href={`/?room=${effectiveCategory}`} className="text-accent hover:underline">
+                /?room={effectiveCategory}
+              </Link>{" "}
+              and claim from there.
+            </>
+          ) : (
+            <>
+              No listings to pin yet —{" "}
+              <Link href="/#claim" className="text-accent hover:underline">
+                claim #1
+              </Link>{" "}
+              first.
+            </>
+          )}
         </p>
       )}
 

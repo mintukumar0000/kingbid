@@ -16,6 +16,7 @@ import { ReferralTracker } from "@/components/ReferralTracker";
 import { ScopeToggle } from "@/components/ScopeToggle";
 import { CategoryRoom, CategoryEmptyState } from "@/components/CategoryRoom";
 import { HomeEcosystem } from "@/components/HomeEcosystem";
+import { HowItWorksStrip } from "@/components/HowItWorksStrip";
 import { HashScrollOnLoad } from "@/components/HashScrollOnLoad";
 import { CountryPicker } from "@/components/CountryPicker";
 import { PAGE_WIDE } from "@/lib/layout";
@@ -296,6 +297,8 @@ function HomeClientInner({
             ? "Have a claim invite? Submit the same URL after opening your link."
             : "Already on the list? Enter the same URL or @handle and up your bid."}
         </p>
+
+        {variant === "home" && <HowItWorksStrip />}
       </>
     );
   }

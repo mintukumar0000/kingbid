@@ -12,6 +12,7 @@ import { formatMoney } from "@/lib/format";
 import { getRankForListing } from "@/lib/listing-page";
 import { BRAND_LABEL, SITE_NAME } from "@/lib/brand";
 import { isDodoLiveMode } from "@/lib/dodo";
+import { syncPaymentFromDodo } from "@/lib/dodo-sync";
 import { ogClaimUrl } from "@/lib/site";
 import { PAGE } from "@/lib/layout";
 
@@ -48,6 +49,11 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
 
   if (dodoFailed && query.payment_id) {
     await failBid(paymentId);
+  }
+
+  // Instant confirm when Dodo redirects back with payment_id (webhook optional)
+  if (query.payment_id && query.status?.toLowerCase() !== "failed") {
+    await syncPaymentFromDodo(paymentId, query.payment_id);
   }
 
   const bid = await prisma.bid.findUnique({
@@ -172,7 +178,7 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
           <>
             <div className="text-6xl">⏳</div>
             <h1 className="mt-4 text-3xl font-extrabold">Confirming payment…</h1>
-            <SuccessPaymentStatus paymentId={paymentId} />
+            <SuccessPaymentStatus paymentId={paymentId} dodoPaymentId={query.payment_id} />
             <p className="mt-6 text-sm text-muted">
               <Link href="/" className="text-accent underline underline-offset-2">
                 Back to leaderboard →

@@ -101,6 +101,33 @@ export async function createDodoCheckout(params: CheckoutParams): Promise<string
   return url;
 }
 
+export type DodoPaymentRecord = {
+  payment_id?: string;
+  status?: string | null;
+  metadata?: Record<string, string>;
+};
+
+/** Fetch payment status from Dodo API (test or live base URL from env). */
+export async function fetchDodoPayment(dodoPaymentId: string): Promise<DodoPaymentRecord | null> {
+  const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const res = await fetch(`${apiBase()}/payments/${encodeURIComponent(dodoPaymentId)}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      console.warn("fetchDodoPayment failed", dodoPaymentId, res.status);
+      return null;
+    }
+    return (await res.json()) as DodoPaymentRecord;
+  } catch (e) {
+    console.warn("fetchDodoPayment error", e);
+    return null;
+  }
+}
+
 export function dodoProductIdForTier(tier: "founder_pro" | "room_pro"): string | null {
   const founder = process.env.DODO_FOUNDER_PRO_PRODUCT_ID?.trim() || "pdt_0Nm2z9ZHI8uSMGj2KPzcA";
   const room = process.env.DODO_ROOM_PRO_PRODUCT_ID?.trim() || "pdt_0Nm2zSAGAeI2UbUtdTKxd";

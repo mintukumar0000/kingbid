@@ -182,6 +182,14 @@ function parseEventHeadline(eventType: string, metadataJson: string): string {
       return String(metadata.title ?? "Weekly room event");
     case "room_follow":
       return `New follower joined ${metadata.roomName ?? "this room"}`;
+    case "room_pin":
+      return `📌 Pinned ${metadata.displayUrl ?? "a listing"}`;
+    case "keeper_invite":
+      return `@${metadata.inviterHandle ?? "keeper"} invited someone to ${metadata.roomName ?? "a room"}`;
+    case "keeper_level_up":
+      return `@${metadata.userHandle ?? "keeper"} became ${String(metadata.level ?? "keeper").replace(/_/g, " ")} in ${metadata.roomName ?? "a room"}`;
+    case "rival_gap":
+      return `${metadata.yours ?? "Listing"} vs ${metadata.rival ?? "rival"} — ${metadata.gapLabel ?? "gap updated"}`;
     default:
       return "Room activity";
   }

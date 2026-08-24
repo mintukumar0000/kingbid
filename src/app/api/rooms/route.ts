@@ -62,6 +62,7 @@ const createSchema = z.object({
   description: z.string().max(500).optional(),
   roomType: z.enum(["category", "geo", "founder_type", "tech"]).optional(),
   parentRoomId: z.string().uuid().optional(),
+  geoRelevanceNote: z.string().max(500).optional(),
 });
 
 export async function POST(request: Request) {
@@ -77,10 +78,14 @@ export async function POST(request: Request) {
   }
 
   const user = await getOrCreateSessionUser();
-  const room = await requestRoom(user.id, parsed.data);
-  return NextResponse.json({
-    id: room.id,
-    slug: room.slug,
-    status: room.status,
-  });
+  try {
+    const room = await requestRoom(user.id, parsed.data);
+    return NextResponse.json({
+      id: room.id,
+      slug: room.slug,
+      status: room.status,
+    });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 400 });
+  }
 }

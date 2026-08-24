@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getOrCreateSessionUser } from "@/lib/users";
-import { evaluateKeeperLevel } from "@/lib/keepers";
+import { evaluateKeeperLevel, getKeeperQuotas } from "@/lib/keepers";
 import { getRoomCommunityPayload } from "@/lib/room-stats";
 import { KEEPER_LEVEL_INFO } from "@/lib/keeper-privileges";
 import { prisma } from "@/lib/db";
@@ -31,9 +31,12 @@ export async function GET(
     select: { level: true },
   });
 
+  const quotas = await getKeeperQuotas(user.id);
+
   return NextResponse.json({
     ...payload,
     myKeeperLevel: myLevel?.level ?? (payload.isCurator ? "keeper" : "observer"),
     levelLadder: KEEPER_LEVEL_INFO,
+    quotas,
   });
 }

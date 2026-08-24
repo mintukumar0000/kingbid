@@ -102,3 +102,23 @@ export async function getUnderdogRow(boardId: string | null, limit = 10) {
     sacrificeScore: row.sacrificeScore,
   }));
 }
+
+export async function getListingSacrifice(listingId: string, boardId: string | null) {
+  const row = await prisma.underdogScore.findFirst({
+    where: { listingId, ...(boardId ? { boardId } : {}) },
+    orderBy: { computedAt: "desc" },
+    select: { sacrificeScore: true, revenueBand: true },
+  });
+  if (!row) return null;
+
+  const verified = await prisma.verification.findFirst({
+    where: { listingId, verificationType: "revenue_band", verifiedAt: { not: null } },
+    select: { id: true },
+  });
+
+  return {
+    sacrificeScore: row.sacrificeScore,
+    revenueBand: row.revenueBand,
+    revenueVerified: !!verified,
+  };
+}

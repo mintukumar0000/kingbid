@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { assertZeroStakesPrediction } from "@/lib/guardrails";
 import { bumpKingbidScore } from "@/lib/users";
 import { writePlatformEvent } from "@/lib/platform-events";
+import { canAddDiscoveryBet } from "@/lib/keepers";
 
 /** Free prediction — no payment path. Resolves nightly at midnight UTC. */
 export async function createCallItPrediction(
@@ -67,8 +68,8 @@ export async function resolveCallItPredictions(): Promise<number> {
 
 export async function addDiscoveryBet(userId: string, listingId: string) {
   assertZeroStakesPrediction();
-  const count = await prisma.discoveryList.count({ where: { userId } });
-  if (count >= 10) throw new Error("Discovery list capped at 10 bets.");
+  const gate = await canAddDiscoveryBet(userId);
+  if (!gate.ok) throw new Error(gate.error);
 
   await prisma.discoveryList.upsert({
     where: { userId_listingId: { userId, listingId } },

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { canManageRoom } from "@/lib/room-keeper-auth";
+import { canManageRoom, requireKeeperLevel } from "@/lib/room-keeper-auth";
 import { writePlatformEvent } from "@/lib/platform-events";
 
 export function startOfWeekUtc(d = new Date()): Date {
@@ -34,8 +34,9 @@ export async function createRoomWeeklyEvent(
   roomId: string,
   input: { title: string; description?: string }
 ) {
-  if (!(await canManageRoom(userId, roomId))) {
-    throw new Error("Senior Keeper or curator required to run weekly events.");
+  const gate = await requireKeeperLevel(userId, roomId, "senior_keeper");
+  if (!gate.ok && !(await canManageRoom(userId, roomId))) {
+    throw new Error(gate.error);
   }
 
   const title = input.title.trim();

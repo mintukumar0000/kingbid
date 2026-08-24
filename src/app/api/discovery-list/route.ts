@@ -4,13 +4,13 @@ import { prisma } from "@/lib/db";
 import { getOrCreateSessionUser, bumpKingbidScore } from "@/lib/users";
 import { addDiscoveryBet, getDiscoveryList } from "@/lib/kingmaker";
 import { resolveListingInput } from "@/lib/resolve-listing";
-import { evaluateKeeperLevel } from "@/lib/keepers";
+import { evaluateKeeperLevel, getKeeperQuotas } from "@/lib/keepers";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const user = await getOrCreateSessionUser();
-  const list = await getDiscoveryList(user.id);
+  const [list, quotas] = await Promise.all([getDiscoveryList(user.id), getKeeperQuotas(user.id)]);
   return NextResponse.json({
     bets: list.map((d) => ({
       listingId: d.listingId,
@@ -20,7 +20,10 @@ export async function GET() {
       currentBid: d.listing.currentBid,
       calledAt: d.calledAt.toISOString(),
     })),
-    remaining: Math.max(0, 10 - list.length),
+    remaining: quotas.discoveryRemaining,
+    limit: quotas.discoveryLimit,
+    level: quotas.level,
+    used: quotas.discoveryUsed,
   });
 }
 

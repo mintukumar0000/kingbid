@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/format";
 import { RelativeTime } from "@/components/RelativeTime";
 import { AdminInvitesPanel } from "@/components/AdminInvitesPanel";
 import { AdminRoomsPanel } from "@/components/AdminRoomsPanel";
+import { AdminCategoryProposalsPanel } from "@/components/AdminCategoryProposalsPanel";
 
 interface AdminBid {
   id: string;
@@ -145,6 +146,7 @@ export default function AdminPage() {
             </div>
 
             <AdminRoomsPanel password={password} />
+            <AdminCategoryProposalsPanel password={password} />
             <AdminInvitesPanel password={password} />
           </>
         )}

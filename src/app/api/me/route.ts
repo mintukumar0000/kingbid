@@ -3,14 +3,14 @@ import { prisma } from "@/lib/db";
 import { getOrCreateSessionUser, getLatestKingbidScore } from "@/lib/users";
 import { getDiscoveryList } from "@/lib/kingmaker";
 import { getActiveSubscription, SUBSCRIPTION_TIERS } from "@/lib/subscriptions";
-import { canRequestRoom } from "@/lib/keepers";
+import { canRequestRoom, getKeeperQuotas } from "@/lib/keepers";
 
 export const dynamic = "force-dynamic";
 
 /** Current session founder — score, keeper levels, subscription. */
 export async function GET() {
   const user = await getOrCreateSessionUser();
-  const [score, subscription, keepers, discoveryCount, canCreateRoom] = await Promise.all([
+  const [score, subscription, keepers, discoveryCount, canCreateRoom, quotas] = await Promise.all([
     getLatestKingbidScore(user.id),
     getActiveSubscription(user.id),
     prisma.roomKeeper.findMany({
@@ -19,6 +19,7 @@ export async function GET() {
     }),
     prisma.discoveryList.count({ where: { userId: user.id } }),
     canRequestRoom(user.id),
+    getKeeperQuotas(user.id),
   ]);
 
   const pendingRoom = await prisma.room.findFirst({
@@ -42,6 +43,13 @@ export async function GET() {
     isPro: !!subscription,
     keeperLevels: keepers.map((k) => ({ room: k.room.name, slug: k.room.slug, level: k.level })),
     discoveryBets: discoveryCount,
+    discoveryLimit: quotas.discoveryLimit,
+    discoveryRemaining: quotas.discoveryRemaining,
+    keeperLevel: quotas.level,
+    roomsCurated: quotas.roomsCurated,
+    roomLimit: quotas.roomLimit,
+    roomsRemaining: quotas.roomsRemaining,
+    hasRoomPro: quotas.hasRoomPro,
     canCreateRoom,
     pendingRoomRequest: pendingRoom,
   });

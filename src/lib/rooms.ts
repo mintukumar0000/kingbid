@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { canRequestRoom } from "@/lib/keepers";
+import { canRequestRoom, canCreateAnotherRoom } from "@/lib/keepers";
 
 export async function resolveRoomByPath(segments: string[]) {
   if (segments.length === 0) return null;
@@ -55,8 +55,19 @@ export async function getRoomByCategorySlug(categorySlug: string) {
 
 export async function requestRoom(
   userId: string,
-  input: { slug: string; name: string; description?: string; roomType?: string; parentRoomId?: string }
+  input: {
+    slug: string;
+    name: string;
+    description?: string;
+    roomType?: string;
+    parentRoomId?: string;
+    geoRelevanceNote?: string;
+  }
 ) {
+  if (input.roomType === "geo" && !input.geoRelevanceNote?.trim()) {
+    throw new Error("Geographic rooms require a relevance note explaining local fit.");
+  }
+
   const allowed = await canRequestRoom(userId);
   if (!allowed) {
     return prisma.room.create({
@@ -67,14 +78,20 @@ export async function requestRoom(
       },
     });
   }
-  return prisma.room.create({
-    data: {
-      ...input,
-      curatorUserId: userId,
-      requesterId: userId,
-      status: "active",
-    },
-  }).then(async (room) => {
+
+  const roomGate = await canCreateAnotherRoom(userId);
+  if (!roomGate.ok) throw new Error(roomGate.error);
+
+  return prisma.room
+    .create({
+      data: {
+        ...input,
+        curatorUserId: userId,
+        requesterId: userId,
+        status: "active",
+      },
+    })
+    .then(async (room) => {
     await prisma.roomKeeper.upsert({
       where: { userId_roomId: { userId, roomId: room.id } },
       create: { userId, roomId: room.id, level: "keeper" },

@@ -4,6 +4,7 @@ import useSWR from "swr";
 import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
 import { keeperLevelRank, KEEPER_LEVEL_INFO } from "@/lib/keeper-privileges";
+import { KeeperUnlockRail } from "@/components/KeeperUnlockRail";
 
 type Payload = {
   myKeeperLevel: string;
@@ -11,6 +12,16 @@ type Payload = {
   canManage?: boolean;
   keepers: { handle: string; level: string; profileUrl: string }[];
   room: { keeperCount: number };
+  quotas?: {
+    level: string;
+    discoveryUsed: number;
+    discoveryLimit: number;
+    discoveryRemaining: number;
+    roomsCurated: number;
+    roomLimit: number;
+    roomsRemaining: number;
+    hasRoomPro?: boolean;
+  };
 };
 
 export function RoomKeeperPanel({ roomSlug }: { roomSlug: string }) {
@@ -72,12 +83,9 @@ export function RoomKeeperPanel({ roomSlug }: { roomSlug: string }) {
             Next → {next.label}: {next.howToEarn}
           </p>
         )}
-        {data.isCurator && data.myKeeperLevel === "observer" && (
-          <p className="mt-2 text-[11px] text-muted">
-            Curator privileges active. Add Discovery bets on /founders to raise your global keeper rank.
-          </p>
-        )}
       </div>
+
+      <KeeperUnlockRail myLevel={data.myKeeperLevel} isCurator={data.isCurator} quotas={data.quotas} />
 
       {data.keepers.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">

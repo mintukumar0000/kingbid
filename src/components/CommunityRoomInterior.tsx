@@ -1,12 +1,17 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RoomCommunityHeader } from "@/components/RoomCommunityHeader";
 import { RoomEventFeed } from "@/components/RoomEventFeed";
 import { RoomKeeperPanel } from "@/components/RoomKeeperPanel";
 import { RoomPinnedProducts, RoomKeeperTools } from "@/components/RoomKeeperTools";
 import { UnderdogRowSection } from "@/components/UnderdogRowSection";
+import { KeeperInviteTracker } from "@/components/KeeperInviteTracker";
 import { PAGE_WIDE } from "@/lib/layout";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 
 /** Community room UI for custom / nested rooms (not category ?room= pages). */
 export function CommunityRoomInterior({
@@ -18,8 +23,17 @@ export function CommunityRoomInterior({
   categorySlug?: string | null;
   roomName: string;
 }) {
+  const { data } = useSWR<{ room?: { sponsored?: boolean; sponsorLabel?: string | null; geoRelevanceNote?: string | null } }>(
+    `/api/rooms/${encodeURIComponent(roomSlug)}`,
+    fetcher
+  );
+
   return (
     <div className={`${PAGE_WIDE} pb-10 pt-6`}>
+      <Suspense fallback={null}>
+        <KeeperInviteTracker roomSlug={roomSlug} />
+      </Suspense>
+
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/rooms"
@@ -33,6 +47,18 @@ export function CommunityRoomInterior({
           </Link>
         )}
       </div>
+
+      {data?.room?.sponsored && (
+        <p className="mb-4 rounded-full border border-accent/30 bg-accent-soft px-3 py-1.5 text-[12px] font-semibold text-accent">
+          Sponsored placement{data.room.sponsorLabel ? `: ${data.room.sponsorLabel}` : ""} — does not affect rank
+        </p>
+      )}
+
+      {data?.room?.geoRelevanceNote && (
+        <p className="mb-4 text-[13px] text-muted">
+          <span className="font-semibold text-foreground">Geo relevance:</span> {data.room.geoRelevanceNote}
+        </p>
+      )}
 
       <RoomCommunityHeader roomSlug={roomSlug} />
 

@@ -264,6 +264,7 @@ model User {
   followers         FounderFollow[]     @relation("Followers")
   roomPins          RoomPin[]
   weeklyEvents      RoomWeeklyEvent[]
+  categoryProposals CategoryProposal[]
 
   @@map("users")
 }
@@ -285,6 +286,9 @@ model Room {
   requesterId   String?  @map("requester_id")
   requester     User?    @relation("RoomRequester", fields: [requesterId], references: [id])
   status        String   @default("active")
+  sponsored     Boolean  @default(false)
+  sponsorLabel  String?  @map("sponsor_label")
+  geoRelevanceNote String? @map("geo_relevance_note")
   createdAt     DateTime @default(now()) @map("created_at")
 
   keepers        RoomKeeper[]
@@ -367,6 +371,20 @@ model RoomWeeklyEvent {
 
   @@index([roomId, weekStart(sort: Desc)])
   @@map("room_weekly_events")
+}
+
+model CategoryProposal {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  slug        String
+  name        String
+  description String   @default("")
+  status      String   @default("pending")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId, status])
+  @@map("category_proposals")
 }
 
 model Dethronement {

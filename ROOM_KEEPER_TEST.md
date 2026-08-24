@@ -23,14 +23,18 @@ Use this checklist to test every Room Keeper feature end-to-end on your deployed
 
 | Level | How to earn | What to test |
 |-------|-------------|--------------|
-| **Observer** | Visit any room | Room header, stats, keeper progress rail |
-| **Member** | 1 Discovery bet on `/founders` | Discovery form works |
-| **Scout** | 3 Discovery bets | Score starts climbing |
-| **Keeper** | Curate 1 active room + Score ≥ 20 | Request room at `/rooms/request` |
-| **Senior Keeper** | 3 active rooms + Score ≥ 50 | Pin listings + weekly events |
-| **Legendary** | 5 rooms + Score ≥ 100 | Profile badge |
+| **Observer** | Visit any room | Room header, stats, keeper **Unlock rail** (locked steps) |
+| **Member** | 1 Discovery bet on `/founders` | Discovery form works; **limit 1 bet** |
+| **Scout** | 3 Discovery bets | **Up to 10 bets**; score climbs |
+| **Keeper** | Curate 1 active room + Score ≥ 20 | Request room at `/rooms/request`; **1 room cap** |
+| **Senior Keeper** | 3 active rooms + Score ≥ 50 | Pin listings + weekly events; **3 room cap** |
+| **Legendary** | 5 rooms + Score ≥ 100 | **Category proposal** on `/founders`; **5 room cap** |
 
-**Shortcut for pin/events:** If you are the **curator** of a room, Keeper tools (pin + weekly event) appear even before Senior Keeper.
+**Discovery gates (P0):** Member = 1 bet, Scout+ = 10 bets. `/api/discovery-list` returns `limit`, `remaining`, `level`.
+
+**Room caps (P0):** Keeper = 1, Senior = 3, Legendary = 5. **Room Pro** adds +1 curated room slot.
+
+**Pin/events access:** Curator **or** Senior Keeper **or** Room Pro Keeper can pin/run events.
 
 ---
 
@@ -96,6 +100,7 @@ Use this checklist to test every Room Keeper feature end-to-end on your deployed
    - Slug: `india`
    - Name: `India`
    - Type: **Geo / region**
+   - **Geo relevance note** (required): e.g. `Hub for India-based SaaS founders`
 
 ### Create child sub-room
 
@@ -135,7 +140,7 @@ Use this checklist to test every Room Keeper feature end-to-end on your deployed
 2. Full room UI loads: header, follow, keeper panel, **Keeper tools**
 3. Pin from dropdown — uses **global live listings** when the room has no category board
 
-**Limits:** Max 3 pins per room.
+**Limits:** Max 3 pins per room (4 with **Room Pro** as curator).
 
 ---
 
@@ -246,6 +251,53 @@ Cross-check against **`/verify`** and **`VERIFICATION.md`** for broader v2 featu
 
 ---
 
+## 13. Underdog Row + Row of Kings (P1)
+
+1. Claim with a **revenue band** selected
+2. Homepage → **Row of Kings** section (5 crowns: Money, Sacrifice, Breakout, Traction, Community)
+3. Open **`/underdogs`** → full sacrifice leaderboard with verified badges
+4. Open **`/l/{slug}`** → **Sacrifice score** panel with band + conviction multiplier
+5. Room sidebar **Underdogs** widget shows band + verified tag
+
+**Pass:** Sacrifice rank is separate from money rank; verified bands show ✓.
+
+---
+
+## 14. Viral distribution (P2)
+
+1. Level up to Member+ on `/founders` → **Level up card** appears with X share + OG preview
+2. Copy invite link from share card → includes `?keeper={userId}`
+3. Open invite link in incognito on **`/rooms/{slug}?keeper=...`**
+4. Go to **`/feed`** (as room follower) → see **keeper invite** or **level up** activity
+5. Track a rival on `/founders` → place a bid → feed shows **rival gap** event after settlement
+
+**Pass:** Share card, keeper refs, and rival gap events appear in follow feed.
+
+---
+
+## 15. Legendary + sponsored + Room Pro (P3)
+
+### Category proposals (Legendary)
+
+1. Reach Legendary (5 rooms + score 100) — or test via admin seed
+2. **`/founders`** → **Propose official category** form
+3. **`/admin`** → **Category proposals** → Approve
+4. New category room appears on `/rooms`
+
+### Sponsored rooms
+
+1. Admin sets `sponsored=true` + `sponsorLabel` on a room (DB or future admin UI)
+2. Room page shows **Sponsored placement** badge — does not affect rank
+
+### Room Pro
+
+1. Subscribe at **`/pricing`** → Room Pro
+2. **`/api/me`** shows `hasRoomPro: true`, `roomLimit` +1
+3. Keeper tools unlock at Keeper level (not only Senior) for pins/events
+4. Curator gets +1 pin slot (4 max)
+
+---
+
 ## Quick URLs
 
 | Page | URL |
@@ -256,5 +308,7 @@ Cross-check against **`/verify`** and **`VERIFICATION.md`** for broader v2 featu
 | Follow feed | `/feed` |
 | Request room | `/rooms/request` |
 | Geo nested | `/rooms/india/saas` |
+| Underdog Row | `/underdogs` |
+| Row of Kings | `/#row-of-kings` |
 | Your profile | `/founders` → link at bottom, or `/profile/{userId}` from `/api/me` |
 | Admin approve | `/admin` |

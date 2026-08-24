@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { canManageRoom, MAX_PINS_PER_ROOM } from "@/lib/room-keeper-auth";
+import { canManageRoom, maxPinsForRoom } from "@/lib/room-keeper-auth";
 import { writePlatformEvent } from "@/lib/platform-events";
 
 export async function getRoomPins(roomId: string) {
@@ -35,7 +35,7 @@ export async function getRoomPins(roomId: string) {
 
 export async function pinListing(userId: string, roomId: string, listingSlug: string) {
   if (!(await canManageRoom(userId, roomId))) {
-    throw new Error("Senior Keeper or curator required to pin listings.");
+    throw new Error("Senior Keeper, Room Pro keeper, or curator required to pin listings.");
   }
 
   const room = await prisma.room.findUnique({
@@ -67,8 +67,9 @@ export async function pinListing(userId: string, roomId: string, listingSlug: st
   }
 
   const count = await prisma.roomPin.count({ where: { roomId } });
-  if (count >= MAX_PINS_PER_ROOM) {
-    throw new Error(`Maximum ${MAX_PINS_PER_ROOM} pins per room. Unpin one first.`);
+  const maxPins = await maxPinsForRoom(userId, roomId);
+  if (count >= maxPins) {
+    throw new Error(`Maximum ${maxPins} pins per room. Unpin one first.`);
   }
 
   const pin = await prisma.roomPin.create({

@@ -12,6 +12,13 @@ export default function RequestRoomPage() {
     "/api/rooms",
     fetcher
   );
+  const { data: me } = useSWR<{
+    kingbidScore: number;
+    canCreateRoom: boolean;
+    roomsCurated: number;
+    roomLimit: number;
+    roomsRemaining: number;
+  }>("/api/me", fetcher);
   const geoParents = (roomsData?.rooms ?? []).filter((r) => r.roomType === "geo");
 
   const [slug, setSlug] = useState("");
@@ -19,6 +26,7 @@ export default function RequestRoomPage() {
   const [description, setDescription] = useState("");
   const [roomType, setRoomType] = useState("founder_type");
   const [parentRoomId, setParentRoomId] = useState("");
+  const [geoRelevanceNote, setGeoRelevanceNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ slug: string; status: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,6 +47,7 @@ export default function RequestRoomPage() {
         description,
         roomType,
         ...(parentRoomId ? { parentRoomId } : {}),
+        ...(geoRelevanceNote.trim() ? { geoRelevanceNote: geoRelevanceNote.trim() } : {}),
       }),
     });
     const data = await res.json();
@@ -58,6 +67,12 @@ export default function RequestRoomPage() {
         <p className="mt-2 text-[14px] text-muted">
           Score ≥ 30 for instant approval. Geo sub-rooms nest under a parent (e.g. india → saas).
         </p>
+        {me && (
+          <p className="mt-2 text-[13px] text-muted">
+            Your rooms: {me.roomsCurated ?? 0}/{me.roomLimit ?? 1} curated
+            {(me.roomsRemaining ?? 0) <= 0 ? " · at keeper cap — level up or get Room Pro" : ""}
+          </p>
+        )}
 
         {success ? (
           <div className="mt-8 rounded-2xl border border-green/30 bg-green/5 p-6">
@@ -111,6 +126,19 @@ export default function RequestRoomPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+            {roomType === "geo" && (
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Geo relevance note (required)</label>
+                <textarea
+                  className={field}
+                  rows={2}
+                  value={geoRelevanceNote}
+                  onChange={(e) => setGeoRelevanceNote(e.target.value)}
+                  placeholder="Why this region matters — e.g. local SaaS founders hub for India"
+                  required
+                />
               </div>
             )}
             {error && <p className="text-sm text-red">{error}</p>}

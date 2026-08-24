@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { evaluateKeeperLevel, type KeeperLevel } from "@/lib/keepers";
 import { keeperLevelRank } from "@/lib/keeper-privileges";
+import { hasTier } from "@/lib/subscriptions";
 
 export async function getUserKeeperLevel(userId: string, roomId: string): Promise<KeeperLevel> {
   await evaluateKeeperLevel(userId, roomId);
@@ -38,11 +39,21 @@ export async function isRoomCurator(userId: string, roomId: string): Promise<boo
   return !!room;
 }
 
-/** Curator or senior+ keeper in this room can manage pins/events. */
+/** Curator, senior+ keeper, or Room Pro keeper can manage pins/events. */
 export async function canManageRoom(userId: string, roomId: string): Promise<boolean> {
   if (await isRoomCurator(userId, roomId)) return true;
   const level = await getUserKeeperLevel(userId, roomId);
-  return keeperLevelRank(level) >= keeperLevelRank("senior_keeper");
+  if (keeperLevelRank(level) >= keeperLevelRank("senior_keeper")) return true;
+  if ((await hasTier(userId, "room_pro")) && keeperLevelRank(level) >= keeperLevelRank("keeper")) {
+    return true;
+  }
+  return false;
+}
+
+export async function maxPinsForRoom(userId: string, roomId: string): Promise<number> {
+  let max = MAX_PINS_PER_ROOM;
+  if ((await hasTier(userId, "room_pro")) && (await isRoomCurator(userId, roomId))) max += 1;
+  return max;
 }
 
 export const MAX_PINS_PER_ROOM = 3;

@@ -14,6 +14,9 @@ export const PLATFORM_EVENT_TYPES = [
   "room_weekly_event",
   "room_pin",
   "room_follow",
+  "keeper_invite",
+  "keeper_level_up",
+  "rival_gap",
 ] as const;
 
 export type PlatformEventType = (typeof PLATFORM_EVENT_TYPES)[number];
@@ -154,6 +157,12 @@ export function eventHeadline(
       return `📌 Pinned ${metadata.displayUrl ?? "a listing"}`;
     case "room_follow":
       return `👋 Someone followed ${metadata.roomName ?? "this room"}`;
+    case "keeper_invite":
+      return `@${metadata.inviterHandle ?? "keeper"} invited you to ${metadata.roomName ?? "a room"}`;
+    case "keeper_level_up":
+      return `@${metadata.userHandle ?? "keeper"} leveled up to ${String(metadata.level ?? "keeper").replace(/_/g, " ")} in ${metadata.roomName ?? "a room"}`;
+    case "rival_gap":
+      return `${metadata.yours ?? "You"} vs ${metadata.rival ?? "rival"} — ${metadata.gapLabel ?? "gap updated"}`;
     default:
       return "Activity on KingBid";
   }

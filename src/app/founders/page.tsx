@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
 import { Header } from "@/components/Header";
 import { DemoPreview, FOUNDER_FEATURE_DEMOS } from "@/components/FounderHubDemo";
+import { KeeperShareCard } from "@/components/KeeperShareCard";
 import { PAGE } from "@/lib/layout";
 import type { LeaderboardData } from "@/lib/leaderboard";
 
@@ -28,6 +29,8 @@ export default function FoundersPage() {
   const [rivalTheirs, setRivalTheirs] = useState("");
   const [callBoardId, setCallBoardId] = useState("");
   const [callListingSlug, setCallListingSlug] = useState("");
+  const [proposalSlug, setProposalSlug] = useState("");
+  const [proposalName, setProposalName] = useState("");
   const [msg, setMsg] = useState<Msg>(null);
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -115,6 +118,27 @@ export default function FoundersPage() {
     setLoading(null);
   }
 
+  async function submitCategoryProposal(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading("proposal");
+    setMsg(null);
+    const res = await fetch("/api/category-proposals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ slug: proposalSlug.trim(), name: proposalName.trim() }),
+    });
+    const d = await res.json();
+    if (res.ok) {
+      setMsg({ type: "ok", text: `Category proposal submitted: ${proposalSlug}` });
+      setProposalSlug("");
+      setProposalName("");
+    } else {
+      setMsg({ type: "err", text: d.error ?? "Proposal failed." });
+    }
+    setLoading(null);
+  }
+
   const field =
     "w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-[13px] outline-none focus:border-accent";
 
@@ -130,7 +154,11 @@ export default function FoundersPage() {
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <Stat label="Score" value={me?.kingbidScore ?? 0} />
-          <Stat label="Discovery" value={`${me?.discoveryBets ?? 0}/10`} />
+          <Stat
+            label="Discovery"
+            value={`${me?.discoveryBets ?? 0}/${me?.discoveryLimit ?? discovery?.limit ?? 10}`}
+            hint={me?.keeperLevel ? `${String(me.keeperLevel).replace(/_/g, " ")}` : undefined}
+          />
           <Stat
             label="Tier"
             value={me?.subscription?.label ?? me?.subscription?.tier ?? "Free"}
@@ -230,7 +258,10 @@ export default function FoundersPage() {
           ) : listings.length === 0 ? (
             <DemoPreview {...FOUNDER_FEATURE_DEMOS.discovery} />
           ) : null}
-          <p className="mt-2 text-[11px] text-muted">{discovery?.remaining ?? 10} slots left</p>
+          <p className="mt-2 text-[11px] text-muted">
+            {discovery?.remaining ?? me?.discoveryRemaining ?? 10} slots left
+            {me?.keeperLevel === "member" ? " · Scout unlocks at 3 picks total" : ""}
+          </p>
         </section>
 
         {/* RIVALS */}
@@ -333,6 +364,13 @@ export default function FoundersPage() {
           <p className="mt-1 text-[12px] text-muted">
             Observer → Member → Scout → Keeper → Senior Keeper → Legendary. Earn through discovery and curation.
           </p>
+          {me?.roomsCurated != null && (
+            <p className="mt-2 text-[12px] text-muted">
+              Rooms curated: {me.roomsCurated}/{me.roomLimit}
+              {me.hasRoomPro ? " · Room Pro +1 slot" : ""}
+              {me.roomsRemaining === 0 ? " · at cap" : ""}
+            </p>
+          )}
           {me?.keeperLevels?.length > 0 ? (
             <p className="mt-3 text-[13px]">
               Your levels:{" "}
@@ -351,7 +389,45 @@ export default function FoundersPage() {
               ))}
             </ul>
           </details>
+
+          {me?.keeperLevel === "legendary_keeper" && (
+            <form onSubmit={submitCategoryProposal} className="mt-4 space-y-2 border-t border-border pt-4">
+              <h3 className="text-[13px] font-semibold">Propose official category</h3>
+              <p className="text-[11px] text-muted">Legendary privilege — admin approves before it goes live.</p>
+              <input
+                className={field}
+                placeholder="slug e.g. ai-tools"
+                value={proposalSlug}
+                onChange={(e) => setProposalSlug(e.target.value)}
+                required
+              />
+              <input
+                className={field}
+                placeholder="Display name"
+                value={proposalName}
+                onChange={(e) => setProposalName(e.target.value)}
+                required
+              />
+              <button
+                type="submit"
+                disabled={loading === "proposal"}
+                className="rounded-full bg-accent px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-50"
+              >
+                {loading === "proposal" ? "Submitting…" : "Submit proposal"}
+              </button>
+            </form>
+          )}
         </section>
+
+        {me?.keeperLevel && me.keeperLevel !== "observer" && (
+          <section className="luxury-card p-5 lg:col-span-2">
+            <KeeperShareCard
+              level={me.keeperLevel}
+              userHandle={me.handle ?? undefined}
+              userId={me.userId}
+            />
+          </section>
+        )}
         </div>
 
         {me?.userId && (

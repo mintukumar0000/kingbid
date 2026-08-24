@@ -5,7 +5,9 @@ import { Header } from "@/components/Header";
 import { RankHistoryChart } from "@/components/RankHistoryChart";
 import { ShareButtons } from "@/components/ShareButtons";
 import { getListingBySlug, getRankHistory } from "@/lib/listing-page";
+import { getListingSacrifice } from "@/lib/underdog";
 import { formatMoney } from "@/lib/format";
+import { REVENUE_BAND_LABELS, type RevenueBand } from "@/lib/revenue-bands";
 import { BRAND_LABEL, SITE_NAME } from "@/lib/brand";
 import { ogClaimUrl } from "@/lib/site";
 import { RelativeTime } from "@/components/RelativeTime";
@@ -39,6 +41,7 @@ export default async function ListingPage({ params }: Props) {
   if (!listing) notFound();
 
   const history = await getRankHistory(listing.id);
+  const sacrifice = await getListingSacrifice(listing.id, listing.boardId);
   const shareText = `${listing.displayUrl} is #${listing.rank} on ${SITE_NAME} with a ${formatMoney(listing.currentBid)} bid. Think you can take our spot?`;
   const clickUrl = `/go/${listing.id}`;
 
@@ -93,6 +96,39 @@ export default async function ListingPage({ params }: Props) {
             <RankHistoryChart history={history} />
           </div>
         </section>
+
+        {(sacrifice || listing.revenueBand) && (
+          <section className="mt-8 rounded-[20px] border border-border bg-surface p-6 shadow-[var(--shadow)]">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-accent">🐕 Underdog</p>
+            <h2 className="mt-1 text-[15px] font-semibold">Sacrifice score</h2>
+            {listing.revenueBand ? (
+              <>
+                <p className="mt-2 text-[13px] text-muted">
+                  Band: {REVENUE_BAND_LABELS[listing.revenueBand as RevenueBand] ?? listing.revenueBand}
+                  {sacrifice?.revenueVerified ? (
+                    <span className="ml-1 text-green">✓ verified</span>
+                  ) : (
+                    <span className="ml-1">(self-reported)</span>
+                  )}
+                </p>
+                {sacrifice ? (
+                  <p className="mt-2 font-mono-label text-[28px] font-semibold text-accent">
+                    {sacrifice.sacrificeScore.toFixed(2)}× conviction
+                  </p>
+                ) : (
+                  <p className="mt-2 text-[13px] text-muted">Score updates after your next bid.</p>
+                )}
+                <Link href="/underdogs" className="mt-3 inline-block text-[13px] font-medium text-accent hover:underline">
+                  See full Underdog Row →
+                </Link>
+              </>
+            ) : (
+              <p className="mt-2 text-[13px] text-muted">
+                Pick a revenue band when claiming to join the Underdog Row — separate from money rank.
+              </p>
+            )}
+          </section>
+        )}
 
         <section className="mt-8 rounded-[20px] border border-border bg-surface p-6 shadow-[var(--shadow)]">
           <h2 className="text-[15px] font-semibold">Share & earn referral credit</h2>

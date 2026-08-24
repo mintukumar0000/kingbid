@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/format";
 import { REVENUE_BAND_LABELS, type RevenueBand } from "@/lib/revenue-bands";
 import { RelativeTime } from "@/components/RelativeTime";
 import { HomeLiveBattleStarter } from "@/components/HomeLiveBattleStarter";
+import { RowOfKings } from "@/components/RowOfKings";
 import { PAGE_WIDE } from "@/lib/layout";
 
 interface EcosystemData {
@@ -179,6 +180,17 @@ export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => 
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ROW OF KINGS */}
+      <section className="mb-10" id="row-of-kings">
+        <SectionBlock
+          eyebrow="Five crowns"
+          title="Row of Kings"
+          href="/underdogs"
+          linkLabel="Underdog Row"
+        />
+        <RowOfKings />
       </section>
 
       {/* BREAKOUT · UNDERDOGS · MOMENTUM */}

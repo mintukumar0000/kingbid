@@ -12,6 +12,7 @@ import { tweetTopSpotChange } from "@/lib/twitter";
 import { getGlobalBoardId, recordReignChange } from "@/lib/reign";
 import { writePlatformEvent } from "@/lib/platform-events";
 import { recomputeUnderdogForListing } from "@/lib/underdog";
+import { emitRivalGapEvents } from "@/lib/rivals-feed";
 
 async function handleTopSpotChange(
   boardId: string,
@@ -91,6 +92,8 @@ export async function settlePayment(paymentId: string): Promise<void> {
     if (bid.listing.revenueBand) {
       await recomputeUnderdogForListing(result.listingId, bid.listing.boardId);
     }
+
+    await emitRivalGapEvents(result.listingId, result.newTotal);
   }
 
   const rank = await getRankForListing(result.listingId);

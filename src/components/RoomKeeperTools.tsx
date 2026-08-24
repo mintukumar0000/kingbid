@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
+import type { LeaderboardData } from "@/lib/leaderboard";
 
 type Pin = {
   id: string;
@@ -37,12 +38,24 @@ export function RoomPinnedProducts({ roomSlug }: { roomSlug: string }) {
   );
 }
 
-export function RoomKeeperTools({ roomSlug }: { roomSlug: string }) {
+export function RoomKeeperTools({
+  roomSlug,
+  categorySlug,
+}: {
+  roomSlug: string;
+  categorySlug?: string | null;
+}) {
   const { data, mutate } = useSWR<{
     canManage: boolean;
+    isCurator?: boolean;
     myKeeperLevel: string;
-    room: { boardId: string | null };
+    room: { boardId: string | null; categorySlug?: string | null };
   }>(`/api/rooms/${encodeURIComponent(roomSlug)}`, fetcher);
+
+  const listingsUrl = categorySlug
+    ? `/api/listings?limit=30&category=${encodeURIComponent(categorySlug)}`
+    : "/api/listings?limit=30";
+  const { data: board } = useSWR<LeaderboardData>(listingsUrl, fetcher);
 
   const { data: pinData, mutate: mutatePins } = useSWR<{ pins: Pin[] }>(
     `/api/rooms/${encodeURIComponent(roomSlug)}/pins`,
@@ -54,7 +67,10 @@ export function RoomKeeperTools({ roomSlug }: { roomSlug: string }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
 
-  if (!data?.canManage) return null;
+  const canUse = data?.canManage || data?.isCurator;
+  if (!canUse) return null;
+
+  const listings = board?.entries ?? [];
 
   async function pin(e: React.FormEvent) {
     e.preventDefault();
@@ -70,7 +86,7 @@ export function RoomKeeperTools({ roomSlug }: { roomSlug: string }) {
     setLoading(null);
     if (res.ok) {
       setListingSlug("");
-      setMsg("Pinned.");
+      setMsg("Pinned — shows above the room feed.");
       mutatePins();
       mutate();
     } else {
@@ -112,25 +128,43 @@ export function RoomKeeperTools({ roomSlug }: { roomSlug: string }) {
   return (
     <div className="luxury-card mt-4 p-5">
       <p className="font-display text-[15px] font-semibold">Keeper tools</p>
-      <p className="mt-1 text-[12px] text-muted">Senior Keeper — pin up to 3 products · run weekly events</p>
+      <p className="mt-1 text-[12px] text-muted">
+        {data?.isCurator ? "Curator" : "Senior Keeper"} — pin up to 3 products · run weekly events
+      </p>
 
       {msg && <p className="mt-2 text-[12px] text-accent">{msg}</p>}
 
-      <form onSubmit={pin} className="mt-3 flex gap-2">
-        <input
-          className={field}
-          placeholder="Listing slug to pin"
-          value={listingSlug}
-          onChange={(e) => setListingSlug(e.target.value)}
-        />
-        <button
-          type="submit"
-          disabled={loading === "pin" || !listingSlug.trim()}
-          className="shrink-0 rounded-full bg-accent px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-50"
-        >
-          Pin
-        </button>
-      </form>
+      {listings.length > 0 ? (
+        <form onSubmit={pin} className="mt-3 flex flex-wrap gap-2">
+          <select
+            className={`${field} min-w-[200px] flex-1`}
+            value={listingSlug}
+            onChange={(e) => setListingSlug(e.target.value)}
+          >
+            <option value="">Pick a listing to pin…</option>
+            {listings.map((l) => (
+              <option key={l.id} value={l.slug}>
+                #{l.rank} {l.displayUrl} ({l.slug})
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={loading === "pin" || !listingSlug.trim()}
+            className="shrink-0 rounded-full bg-accent px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-50"
+          >
+            Pin
+          </button>
+        </form>
+      ) : (
+        <p className="mt-3 text-[12px] text-muted">
+          No listings to pin yet —{" "}
+          <Link href="/#claim" className="text-accent hover:underline">
+            claim #1
+          </Link>{" "}
+          first.
+        </p>
+      )}
 
       {pinData?.pins.length ? (
         <ul className="mt-2 space-y-1 text-[12px]">

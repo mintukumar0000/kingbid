@@ -79,7 +79,7 @@ export function CategoryRoom({
         </div>
 
         <RoomPinnedProducts roomSlug={slug} />
-        <RoomKeeperTools roomSlug={slug} />
+        <RoomKeeperTools roomSlug={slug} categorySlug={slug} />
 
         <div className="room-interior-reveal mt-4 flex flex-wrap items-center justify-center gap-4 text-[12px] text-muted" style={{ animationDelay: "120ms" }}>
           <Link href="/founders" className="font-medium text-accent hover:underline">

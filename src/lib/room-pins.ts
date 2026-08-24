@@ -42,19 +42,29 @@ export async function pinListing(userId: string, roomId: string, listingSlug: st
     where: { id: roomId },
     select: { categoryId: true },
   });
-  if (!room?.categoryId) throw new Error("Room has no board — cannot pin.");
+  if (!room) throw new Error("Room not found.");
 
-  const board = await prisma.board.findFirst({
-    where: { categoryId: room.categoryId, region: null },
-    select: { id: true },
-  });
-  if (!board) throw new Error("Board not found.");
+  let listing: { id: string; displayUrl: string } | null = null;
 
-  const listing = await prisma.listing.findFirst({
-    where: { boardId: board.id, slug: listingSlug, status: "active", currentBid: { gt: 0 } },
-    select: { id: true, displayUrl: true },
-  });
-  if (!listing) throw new Error("Listing not found on this room board.");
+  if (room.categoryId) {
+    const board = await prisma.board.findFirst({
+      where: { categoryId: room.categoryId, region: null },
+      select: { id: true },
+    });
+    if (!board) throw new Error("Board not found.");
+
+    listing = await prisma.listing.findFirst({
+      where: { boardId: board.id, slug: listingSlug, status: "active", currentBid: { gt: 0 } },
+      select: { id: true, displayUrl: true },
+    });
+    if (!listing) throw new Error("Listing not found on this room board.");
+  } else {
+    listing = await prisma.listing.findFirst({
+      where: { slug: listingSlug, status: "active", currentBid: { gt: 0 } },
+      select: { id: true, displayUrl: true },
+    });
+    if (!listing) throw new Error("Listing not found — pick from the dropdown.");
+  }
 
   const count = await prisma.roomPin.count({ where: { roomId } });
   if (count >= MAX_PINS_PER_ROOM) {

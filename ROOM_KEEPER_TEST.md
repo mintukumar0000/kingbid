@@ -118,23 +118,24 @@ Use this checklist to test every Room Keeper feature end-to-end on your deployed
 
 ## 6. Pin products (Senior Keeper / Curator)
 
-**Requires:** A listing on that room's board + curator or Senior Keeper access.
+**Requires:** At least 1 live listing on the board + curator or Senior Keeper access.
 
-1. Enter a category room where you are **curator** (or have Senior Keeper level)
+### Category rooms (`/?room=ai-agents`)
+
+1. Enter a category room where you are **curator** (e.g. your approved room linked to a category)
 2. Scroll to **Keeper tools**
-3. Enter a listing **slug** from that room's leaderboard
+3. Pick a listing from the **dropdown** (from that room's leaderboard)
 4. Click **Pin**
-5. **Pinned by keepers** section appears above leaderboard
+5. **📌 Pinned by keepers** row appears above the bid form
 6. Click **Unpin** to remove
 
-**Limits:** Max 3 pins per room.
+### Custom community rooms (`/rooms/india-saas`)
 
-**API:**
-```bash
-curl -X POST https://YOUR_DOMAIN/api/rooms/ai-agents/pins \
-  -H "Content-Type: application/json" \
-  -d '{"listingSlug":"YOUR_SLUG"}' -b cookies.txt
-```
+1. Go to **`/rooms/{your-room-slug}`** (e.g. `/rooms/india-saas` where you are curator)
+2. Full room UI loads: header, follow, keeper panel, **Keeper tools**
+3. Pin from dropdown — uses **global live listings** when the room has no category board
+
+**Limits:** Max 3 pins per room.
 
 ---
 
@@ -158,26 +159,35 @@ curl -X POST https://YOUR_DOMAIN/api/rooms/ai-agents/weekly-events \
 
 ## 8. Follow a founder
 
-1. Open a keeper profile: **`/profile/{userId}`** (link from room header)
-2. Click **Follow founder**
-3. Go to **`/feed`** → founder listed under **Founders**
-4. Their Discovery bet activity appears in feed
+1. Open **another** founder's profile: **`/profile/{userId}`** (link from room header — not your own)
+2. Click **Follow founder** → button becomes **Following**
+3. Go to **`/feed`** → founder listed under **Founders you follow**
+4. Feed shows `Following @handle — discovery picks & activity`
+5. Their Discovery bet activity appears when they add picks
 
-**Second browser:** Use Account B to follow Account A's profile and confirm feed updates.
+**On your own profile:** No follow button — shows "This is your profile". **Founder followers** stat counts people following you.
 
 ---
 
-## 9. Profile stats (fixed metrics)
+## 9. Profile stats + homepage profile chip
+
+### Homepage stats bar
+
+1. On **`/`**, the stats bar shows a **profile avatar** (initial in orange circle)
+2. Click it → opens **`/profile/{your-id}`** with score, rooms, discovery list
+
+### Profile page
 
 On **`/profile/{your-id}`** confirm:
 
 | Stat | Meaning |
 |------|---------|
 | **Room members** | People following your curated/keeper rooms (follow graph, not listing count) |
+| **Founder followers** | People who clicked **Follow founder** on your profile |
 | **Discovery picks** | Your Discovery list size |
 | **Successful calls** | Picks that **reached #1 at any point after** you added them (uses reign history) |
 
-**Pass:** Labels match behavior; numbers change when you follow rooms or hit #1 calls.
+**Pass:** Labels match behavior; numbers change when others follow you or your rooms.
 
 ---
 
@@ -212,15 +222,27 @@ Cross-check against **`/verify`** and **`VERIFICATION.md`** for broader v2 featu
 
 ---
 
+## UI checks (new)
+
+| Check | Where | Pass |
+|-------|-------|------|
+| No scrolling ticker above nav | Homepage | Dark "joined the kingdom" bar **removed** |
+| Dark mode toggle | Bottom-right floating button (all pages) | Moon/sun icon **not** in nav |
+| Profile chip | Homepage stats bar | Avatar links to your profile |
+
+---
+
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
-| Keeper tools not visible | Must be **curator** of that room OR Senior Keeper+ globally |
-| Pin fails "Listing not found" | Slug must be on **that room's** board |
+| Keeper tools not visible | Must be **curator** of that room OR Senior Keeper+; open **`/rooms/{slug}`** for custom rooms |
+| Pin fails "Listing not found" | Category room: listing must be on that room's board. Custom room: pick from global dropdown |
+| Pin section missing | Go to **`/rooms/india-saas`** not only `/founders`; category rooms use `/?room=slug` |
+| Follow founder does nothing | Don't follow your own profile; use incognito Account B to follow you |
 | Feed empty | Follow at least one room or founder first |
 | Nested room 404 | Parent must exist and be `active`; child `parentRoomId` must match |
-| Members count 0 | Click **Follow room** — members = followers + non-observer keepers |
+| Members count 0 | **Room members** = others following your rooms — follow your own room with Account B to test |
 
 ---
 

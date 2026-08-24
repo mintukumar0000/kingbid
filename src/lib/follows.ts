@@ -124,6 +124,13 @@ export async function getFollowFeed(userId: string, limit = 30) {
     headline: `Following ${f.room.name} — waiting for bids & crown changes`,
   }));
 
+  const founderFollowItems = founderFollows.map((f) => ({
+    type: "founder_subscribed" as const,
+    at: f.createdAt.toISOString(),
+    founderId: f.followingId,
+    headline: `Following @${f.following.handle ?? f.following.name ?? "founder"} — discovery picks & activity`,
+  }));
+
   const feed = [
     ...roomEvents.map((e) => ({
       type: "room_event" as const,
@@ -134,6 +141,7 @@ export async function getFollowFeed(userId: string, limit = 30) {
     })),
     ...founderActivity.flat(),
     ...followItems,
+    ...founderFollowItems,
   ]
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
     .slice(0, limit);

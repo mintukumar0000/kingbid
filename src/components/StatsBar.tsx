@@ -18,6 +18,36 @@ export interface PlatformStats {
   revenueLastHour: number;
 }
 
+type Me = {
+  userId: string;
+  handle: string | null;
+  kingbidScore: number;
+};
+
+function ProfileChip() {
+  const { data: me } = useSWR<Me>("/api/me", fetcher);
+  if (!me?.userId) return null;
+
+  const label = me.handle ? `@${me.handle}` : "You";
+  const initial = (me.handle?.[0] ?? "K").toUpperCase();
+
+  return (
+    <>
+      <span className="text-muted/50">·</span>
+      <Link
+        href={`/profile/${me.userId}`}
+        title={`${label} · Score ${me.kingbidScore} — view profile`}
+        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-0.5 font-medium text-foreground/85 transition-colors hover:border-accent hover:text-accent"
+      >
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
+          {initial}
+        </span>
+        <span className="hidden sm:inline">{label}</span>
+      </Link>
+    </>
+  );
+}
+
 export function StatsBar() {
   const { data } = useSWR<PlatformStats>("/api/stats", fetcher, { refreshInterval: 20_000 });
 
@@ -31,6 +61,7 @@ export function StatsBar() {
       <span className="tabular text-foreground/75">
         {liveStat(data?.totalVisitors)} visitors since launch
       </span>
+      <ProfileChip />
       <span className="text-muted/50">·</span>
       <Link
         href="/stats"

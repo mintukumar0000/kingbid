@@ -5,6 +5,7 @@ import { getDiscoveryList } from "@/lib/kingmaker";
 import { getKeeperProfileStats } from "@/lib/keeper-profile";
 import { keeperLevelLabel, keeperLevelRank } from "@/lib/keeper-privileges";
 import { formatMoney } from "@/lib/format";
+import { getOrCreateSessionUser } from "@/lib/users";
 import { Header } from "@/components/Header";
 import { FollowFounderButton } from "@/components/FollowFounderButton";
 import { PAGE } from "@/lib/layout";
@@ -18,6 +19,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     select: { id: true, handle: true, name: true, email: true, createdAt: true },
   });
   if (!user) notFound();
+
+  const me = await getOrCreateSessionUser();
+  const isSelf = me.id === user.id;
 
   const [score, discovery, keepers, keeperStats] = await Promise.all([
     prisma.kingbidScore.findFirst({
@@ -51,11 +55,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         <p className="mt-1 text-[13px] text-muted">
           Founded {user.createdAt.toLocaleDateString(undefined, { month: "short", year: "numeric" })}
         </p>
-        <FollowFounderButton userId={user.id} />
+        <FollowFounderButton userId={user.id} isSelf={isSelf} />
 
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
           <ProfileStat label="Kingbid Score" value={String(score?.score ?? 0)} />
           <ProfileStat label="Room members" value={keeperStats.membersInRooms.toLocaleString()} hint="Followers across your rooms" />
+          <ProfileStat label="Founder followers" value={keeperStats.founderFollowers.toLocaleString()} hint="People following you" />
           <ProfileStat label="Discovery picks" value={keeperStats.productsDiscovered.toLocaleString()} />
           <ProfileStat label="Successful calls" value={keeperStats.successfulProducts.toLocaleString()} hint="Picks that hit #1" />
         </div>
@@ -66,7 +71,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <ul className="mt-3 space-y-2 text-[14px]">
               {keeperStats.rooms.map((r) => (
                 <li key={`${r.slug}-${r.role}`} className="flex items-center justify-between">
-                  <Link href={`/?room=${r.slug}`} className="font-medium hover:text-accent hover:underline">
+                  <Link href={r.enterUrl} className="font-medium hover:text-accent hover:underline">
                     {r.name}
                   </Link>
                   <span className="text-[12px] text-muted">{r.role}</span>

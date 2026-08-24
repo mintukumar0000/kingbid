@@ -4,12 +4,20 @@ import useSWR from "swr";
 import { useState } from "react";
 import { fetcher } from "@/lib/fetcher";
 
-export function FollowFounderButton({ userId }: { userId: string }) {
+export function FollowFounderButton({ userId, isSelf }: { userId: string; isSelf?: boolean }) {
   const { data, mutate } = useSWR<{ following: boolean }>(
-    `/api/founders/${encodeURIComponent(userId)}/follow`,
+    isSelf ? null : `/api/founders/${encodeURIComponent(userId)}/follow`,
     fetcher
   );
   const [loading, setLoading] = useState(false);
+
+  if (isSelf) {
+    return (
+      <p className="mt-4 text-[13px] text-muted">
+        This is your profile — share the link so others can follow you.
+      </p>
+    );
+  }
 
   async function toggle() {
     setLoading(true);

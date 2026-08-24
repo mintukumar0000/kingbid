@@ -23,7 +23,14 @@ export async function getKeeperProfileStats(userId: string) {
   const [curatedRooms, keeperRows, discovery, followStats] = await Promise.all([
     prisma.room.findMany({
       where: { curatorUserId: userId, status: "active" },
-      select: { id: true, slug: true, name: true, categoryId: true, createdAt: true },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        categoryId: true,
+        createdAt: true,
+        category: { select: { slug: true } },
+      },
     }),
     prisma.roomKeeper.findMany({
       where: { userId, level: { not: "observer" } },
@@ -78,10 +85,20 @@ export async function getKeeperProfileStats(userId: string) {
   const successfulProducts = await countSuccessfulDiscoveryCalls(userId, discovery);
 
   const roomsListed = [
-    ...curatedRooms.map((r) => ({ slug: r.slug, name: r.name, role: "Curator" as const })),
+    ...curatedRooms.map((r) => ({
+      slug: r.slug,
+      name: r.name,
+      role: "Curator" as const,
+      enterUrl: r.category?.slug ? `/?room=${r.category.slug}` : `/rooms/${r.slug}`,
+    })),
     ...keeperRows
       .filter((k) => !curatedRooms.some((c) => c.id === k.roomId))
-      .map((k) => ({ slug: k.room.slug, name: k.room.name, role: keeperLevelLabel(k.level) })),
+      .map((k) => ({
+        slug: k.room.slug,
+        name: k.room.name,
+        role: keeperLevelLabel(k.level),
+        enterUrl: `/rooms/${k.room.slug}`,
+      })),
   ];
 
   return {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, IBM_Plex_Mono } from "next/font/google";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeToggleFab } from "@/components/ThemeToggleFab";
 import { Footer } from "@/components/Footer";
 import { SITE_NAME } from "@/lib/brand";
 import "./globals.css";
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           {children}
           <Footer />
+          <ThemeToggleFab />
         </ThemeProvider>
       </body>
     </html>

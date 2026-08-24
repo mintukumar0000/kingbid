@@ -22,6 +22,8 @@ type FeedPayload = {
 export default function FeedPage() {
   const { data } = useSWR<FeedPayload>("/api/feed", fetcher, { refreshInterval: 20_000 });
 
+  const followingCount = (data?.followedRooms.length ?? 0) + (data?.followedFounders.length ?? 0);
+
   return (
     <main className="flex-1">
       <Header />
@@ -33,10 +35,28 @@ export default function FeedPage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <section className="luxury-card p-5 lg:col-span-2">
             <h2 className="font-display text-[16px] font-semibold">Recent activity</h2>
-            {!data?.feed.length ? (
+            {!data ? (
+              <p className="mt-3 text-[13px] text-muted">Loading…</p>
+            ) : !data.feed.length && followingCount === 0 ? (
               <p className="mt-3 text-[13px] text-muted">
-                Follow a room or founder to see activity here.
+                Follow a room on{" "}
+                <Link href="/rooms" className="text-accent hover:underline">
+                  /rooms
+                </Link>{" "}
+                or a keeper on their profile — activity shows up here.
               </p>
+            ) : !data.feed.length ? (
+              <div className="mt-3 space-y-2 text-[13px] text-muted">
+                <p>
+                  You&apos;re following {data.followedRooms.length} room
+                  {data.followedRooms.length === 1 ? "" : "s"}
+                  {data.followedFounders.length > 0
+                    ? ` and ${data.followedFounders.length} founder${data.followedFounders.length === 1 ? "" : "s"}`
+                    : ""}
+                  .
+                </p>
+                <p>Live events appear when founders bid, take the crown, or keepers pin products / run weekly events.</p>
+              </div>
             ) : (
               <ul className="mt-4 space-y-3">
                 {data.feed.map((item, i) => (
@@ -51,7 +71,7 @@ export default function FeedPage() {
 
           <div className="space-y-4">
             <section className="luxury-card p-5">
-              <h2 className="text-[14px] font-semibold">Rooms</h2>
+              <h2 className="text-[14px] font-semibold">Rooms you follow</h2>
               {!data?.followedRooms.length ? (
                 <p className="mt-2 text-[12px] text-muted">
                   <Link href="/rooms" className="text-accent hover:underline">
@@ -71,7 +91,7 @@ export default function FeedPage() {
               )}
             </section>
             <section className="luxury-card p-5">
-              <h2 className="text-[14px] font-semibold">Founders</h2>
+              <h2 className="text-[14px] font-semibold">Founders you follow</h2>
               {!data?.followedFounders.length ? (
                 <p className="mt-2 text-[12px] text-muted">Follow keepers from their profile page.</p>
               ) : (

@@ -87,11 +87,12 @@ export async function getRoomCommunityPayload(slugOrCategory: string, userId?: s
 
   const stats = await getRoomBoardStats(room.categoryId);
   const keepers = await getRoomKeepers(room.id);
-  const [memberCount, pins, following, canManage] = await Promise.all([
+  const [memberCount, pins, following, canManage, isCurator] = await Promise.all([
     getRoomMemberCount(room.id),
     getRoomPins(room.id),
     userId ? isFollowingRoom(userId, room.id) : Promise.resolve(false),
     userId ? canManageRoom(userId, room.id) : Promise.resolve(false),
+    userId ? Promise.resolve(room.curatorUserId === userId) : Promise.resolve(false),
   ]);
 
   const primaryKeeper =
@@ -162,5 +163,6 @@ export async function getRoomCommunityPayload(slugOrCategory: string, userId?: s
     pins,
     isFollowing: following,
     canManage,
+    isCurator,
   };
 }

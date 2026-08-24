@@ -74,6 +74,13 @@ export async function requestRoom(
       requesterId: userId,
       status: "active",
     },
+  }).then(async (room) => {
+    await prisma.roomKeeper.upsert({
+      where: { userId_roomId: { userId, roomId: room.id } },
+      create: { userId, roomId: room.id, level: "keeper" },
+      update: { level: "keeper", leveledUpAt: new Date() },
+    });
+    return room;
   });
 }
 

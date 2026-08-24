@@ -1,13 +1,23 @@
 import { prisma } from "@/lib/db";
 import { evaluateKeeperLevel } from "@/lib/keepers";
+import { writePlatformEvent } from "@/lib/platform-events";
 
 export async function followRoom(userId: string, roomId: string) {
   await evaluateKeeperLevel(userId, roomId);
-  return prisma.roomFollow.upsert({
+  const follow = await prisma.roomFollow.upsert({
     where: { userId_roomId: { userId, roomId } },
     create: { userId, roomId },
     update: {},
   });
+
+  const room = await prisma.room.findUnique({ where: { id: roomId }, select: { name: true } });
+  await writePlatformEvent({
+    eventType: "room_follow",
+    roomId,
+    metadata: { roomName: room?.name ?? "Room", userId },
+  });
+
+  return follow;
 }
 
 export async function unfollowRoom(userId: string, roomId: string) {
@@ -56,7 +66,18 @@ export async function getFollowFeed(userId: string, limit = 30) {
   const [roomFollows, founderFollows] = await Promise.all([
     prisma.roomFollow.findMany({
       where: { userId },
-      include: { room: { select: { id: true, slug: true, name: true, categoryId: true } } },
+      orderBy: { createdAt: "desc" },
+      include: {
+        room: {
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            categoryId: true,
+            category: { select: { slug: true } },
+          },
+        },
+      },
     }),
     prisma.founderFollow.findMany({
       where: { followerId: userId },
@@ -67,24 +88,14 @@ export async function getFollowFeed(userId: string, limit = 30) {
   const roomIds = roomFollows.map((f) => f.roomId);
   const founderIds = founderFollows.map((f) => f.followingId);
 
-  const events = await prisma.platformEvent.findMany({
-    where: {
-      OR: [
-        roomIds.length ? { roomId: { in: roomIds } } : undefined,
-        founderIds.length
-          ? {
-              metadata: { contains: "" },
-            }
-          : undefined,
-      ].filter(Boolean) as { roomId?: { in: string[] } }[],
-    },
-    orderBy: { createdAt: "desc" },
-    take: limit * 2,
-  });
-
-  const roomEvents = events
-    .filter((e) => e.roomId && roomIds.includes(e.roomId))
-    .slice(0, limit);
+  const roomEvents =
+    roomIds.length > 0
+      ? await prisma.platformEvent.findMany({
+          where: { roomId: { in: roomIds } },
+          orderBy: { createdAt: "desc" },
+          take: limit * 2,
+        })
+      : [];
 
   const founderActivity = await Promise.all(
     founderIds.slice(0, 10).map(async (founderId) => {
@@ -100,11 +111,18 @@ export async function getFollowFeed(userId: string, limit = 30) {
         at: b.calledAt.toISOString(),
         handle: user?.handle ?? user?.name ?? "founder",
         founderId,
-        headline: `Added ${b.listing.displayUrl} to Discovery list`,
+        headline: `@${user?.handle ?? user?.name ?? "founder"} added ${b.listing.displayUrl} to Discovery`,
         listingSlug: b.listing.slug,
       }));
     })
   );
+
+  const followItems = roomFollows.map((f) => ({
+    type: "room_subscribed" as const,
+    at: f.createdAt.toISOString(),
+    roomId: f.roomId,
+    headline: `Following ${f.room.name} — waiting for bids & crown changes`,
+  }));
 
   const feed = [
     ...roomEvents.map((e) => ({
@@ -115,6 +133,7 @@ export async function getFollowFeed(userId: string, limit = 30) {
       headline: parseEventHeadline(e.eventType, e.metadata),
     })),
     ...founderActivity.flat(),
+    ...followItems,
   ]
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
     .slice(0, limit);
@@ -124,7 +143,9 @@ export async function getFollowFeed(userId: string, limit = 30) {
       id: f.room.id,
       slug: f.room.slug,
       name: f.room.name,
-      enterUrl: f.room.categoryId ? `/?room=${f.room.slug}` : `/rooms/${f.room.slug}`,
+      enterUrl: f.room.category?.slug
+        ? `/?room=${f.room.category.slug}`
+        : `/rooms/${f.room.slug}`,
     })),
     followedFounders: founderFollows.map((f) => ({
       id: f.following.id,
@@ -151,6 +172,8 @@ function parseEventHeadline(eventType: string, metadataJson: string): string {
       return `${metadata.displayUrl ?? "Listing"} breaking out`;
     case "room_weekly_event":
       return String(metadata.title ?? "Weekly room event");
+    case "room_follow":
+      return `New follower joined ${metadata.roomName ?? "this room"}`;
     default:
       return "Room activity";
   }

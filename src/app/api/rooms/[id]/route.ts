@@ -18,6 +18,14 @@ export async function GET(
 
   await evaluateKeeperLevel(user.id, payload.room.id);
 
+  if (payload.isCurator) {
+    await prisma.roomKeeper.upsert({
+      where: { userId_roomId: { userId: user.id, roomId: payload.room.id } },
+      create: { userId: user.id, roomId: payload.room.id, level: "keeper" },
+      update: { level: "keeper", leveledUpAt: new Date() },
+    });
+  }
+
   const myLevel = await prisma.roomKeeper.findUnique({
     where: { userId_roomId: { userId: user.id, roomId: payload.room.id } },
     select: { level: true },
@@ -25,7 +33,7 @@ export async function GET(
 
   return NextResponse.json({
     ...payload,
-    myKeeperLevel: myLevel?.level ?? "observer",
+    myKeeperLevel: myLevel?.level ?? (payload.isCurator ? "keeper" : "observer"),
     levelLadder: KEEPER_LEVEL_INFO,
   });
 }

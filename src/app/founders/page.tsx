@@ -173,8 +173,24 @@ export default function FoundersPage() {
         <section className="luxury-card p-5">
           <h2 className="font-display text-[16px] font-semibold">Discovery bets</h2>
           <p className="mt-1 text-[12px] text-muted">Pick founders you think hit #1 — raises your score.</p>
-          <form onSubmit={addBet} className="mt-4 flex flex-wrap gap-2">
-            {listings.length > 0 ? (
+          {listings.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-dashed border-border bg-surface-2/50 px-4 py-5 text-[13px]">
+              <p className="font-medium text-foreground">Board is empty — claim first</p>
+              <p className="mt-2 text-muted">
+                Discovery bets only work on <strong>live listings</strong> already on the board. You can&apos;t bet on a URL that isn&apos;t listed yet.
+              </p>
+              <Link
+                href="/#claim"
+                className="mt-3 inline-block rounded-full bg-accent px-5 py-2 text-[13px] font-semibold text-white hover:brightness-110"
+              >
+                Claim #1 on homepage ($5 min)
+              </Link>
+              <p className="mt-3 text-[12px] text-muted">
+                After paying, your listing appears on the board — then come back and pick it (or others) from the dropdown.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={addBet} className="mt-4 flex flex-wrap gap-2">
               <select
                 className={`${field} min-w-[200px] flex-1`}
                 value={betSlug}
@@ -187,22 +203,15 @@ export default function FoundersPage() {
                   </option>
                 ))}
               </select>
-            ) : (
-              <input
-                className={`${field} min-w-[200px] flex-1`}
-                placeholder="listing slug — claim #1 first if empty"
-                value={betSlug}
-                onChange={(e) => setBetSlug(e.target.value)}
-              />
-            )}
-            <button
-              type="submit"
-              disabled={loading === "bet" || !betSlug.trim()}
-              className="rounded-full bg-accent px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
-            >
-              {loading === "bet" ? "Adding…" : "Add bet"}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={loading === "bet" || !betSlug.trim()}
+                className="rounded-full bg-accent px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              >
+                {loading === "bet" ? "Adding…" : "Add bet"}
+              </button>
+            </form>
+          )}
           {discovery?.bets?.length > 0 ? (
             <ul className="mt-4 space-y-1 text-[13px]">
               {discovery.bets.map((b: { slug: string; displayUrl: string; currentBid: number }) => (

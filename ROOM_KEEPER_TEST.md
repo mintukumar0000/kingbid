@@ -8,7 +8,14 @@ Use this checklist to test every Room Keeper feature end-to-end on your deployed
 
 1. App running with DB connected (Neon + `DATABASE_URL` in `.env`)
 2. Two browser profiles (or normal + incognito) — **Account A** (you) and **Account B** (optional, for follow tests)
-3. At least one listing on the global board (claim #1 on homepage if empty)
+3. **Important:** The board is empty on a fresh deploy (`$0 raised`, 0 listings). You **must claim #1 first** before Discovery bets, rivals, or pins work.
+
+### Step 0 — Claim #1 (do this first)
+
+1. Go to **`https://kingbid.lol/#claim`**
+2. Paste your product URL (e.g. `nestly.io`) and pay the minimum **$5**
+3. Complete checkout — your listing now appears on the global board **and** in room dropdowns
+4. Only then can you add Discovery bets, pin listings, etc.
 
 ---
 
@@ -46,41 +53,38 @@ Use this checklist to test every Room Keeper feature end-to-end on your deployed
 1. On a room page, click **Follow room**
 2. Button changes to **Following**
 3. **Members** count increases by 1
-4. Go to **`/feed`** (also linked from Founder Hub)
-5. Confirm the room appears under **Rooms**
-6. Room activity (bids, dethronements) shows in **Recent activity** when events occur
+4. Go to **`/feed`**
+5. Room appears under **Rooms you follow**
+6. **Recent activity** shows `Following [room] — waiting for bids & crown changes`
 
-**API check (optional):**
-```bash
-curl -X POST https://YOUR_DOMAIN/api/rooms/ai-agents/follow -b cookies.txt
-curl https://YOUR_DOMAIN/api/feed -b cookies.txt
-```
+**Note:** Bid/dethronement events only appear after someone claims a spot on the board. Empty board = subscription line only (correct behavior).
 
 ---
 
 ## 3. Discovery bets → Member / Scout
 
-1. Go to **`/founders`**
-2. Add a Discovery bet (pick a live listing from dropdown)
-3. Revisit a room → Keeper panel shows **Member** progress
-4. Add 2 more bets → progress rail advances toward **Scout**
+**Requires Step 0 — at least 1 live listing on the board.**
 
-**Pass:** `/api/me` shows `discoveryBets` count; keeper level updates on room visit.
+1. **`/founders`** → pick from the **dropdown** (not free-text)
+2. **Add bet** → revisit room → **Member** on progress rail
+3. Add 2 more bets → progress toward **Scout**
+
+**If board is empty:** UI shows "Claim #1 on homepage" — typing `nestly.io` manually will fail.
+
+**Pass:** `/api/me` shows `discoveryBets`; keeper level updates on room visit.
 
 ---
 
-## 4. Request a room (Keeper path)
+## 4. Request a room (Keeper / Curator path)
 
 1. On **`/founders`**, note your Kingbid Score
 2. Go to **`/rooms/request`**
-3. Submit:
-   - Slug: `my-test-room`
-   - Name: `My Test Room`
-   - Type: Founder type
-4. If Score ≥ 30 → room is **active** immediately
-5. If Score < 30 → **pending** → approve in **`/admin`** → Rooms panel
+3. Submit slug, name, type
+4. Score ≥ 30 → active immediately; else approve in **`/admin`**
 
-**Pass:** Room appears on `/rooms`; you become curator.
+**Pass:** You become **curator** — Keeper panel shows "You curate this room" and **Keeper tools** unlock.
+
+**Note:** "Indie SaaS" (your custom room) ≠ "AI agents" (category room). Member count is per-room — follow each room separately.
 
 ---
 

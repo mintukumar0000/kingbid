@@ -7,6 +7,8 @@ import { keeperLevelRank, KEEPER_LEVEL_INFO } from "@/lib/keeper-privileges";
 
 type Payload = {
   myKeeperLevel: string;
+  isCurator?: boolean;
+  canManage?: boolean;
   keepers: { handle: string; level: string; profileUrl: string }[];
   room: { keeperCount: number };
 };
@@ -18,8 +20,9 @@ export function RoomKeeperPanel({ roomSlug }: { roomSlug: string }) {
     return <div className="luxury-card h-40 animate-pulse" />;
   }
 
-  const myRank = keeperLevelRank(data.myKeeperLevel);
-  const current = KEEPER_LEVEL_INFO.find((s) => s.level === data.myKeeperLevel) ?? KEEPER_LEVEL_INFO[0]!;
+  const displayLevel = data.isCurator && data.myKeeperLevel === "observer" ? "keeper" : data.myKeeperLevel;
+  const myRank = keeperLevelRank(displayLevel);
+  const current = KEEPER_LEVEL_INFO.find((s) => s.level === displayLevel) ?? KEEPER_LEVEL_INFO[0]!;
   const next = KEEPER_LEVEL_INFO.find((s) => keeperLevelRank(s.level) === myRank + 1);
 
   return (
@@ -31,12 +34,17 @@ export function RoomKeeperPanel({ roomSlug }: { roomSlug: string }) {
         </Link>
       </div>
 
-      {/* Compact progress rail */}
+      {data.isCurator && (
+        <p className="mt-2 rounded-full bg-accent-soft px-2.5 py-1 text-[11px] font-semibold text-accent">
+          🏰 You curate this room — Keeper tools unlocked
+        </p>
+      )}
+
       <div className="mt-4 flex items-center gap-1">
         {KEEPER_LEVEL_INFO.map((step) => {
           const rank = keeperLevelRank(step.level);
           const active = rank <= myRank;
-          const isCurrent = step.level === data.myKeeperLevel;
+          const isCurrent = step.level === displayLevel;
           return (
             <div
               key={step.level}
@@ -56,11 +64,17 @@ export function RoomKeeperPanel({ roomSlug }: { roomSlug: string }) {
       <div className="mt-4 rounded-xl border border-border/80 bg-surface/80 px-3 py-2.5">
         <p className="text-[12px] text-muted">
           You: <span className="font-semibold text-foreground">{current.emoji} {current.label}</span>
+          {data.isCurator ? " · Curator" : ""}
         </p>
         <p className="mt-0.5 text-[11.5px] text-muted">{current.privilege}</p>
-        {next && myRank < keeperLevelRank(next.level) && (
+        {!data.isCurator && next && myRank < keeperLevelRank(next.level) && (
           <p className="mt-2 text-[11px] text-accent">
             Next → {next.label}: {next.howToEarn}
+          </p>
+        )}
+        {data.isCurator && data.myKeeperLevel === "observer" && (
+          <p className="mt-2 text-[11px] text-muted">
+            Curator privileges active. Add Discovery bets on /founders to raise your global keeper rank.
           </p>
         )}
       </div>

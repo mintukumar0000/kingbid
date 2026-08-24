@@ -13,6 +13,7 @@ export const PLATFORM_EVENT_TYPES = [
   "kingmaker_called_it",
   "room_weekly_event",
   "room_pin",
+  "room_follow",
 ] as const;
 
 export type PlatformEventType = (typeof PLATFORM_EVENT_TYPES)[number];
@@ -151,6 +152,8 @@ export function eventHeadline(
       return `📅 ${metadata.title ?? "Weekly event"} — ${metadata.createdBy ?? "keeper"}`;
     case "room_pin":
       return `📌 Pinned ${metadata.displayUrl ?? "a listing"}`;
+    case "room_follow":
+      return `👋 Someone followed ${metadata.roomName ?? "this room"}`;
     default:
       return "Activity on KingBid";
   }

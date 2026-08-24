@@ -32,7 +32,17 @@ function activeBid(
   return scope === "local" ? listing.localBid : listing.currentBid;
 }
 
-async function getTopListing(scope: BoardScope, countryCode?: string | null) {
+async function getTopListing(
+  scope: BoardScope,
+  countryCode?: string | null,
+  boardId?: string | null
+) {
+  if (boardId) {
+    return prisma.listing.findFirst({
+      where: { boardId, currentBid: { gt: 0 }, status: "active" },
+      orderBy: [{ currentBid: "desc" }, { lastBidAt: "asc" }, { createdAt: "asc" }],
+    });
+  }
   if (scope === "local" && countryCode) {
     return prisma.listing.findFirst({
       where: { countryCode, localBid: { gt: 0 } },
@@ -96,7 +106,7 @@ export async function createBidIntent(input: BidIntentInput): Promise<BidIntent>
   }
 
   const existing = await prisma.listing.findUnique({ where: { url: target.url } });
-  const top = await getTopListing(scope, countryCode);
+  const top = await getTopListing(scope, countryCode, input.boardId);
   const topBid = top ? activeBid(top, scope) : 0;
   const existingBid = existing ? activeBid(existing, scope) : 0;
   const isRaise = existing !== null && existingBid > 0;
@@ -192,6 +202,21 @@ export async function createBidIntent(input: BidIntentInput): Promise<BidIntent>
         where: { id: listing.id },
         data: { revenueBand: input.revenueBand },
       });
+    }
+
+    // Claiming from a category room assigns the listing to that room's board.
+    if (input.boardId) {
+      if (listing.boardId && listing.boardId !== input.boardId) {
+        throw new BidError(
+          "This product is already listed in another room. Open that room to raise your bid."
+        );
+      }
+      if (!listing.boardId) {
+        listing = await tx.listing.update({
+          where: { id: listing.id },
+          data: { boardId: input.boardId },
+        });
+      }
     }
     return tx.bid.create({
       data: {

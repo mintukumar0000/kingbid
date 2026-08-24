@@ -99,6 +99,10 @@ export function CategoryRoom({
             <p className="mt-1 text-[13px] text-muted">
               Founding spot {formatMoney(foundingPrice)} · {listingCount} live · pay to move up
             </p>
+            <p className="mt-2 text-[12px] text-muted">
+              Only products claimed <strong className="font-medium text-foreground">in this room</strong> appear here.
+              Claimed on the homepage first? Paste the same URL above — a $1 rebid joins this room&apos;s board.
+            </p>
           </div>
           {children}
         </div>

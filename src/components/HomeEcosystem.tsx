@@ -6,6 +6,7 @@ import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
 import { REVENUE_BAND_LABELS, type RevenueBand } from "@/lib/revenue-bands";
 import { RelativeTime } from "@/components/RelativeTime";
+import { HomeLiveBattleStarter } from "@/components/HomeLiveBattleStarter";
 import { PAGE_WIDE } from "@/lib/layout";
 
 interface EcosystemData {
@@ -272,40 +273,53 @@ export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => 
       </section>
 
       {/* LIVE BATTLES */}
-      <section className="mb-10">
+      <section className="mb-10" id="live-battles">
         <SectionBlock eyebrow="⚔️ Right now" title="Live Battles" />
         {data.liveBattles.length === 0 ? (
-          <BracketCard>
-            <EmptyCard>No active matchups — founders can start battles from listing pages.</EmptyCard>
+          <BracketCard className="!p-6">
+            <EmptyCard>No active matchups yet — start one below from the live board.</EmptyCard>
+            <div className="mt-4">
+              <HomeLiveBattleStarter />
+            </div>
           </BracketCard>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {data.liveBattles.map((m) => (
-              <Link key={m.id} href={m.url} className="block">
-                <BracketCard className="flex items-center justify-between gap-3 !py-5">
-                  <div className="min-w-0 text-center">
-                    <p className="text-[10px] uppercase tracking-wide text-accent">Current King</p>
-                    <p className="font-display mt-1.5 truncate text-[17px] font-semibold">{m.king.displayUrl}</p>
-                    <p className="font-mono-label mt-1 text-[13px] text-muted">{formatMoney(m.king.currentBid)}</p>
-                  </div>
-                  <div className="shrink-0 text-center">
-                    <p className="font-mono-label text-[12px] text-accent">VS</p>
-                    <p className="font-mono-label mt-1 text-[14px] font-bold text-accent">
-                      {formatMoney(m.gapCents)}
-                    </p>
-                    <p className="text-[10px] text-muted">gap</p>
-                  </div>
-                  <div className="min-w-0 text-center">
-                    <p className="text-[10px] uppercase tracking-wide text-muted">Challenger</p>
-                    <p className="font-display mt-1.5 truncate text-[17px] font-semibold">{m.challenger.displayUrl}</p>
-                    <p className="font-mono-label mt-1 text-[13px] text-muted">
-                      {formatMoney(m.challenger.currentBid)}
-                    </p>
-                  </div>
-                </BracketCard>
-              </Link>
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {data.liveBattles.map((m) => (
+                <Link key={m.id} href={m.url} className="block">
+                  <BracketCard className="flex items-center justify-between gap-3 !py-5">
+                    <div className="min-w-0 text-center">
+                      <p className="text-[10px] uppercase tracking-wide text-accent">Current King</p>
+                      <p className="font-display mt-1.5 truncate text-[17px] font-semibold">{m.king.displayUrl}</p>
+                      <p className="font-mono-label mt-1 text-[13px] text-muted">{formatMoney(m.king.currentBid)}</p>
+                    </div>
+                    <div className="shrink-0 text-center">
+                      <p className="font-mono-label text-[12px] text-accent">VS</p>
+                      <p className="font-mono-label mt-1 text-[14px] font-bold text-accent">
+                        {formatMoney(m.gapCents)}
+                      </p>
+                      <p className="text-[10px] text-muted">gap</p>
+                    </div>
+                    <div className="min-w-0 text-center">
+                      <p className="text-[10px] uppercase tracking-wide text-muted">Challenger</p>
+                      <p className="font-display mt-1.5 truncate text-[17px] font-semibold">{m.challenger.displayUrl}</p>
+                      <p className="font-mono-label mt-1 text-[13px] text-muted">
+                        {formatMoney(m.challenger.currentBid)}
+                      </p>
+                    </div>
+                  </BracketCard>
+                </Link>
+              ))}
+            </div>
+            <details className="mt-4">
+              <summary className="cursor-pointer text-[13px] font-medium text-accent hover:underline">
+                Start another battle
+              </summary>
+              <div className="mt-3 rounded-[14px] border border-border bg-surface p-4">
+                <HomeLiveBattleStarter compact />
+              </div>
+            </details>
+          </>
         )}
       </section>
 

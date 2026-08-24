@@ -6,6 +6,7 @@ import useSWR from "swr";
 import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
+import { createAndActivateMatchup } from "@/lib/start-matchup";
 import type { LeaderboardData, LeaderboardEntry } from "@/lib/leaderboard";
 
 function findOpponent(slug: string, opponents: LeaderboardEntry[]) {
@@ -36,55 +37,13 @@ export function StartBattlePanel({
   async function startBattle(opponent: LeaderboardEntry) {
     setLoading(true);
     setMsg(null);
-    try {
-      const createRes = await fetch("/api/matchups", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ listingAId: listingId, listingBId: opponent.id }),
-      });
-      const created = await createRes.json();
-      if (!createRes.ok) {
-        setMsg(created.error ?? "Could not start battle.");
-        setLoading(false);
-        return;
-      }
-
-      const confirmRes = await fetch(`/api/matchups/${created.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ listingId }),
-      });
-      const confirmed = await confirmRes.json();
-      if (!confirmRes.ok) {
-        setMsg(confirmed.error ?? "Battle created but confirm failed.");
-        setLoading(false);
-        return;
-      }
-
-      const rivalConfirm = await fetch(`/api/matchups/${created.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ listingId: opponent.id }),
-      });
-      const rivalBody = await rivalConfirm.json();
-      if (!rivalConfirm.ok) {
-        setMsg(rivalBody.error ?? "Confirm the rival on the battle page.");
-        router.push(`/versus/${created.id}`);
-        return;
-      }
-
-      if (rivalBody.status !== "active") {
-        setMsg("Battle pending — confirm the rival on the next page.");
-      }
-
-      router.push(`/versus/${created.id}`);
-    } catch {
-      setMsg("Network error — try again.");
-      setLoading(false);
+    const result = await createAndActivateMatchup(listingId, opponent.id);
+    setLoading(false);
+    if ("error" in result) {
+      setMsg(result.error);
+      return;
     }
+    router.push(`/versus/${result.id}`);
   }
 
   async function startFromSlug(e: React.FormEvent) {
@@ -94,7 +53,7 @@ export function StartBattlePanel({
 
     const opponent = findOpponent(trimmed, opponents);
     if (!opponent) {
-      setMsg(`Rival not found — use slug "${opponents[0]?.slug ?? "outbid.lol"}" (dots, not dashes).`);
+      setMsg(`Rival not found — try "${opponents[0]?.displayUrl ?? "outbid.lol"}".`);
       return;
     }
     await startBattle(opponent);
@@ -106,12 +65,11 @@ export function StartBattlePanel({
   return (
     <div className="space-y-4">
       <p className="text-[12px] text-muted">
-        Challenge another live listing. Both sides auto-confirm and the battle goes live on the homepage
-        immediately. Use listing URLs like{" "}
-        <Link href={`/l/${displayUrl}`} className="text-accent hover:underline">
-          /l/{displayUrl}
-        </Link>
-        .
+        Or start from the{" "}
+        <Link href="/#live-battles" className="text-accent hover:underline">
+          homepage Live Battles
+        </Link>{" "}
+        section — pick both products in one click.
       </p>
 
       {opponents.length > 0 ? (
@@ -143,18 +101,18 @@ export function StartBattlePanel({
         </div>
       ) : (
         <p className="text-[12px] text-muted">
-          Need at least 2 live listings on the board —{" "}
+          Need at least 2 live listings —{" "}
           <Link href="/#claim" className="text-accent hover:underline">
             claim another spot
-          </Link>{" "}
-          first.
+          </Link>
+          .
         </p>
       )}
 
       <form onSubmit={startFromSlug} className="flex flex-wrap gap-2">
         <input
           className={`${field} min-w-[200px] flex-1`}
-          placeholder="Or paste rival slug e.g. outbid.lol"
+          placeholder={`Rival e.g. ${opponents[0]?.displayUrl ?? "outbid.lol"}`}
           value={opponentSlug}
           onChange={(e) => setOpponentSlug(e.target.value)}
         />
@@ -163,7 +121,7 @@ export function StartBattlePanel({
           disabled={loading || !opponentSlug.trim()}
           className="shrink-0 rounded-full border border-border px-5 py-2 text-[13px] font-semibold hover:border-accent disabled:opacity-50"
         >
-          Challenge by slug
+          Challenge
         </button>
       </form>
 

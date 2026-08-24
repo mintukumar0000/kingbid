@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getOrCreateSessionUser, getLatestKingbidScore } from "@/lib/users";
 import { getDiscoveryList } from "@/lib/kingmaker";
-import { getActiveSubscription } from "@/lib/subscriptions";
+import { getActiveSubscription, SUBSCRIPTION_TIERS } from "@/lib/subscriptions";
 import { canRequestRoom } from "@/lib/keepers";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +32,14 @@ export async function GET() {
     handle: user.handle,
     kingbidScore: score?.score ?? 0,
     scoreComponents: score ? JSON.parse(score.components || "{}") : {},
-    subscription: subscription ? { tier: subscription.tier, renewsAt: subscription.renewsAt } : null,
+    subscription: subscription
+      ? {
+          tier: subscription.tier,
+          label: SUBSCRIPTION_TIERS[subscription.tier as keyof typeof SUBSCRIPTION_TIERS]?.label ?? subscription.tier,
+          renewsAt: subscription.renewsAt,
+        }
+      : null,
+    isPro: !!subscription,
     keeperLevels: keepers.map((k) => ({ room: k.room.name, slug: k.room.slug, level: k.level })),
     discoveryBets: discoveryCount,
     canCreateRoom,

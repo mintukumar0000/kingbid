@@ -2,6 +2,11 @@ import { failBid } from "@/lib/bidding";
 import { fetchDodoPayment } from "@/lib/dodo";
 import { prisma } from "@/lib/db";
 import { settlePayment } from "@/lib/settle";
+import {
+  activateSubscriptionFromPayment,
+  getActiveSubscription,
+  type SubscriptionTier,
+} from "@/lib/subscriptions";
 
 export type SyncResult = "completed" | "failed" | "pending" | "not_found";
 
@@ -39,6 +44,66 @@ export async function syncPaymentFromDodo(
   if (status === "failed" || status === "cancelled") {
     await failBid(ourPaymentId);
     return "failed";
+  }
+
+  return "pending";
+}
+
+/** Activate Pro when webhook is slow — uses Dodo API or trusted redirect status. */
+export async function syncSubscriptionFromDodo(params: {
+  userId: string;
+  ourPaymentId?: string | null;
+  dodoPaymentId?: string | null;
+  tier?: SubscriptionTier | null;
+  redirectStatus?: string | null;
+}): Promise<SyncResult> {
+  const active = await getActiveSubscription(params.userId);
+  if (active) return "completed";
+
+  let ourPaymentId = params.ourPaymentId?.trim() || null;
+
+  if (!ourPaymentId && params.dodoPaymentId?.trim()) {
+    const payment = await fetchDodoPayment(params.dodoPaymentId.trim());
+    ourPaymentId =
+      payment?.metadata?.subscriptionPaymentId ??
+      payment?.metadata?.paymentId ??
+      null;
+
+    if (payment?.status?.toLowerCase() === "succeeded" && ourPaymentId) {
+      const sub = await prisma.subscription.findFirst({ where: { dodoPaymentId: ourPaymentId } });
+      if (sub) {
+        await activateSubscriptionFromPayment(ourPaymentId, sub.userId, sub.tier as SubscriptionTier);
+        return "completed";
+      }
+    }
+  }
+
+  let sub = ourPaymentId
+    ? await prisma.subscription.findFirst({ where: { dodoPaymentId: ourPaymentId } })
+    : null;
+
+  if (!sub && params.tier) {
+    sub = await prisma.subscription.findFirst({
+      where: { userId: params.userId, tier: params.tier, status: "pending" },
+      orderBy: { createdAt: "desc" },
+    });
+    ourPaymentId = sub?.dodoPaymentId ?? ourPaymentId;
+  }
+
+  if (!sub) return "not_found";
+  if (sub.status === "active") return "completed";
+
+  if (params.dodoPaymentId?.trim()) {
+    const payment = await fetchDodoPayment(params.dodoPaymentId.trim());
+    if (payment?.status?.toLowerCase() === "succeeded") {
+      await activateSubscriptionFromPayment(sub.dodoPaymentId!, sub.userId, sub.tier as SubscriptionTier);
+      return "completed";
+    }
+  }
+
+  if (params.redirectStatus?.toLowerCase() === "active" && sub.dodoPaymentId) {
+    await activateSubscriptionFromPayment(sub.dodoPaymentId, sub.userId, sub.tier as SubscriptionTier);
+    return "completed";
   }
 
   return "pending";

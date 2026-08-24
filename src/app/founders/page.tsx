@@ -131,7 +131,11 @@ export default function FoundersPage() {
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <Stat label="Score" value={me?.kingbidScore ?? 0} />
           <Stat label="Discovery" value={`${me?.discoveryBets ?? 0}/10`} />
-          <Stat label="Tier" value={me?.subscription?.tier ?? "Free"} />
+          <Stat
+            label="Tier"
+            value={me?.subscription?.label ?? me?.subscription?.tier ?? "Free"}
+            hint={me?.isPro ? "Pro active on this account" : undefined}
+          />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-3 text-[12px]">
@@ -362,11 +366,12 @@ export default function FoundersPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
     <div className="luxury-card p-4 text-center">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</p>
       <p className="font-mono-label mt-1 text-xl font-bold">{value}</p>
+      {hint && <p className="mt-1 text-[10px] text-green">{hint}</p>}
     </div>
   );
 }

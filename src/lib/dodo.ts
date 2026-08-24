@@ -155,7 +155,7 @@ export async function createDodoSubscriptionCheckout(params: {
     displayUrl: "KingBid Pro",
     email: params.email,
     productId,
-    returnUrl: `${siteUrl()}/pricing?subscribed=${params.tier}`,
+    returnUrl: `${siteUrl()}/pricing?subscribed=${params.tier}&sub=${encodeURIComponent(params.paymentId)}`,
     metadata: {
       type: "subscription",
       tier: params.tier,

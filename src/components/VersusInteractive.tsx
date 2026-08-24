@@ -65,6 +65,31 @@ export function VersusInteractive({ matchupId }: { matchupId: string }) {
   );
   const [error, setError] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
+  const [confirming, setConfirming] = useState<string | null>(null);
+
+  async function confirmParticipation(forListingId: string) {
+    setConfirming(forListingId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/matchups/${matchupId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ listingId: forListingId }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Could not confirm.");
+        setConfirming(null);
+        return;
+      }
+      await mutate();
+      setConfirming(null);
+    } catch {
+      setError("Network error.");
+      setConfirming(null);
+    }
+  }
 
   async function vote(forListingId: string) {
     setVoting(true);
@@ -96,8 +121,57 @@ export function VersusInteractive({ matchupId }: { matchupId: string }) {
   return (
     <>
       {data.status === "pending" && (
+        <div className="mt-6 rounded-2xl border border-border bg-surface p-6 text-center shadow-[var(--shadow)]">
+          <p className="text-[15px] font-semibold">Confirm to go live</p>
+          <p className="mt-2 text-[13px] text-muted">
+            Both listings must confirm before voting opens and the battle shows on the homepage.
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            {!data.ownerAConfirmed ? (
+              <button
+                type="button"
+                disabled={!!confirming}
+                onClick={() => confirmParticipation(data.listingA.id)}
+                className="rounded-full bg-accent px-5 py-2.5 text-[13px] font-semibold text-white hover:brightness-110 disabled:opacity-50"
+              >
+                {confirming === data.listingA.id ? "Confirming…" : `Confirm ${data.listingA.displayUrl}`}
+              </button>
+            ) : (
+              <span className="rounded-full border border-green/30 bg-green/10 px-4 py-2 text-[13px] font-medium text-green">
+                ✓ {data.listingA.displayUrl} confirmed
+              </span>
+            )}
+            {!data.ownerBConfirmed ? (
+              <button
+                type="button"
+                disabled={!!confirming}
+                onClick={() => confirmParticipation(data.listingB.id)}
+                className="rounded-full border border-border px-5 py-2.5 text-[13px] font-semibold hover:border-accent disabled:opacity-50"
+              >
+                {confirming === data.listingB.id ? "Confirming…" : `Confirm ${data.listingB.displayUrl}`}
+              </button>
+            ) : (
+              <span className="rounded-full border border-green/30 bg-green/10 px-4 py-2 text-[13px] font-medium text-green">
+                ✓ {data.listingB.displayUrl} confirmed
+              </span>
+            )}
+          </div>
+          <p className="mt-4 text-[12px] text-muted">
+            Testing solo? Open each listing page and confirm from{" "}
+            <Link href={`/l/${data.listingA.slug}`} className="text-accent hover:underline">
+              /l/{data.listingA.slug}
+            </Link>{" "}
+            and{" "}
+            <Link href={`/l/${data.listingB.slug}`} className="text-accent hover:underline">
+              /l/{data.listingB.slug}
+            </Link>
+            .
+          </p>
+        </div>
+      )}
+      {data.status === "active" && (
         <p className="mt-4 text-center text-[13px] text-muted">
-          Waiting for both owners to confirm before voting opens.
+          Live on the homepage under <strong>Live Battles</strong> — share this page for votes.
         </p>
       )}
       <div className="mt-8 flex flex-col gap-6 sm:flex-row sm:items-stretch">

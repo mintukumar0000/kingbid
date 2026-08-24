@@ -11,6 +11,7 @@ import { ogClaimUrl } from "@/lib/site";
 import { RelativeTime } from "@/components/RelativeTime";
 import { BadgeEmbedSnippet } from "@/components/BadgeEmbedSnippet";
 import { FounderToolsPanel } from "@/components/FounderToolsPanel";
+import { StartBattlePanel } from "@/components/StartBattlePanel";
 import { PAGE } from "@/lib/layout";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +102,17 @@ export default async function ListingPage({ params }: Props) {
           </p>
           <div className="mt-4">
             <ShareButtons text={shareText} slug={listing.slug} />
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-[20px] border border-border bg-surface p-6 shadow-[var(--shadow)]">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-accent">⚔️ Live Battles</p>
+          <h2 className="mt-1 text-[15px] font-semibold">Start a battle</h2>
+          <p className="mt-1 text-[13px] text-muted">
+            Pick a rival — goes live on the homepage once both sides confirm.
+          </p>
+          <div className="mt-4">
+            <StartBattlePanel listingId={listing.id} slug={listing.slug} displayUrl={listing.displayUrl} />
           </div>
         </section>
 

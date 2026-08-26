@@ -142,7 +142,7 @@ function HomeClientInner({
     const parsed = amount ? parseInt(amount, 10) : board.claimTopPrice;
     if (!Number.isNaN(parsed)) {
       setHeroAmount(parsed);
-      setPrefill({ mode: "new", amount: parsed, url: rebid });
+      setPrefill({ mode: "new", amount: parsed, amountIsTargetTotal: true, url: rebid });
       setModalOpen(true);
     }
   }, [searchParams, board.claimTopPrice]);
@@ -159,6 +159,7 @@ function HomeClientInner({
     setPrefill({
       mode: "claim",
       amount: entry.claimPrice,
+      amountIsTargetTotal: true,
       targetRank: entry.rank,
       targetTitle: entry.title,
     });
@@ -169,6 +170,7 @@ function HomeClientInner({
     setPrefill({
       mode: "new",
       amount: heroValue,
+      amountIsTargetTotal: true,
       url: heroUrl.trim() || undefined,
     });
     setModalOpen(true);

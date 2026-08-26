@@ -82,7 +82,7 @@ export default async function ListingPage({ params }: Props) {
               Click stats
             </Link>
             <Link
-              href={`/?claim=${encodeURIComponent(listing.slug)}&amount=${listing.claimPrice}`}
+              href={`/?claim=${encodeURIComponent(listing.displayUrl)}&amount=${listing.claimPrice}`}
               className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold hover:border-accent hover:text-accent"
             >
               Claim this spot for {formatMoney(listing.claimPrice)}

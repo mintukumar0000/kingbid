@@ -116,7 +116,8 @@ export async function settlePayment(paymentId: string): Promise<void> {
       result.outbidListingTitle,
       result.outbidListingSlug,
       claimPrice,
-      result.newTotal
+      result.newTotal,
+      result.outbidListingDisplayUrl ?? undefined
     );
   }
 

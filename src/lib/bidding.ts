@@ -260,6 +260,7 @@ export interface ConfirmResult {
   outbidOwnerEmail: string | null;
   outbidListingTitle: string | null;
   outbidListingSlug: string | null;
+  outbidListingDisplayUrl: string | null;
   referralListingId: string | null;
   referralOwnerEmail: string | null;
 }
@@ -305,6 +306,7 @@ async function applyConfirmedBid(paymentId: string): Promise<ConfirmResult | nul
           outbidOwnerEmail: null,
           outbidListingTitle: null,
           outbidListingSlug: null,
+          outbidListingDisplayUrl: null,
           referralListingId: bid.referralListingId,
           referralOwnerEmail: null,
         };
@@ -436,6 +438,10 @@ async function applyConfirmedBid(paymentId: string): Promise<ConfirmResult | nul
         outbidListingSlug:
           tookTopSpot && previousTop && previousTop.id !== listing.id
             ? previousTop.slug
+            : null,
+        outbidListingDisplayUrl:
+          tookTopSpot && previousTop && previousTop.id !== listing.id
+            ? previousTop.displayUrl
             : null,
         referralListingId: bid.referralListingId,
         referralOwnerEmail,

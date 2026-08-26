@@ -55,9 +55,10 @@ export async function sendOutbidAlert(
   listingTitle: string,
   slug: string,
   claimPrice: number,
-  newTopBid: number
+  newTopBid: number,
+  rebidKey?: string
 ): Promise<void> {
-  const rebidUrl = `${siteUrl()}/?rebid=${encodeURIComponent(slug)}&amount=${claimPrice}`;
+  const rebidUrl = `${siteUrl()}/?rebid=${encodeURIComponent(rebidKey ?? slug)}&amount=${claimPrice}`;
 
   await send(
     to,

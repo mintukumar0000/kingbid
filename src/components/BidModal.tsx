@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { LeaderboardData } from "@/lib/leaderboard";
 import { formatMoney } from "@/lib/format";
+import { raisePayment } from "@/lib/pricing";
 import { REF_COOKIE } from "@/lib/brand";
 import type { BoardScope } from "@/lib/geo";
 import { BID_MODAL_NEW } from "@/lib/copy";
@@ -14,6 +15,8 @@ import type { RevenueBand } from "@/lib/revenue-bands";
 export interface BidPrefill {
   mode: "new" | "claim" | "takeover";
   amount: number;
+  /** When true, `amount` is the target total bid — converted to a raise increment if URL matches an existing listing. */
+  amountIsTargetTotal?: boolean;
   targetRank?: number;
   targetTitle?: string;
   url?: string;
@@ -47,6 +50,7 @@ export function BidModal({
   const [campaignAck, setCampaignAck] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const convertedRaise = useRef(false);
 
   useEffect(() => {
     if (open) {
@@ -54,6 +58,7 @@ export function BidModal({
       setUrl(prefill.url ?? "");
       setError(null);
       setCampaignAck(false);
+      convertedRaise.current = false;
     }
   }, [open, prefill]);
 
@@ -71,10 +76,25 @@ export function BidModal({
       board.entries.find((e) => {
         const eNorm = e.url.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "");
         const hNorm = e.handle?.toLowerCase().replace(/^@/, "");
-        return eNorm === norm || (hNorm && hNorm === norm);
+        const displayNorm = e.displayUrl.toLowerCase().replace(/^@/, "");
+        const slugNorm = e.slug.toLowerCase();
+        return (
+          eNorm === norm ||
+          (hNorm && hNorm === norm) ||
+          displayNorm === norm ||
+          slugNorm === norm
+        );
       }) ?? null
     );
   }, [url, board.entries]);
+
+  useEffect(() => {
+    if (!open || !existing || convertedRaise.current || prefill.mode === "takeover") return;
+    if (prefill.amountIsTargetTotal) {
+      setAmount(raisePayment(existing.currentBid, prefill.amount));
+      convertedRaise.current = true;
+    }
+  }, [open, existing, prefill.amount, prefill.amountIsTargetTotal, prefill.mode]);
 
   const isTakeover = prefill.mode === "takeover";
   const minAmount = isTakeover ? board.takeoverPrice : existing ? 1 : board.minBid;

@@ -8,6 +8,11 @@ export const NEPAL_CAMPAIGN = {
   contactEmail: "heyquixy@gmail.com",
 } as const;
 
+/** Shown to payers — full proceeds to charity; founder offers verification on request. */
+export const NEPAL_PAYER_REASSURANCE = `After Dodo payment processing, 100% of eligible campaign proceeds go to ${NEPAL_CAMPAIGN.recipient}. Kingbid takes $0 platform fee. If you need any verification — receipts, transfer proof, or campaign details — I'm happy to provide it.`;
+
+export const NEPAL_PAYER_REASSURANCE_SHORT = `100% goes to ${NEPAL_CAMPAIGN.recipient} after Dodo settlement. Need verification? Happy to provide it.`;
+
 /** Open-ended milestones for timeline display — not a fundraising cap. */
 export const NEPAL_FUNDRAISING_MILESTONES = [100, 500, 1_000, 5_000, 10_000, 20_000] as const;
 

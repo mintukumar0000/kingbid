@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
-import { campaignPhase, isCampaignPaymentEligible, NEPAL_CAMPAIGN } from "@/lib/nepal-campaign-config";
+import { campaignPhase, isCampaignPaymentEligible, NEPAL_CAMPAIGN, NEPAL_PAYER_REASSURANCE_SHORT } from "@/lib/nepal-campaign-config";
 
 export function NepalBidDisclosure({
   amount,
@@ -24,14 +24,18 @@ export function NepalBidDisclosure({
       </p>
       {countsTowardCampaign ? (
         <p className="mt-1.5 text-[11px] leading-snug text-muted">
-          Proceeds transfer to {NEPAL_CAMPAIGN.recipient} after settlement.{" "}
+          {NEPAL_PAYER_REASSURANCE_SHORT}{" "}
+          <a href={`mailto:${NEPAL_CAMPAIGN.contactEmail}`} className="text-accent hover:underline">
+            Email for proof →
+          </a>{" "}
+          ·{" "}
           <Link href="/nepal-relief" className="text-accent hover:underline">
             Live accounting →
           </Link>
         </p>
       ) : (
         <p className="mt-1.5 text-[11px] leading-snug text-muted">
-          Aug 27 – Sep 3, 2026.{" "}
+          Aug 27 – Sep 3, 2026. {NEPAL_PAYER_REASSURANCE_SHORT}{" "}
           <Link href="/nepal-relief" className="text-accent hover:underline">
             Campaign accounting →
           </Link>
@@ -44,7 +48,10 @@ export function NepalBidDisclosure({
           onChange={(e) => onAcknowledge(e.target.checked)}
           className="mt-0.5 shrink-0"
         />
-        <span>I understand campaign proceeds are settled through Kingbid before transfer to the relief org.</span>
+        <span>
+          I understand my payment is processed by Dodo, then transferred to {NEPAL_CAMPAIGN.recipient} after
+          settlement — and I can request verification any time.
+        </span>
       </label>
     </div>
   );

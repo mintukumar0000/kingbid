@@ -4,7 +4,7 @@ import useSWR from "swr";
 import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
-import { NEPAL_CAMPAIGN } from "@/lib/nepal-campaign-config";
+import { NEPAL_CAMPAIGN, NEPAL_PAYER_REASSURANCE } from "@/lib/nepal-campaign-config";
 import { RelativeTime } from "@/components/RelativeTime";
 import { NepalReliefDashboard } from "@/components/nepal/NepalReliefDashboard";
 
@@ -98,6 +98,16 @@ export function NepalReliefPageContent() {
           <strong className="text-foreground">{NEPAL_CAMPAIGN.recipient}</strong>. Donation records and receipts are
           published here — not at checkout.
         </p>
+        <div className="mt-5 rounded-xl border border-accent/25 bg-accent-soft/30 p-4">
+          <p className="text-[13px] font-semibold text-foreground">Payer verification</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted">{NEPAL_PAYER_REASSURANCE}</p>
+          <a
+            href={`mailto:${NEPAL_CAMPAIGN.contactEmail}?subject=Nepal%20campaign%20verification%20request`}
+            className="mt-3 inline-block text-[13px] font-semibold text-accent hover:underline"
+          >
+            Request verification → {NEPAL_CAMPAIGN.contactEmail}
+          </a>
+        </div>
       </section>
 
       {/* Ledger */}
@@ -242,6 +252,10 @@ export function NepalReliefPageContent() {
           ["$0 Kingbid platform fee", "Kingbid does not take platform revenue from this campaign."],
           ["Public ledger", "Campaign transactions are trackable without exposing sensitive data."],
           ["Donation receipt", "The final receipt is published after the donation is completed."],
+          [
+            "Verification on request",
+            "Need proof your payment reached charity? Email us — receipts and transfer details available.",
+          ],
         ].map(([title, body]) => (
           <div key={title} className="luxury-card p-4">
             <p className="font-semibold">{title}</p>

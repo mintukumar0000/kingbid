@@ -30,7 +30,7 @@ export function emptyBoardMessage(minBid: number, scope: "global" | "local", lab
 export const HERO_EYEBROW = "Live Kingdom";
 export const HERO_CAMPAIGN_EYEBROW = "🇳🇵 Nepal Flood Relief";
 export const HERO_CAMPAIGN_SUBTEXT = (minBid: number) =>
-  `New spots start at ${formatMoney(minBid)}. Kingbid takes $0 — every dollar supports flood relief.`;
+  `New spots start at ${formatMoney(minBid)}. After Dodo checkout, 100% goes to Nepal charity — Kingbid takes $0. Verification available on request.`;
 
 export const REVENUE_TICKER_LINE = "Total raised on Kingbid since launch";
 export const BID_MODAL_NEW = (minBid: number) =>

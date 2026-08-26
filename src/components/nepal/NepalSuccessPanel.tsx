@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
-import { NEPAL_CAMPAIGN } from "@/lib/nepal-campaign-config";
+import { NEPAL_CAMPAIGN, NEPAL_PAYER_REASSURANCE_SHORT } from "@/lib/nepal-campaign-config";
 
 export function NepalSuccessPanel({
   rank,
@@ -50,6 +50,13 @@ export function NepalSuccessPanel({
           </div>
         )}
       </dl>
+
+      <p className="mt-4 text-[12px] leading-relaxed text-muted">
+        {NEPAL_PAYER_REASSURANCE_SHORT}{" "}
+        <a href={`mailto:${NEPAL_CAMPAIGN.contactEmail}`} className="font-medium text-accent hover:underline">
+          Request verification →
+        </a>
+      </p>
 
       <div className="mt-5 rounded-xl border border-border bg-surface p-4">
         <p className="text-[11px] uppercase tracking-wide text-muted">Share card</p>

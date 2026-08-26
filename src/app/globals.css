@@ -404,3 +404,27 @@ html.dark .eco-room-tile {
   background: var(--border-strong);
   border-radius: 6px;
 }
+
+/* Nepal Flood Relief campaign layer */
+.nepal-banner {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--surface)) 0%, var(--surface-2) 100%);
+}
+
+.nepal-dashboard-card {
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  background: linear-gradient(160deg, var(--surface) 0%, color-mix(in srgb, var(--accent) 6%, var(--surface-2)) 100%);
+  box-shadow: var(--shadow);
+}
+
+.nepal-commitment-card {
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface)) 0%, var(--surface-2) 100%);
+}
+
+html.dark .nepal-banner {
+  background: linear-gradient(135deg, rgba(240, 113, 85, 0.08) 0%, var(--surface-2) 100%);
+}
+
+html.dark .nepal-dashboard-card {
+  background: linear-gradient(160deg, var(--surface) 0%, rgba(240, 113, 85, 0.06) 100%);
+}

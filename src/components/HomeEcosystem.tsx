@@ -115,7 +115,13 @@ function EmptyCard({ children }: { children: React.ReactNode }) {
   return <p className="text-[13px] leading-relaxed text-muted">{children}</p>;
 }
 
-export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => void }) {
+export function HomeEcosystem({
+  onEnterRoom,
+  showFallenFund = false,
+}: {
+  onEnterRoom: (slug: string) => void;
+  showFallenFund?: boolean;
+}) {
   const { data } = useSWR<EcosystemData>("/api/home-ecosystem", fetcher, { refreshInterval: 20_000 });
 
   if (!data) {
@@ -368,7 +374,8 @@ export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => 
         </BracketCard>
       </section>
 
-      {/* FALLEN FUND */}
+      {/* FALLEN FUND — hidden during Nepal campaign */}
+      {showFallenFund && (
       <section className="mb-10">
         <SectionBlock eyebrow="🪦 Community" title="Fallen Fund" href="/fallen-fund" linkLabel="How it works" />
         <div className="fallen-fund-card flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -401,6 +408,7 @@ export function HomeEcosystem({ onEnterRoom }: { onEnterRoom: (slug: string) => 
           </div>
         </div>
       </section>
+      )}
 
       {/* RECENT HISTORY */}
       <section id="history">

@@ -7,6 +7,8 @@ import { REF_COOKIE } from "@/lib/brand";
 import type { BoardScope } from "@/lib/geo";
 import { BID_MODAL_NEW } from "@/lib/copy";
 import { RevenueBandSelect } from "@/components/RevenueBandSelect";
+import { NepalBidDisclosure } from "@/components/nepal/NepalBidDisclosure";
+import { isCampaignUiEnabled } from "@/lib/nepal-campaign-config";
 import type { RevenueBand } from "@/lib/revenue-bands";
 
 export interface BidPrefill {
@@ -42,6 +44,7 @@ export function BidModal({
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState(prefill.amount);
   const [revenueBand, setRevenueBand] = useState<RevenueBand | "">("");
+  const [campaignAck, setCampaignAck] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +53,7 @@ export function BidModal({
       setAmount(prefill.amount);
       setUrl(prefill.url ?? "");
       setError(null);
+      setCampaignAck(false);
     }
   }, [open, prefill]);
 
@@ -74,6 +78,7 @@ export function BidModal({
 
   const isTakeover = prefill.mode === "takeover";
   const minAmount = isTakeover ? board.takeoverPrice : existing ? 1 : board.minBid;
+  const showCampaignDisclosure = isCampaignUiEnabled() && scope === "global" && !isTakeover;
   const resultingTotal = (existing?.currentBid ?? 0) + amount;
   const wouldBeTop = resultingTotal >= board.claimTopPrice || isTakeover;
 
@@ -95,6 +100,9 @@ export function BidModal({
       return setError("Pick a revenue band for Underdog rank.");
     }
     if (!Number.isInteger(amount) || amount < 1) return setError("Enter a whole dollar amount.");
+    if (showCampaignDisclosure && !campaignAck) {
+      return setError("Please confirm you understand the campaign settlement process.");
+    }
 
     setSubmitting(true);
     try {
@@ -282,12 +290,20 @@ export function BidModal({
             <p className="rounded-lg border border-red/30 bg-red/10 px-3 py-2 text-sm text-red">{error}</p>
           )}
 
+          {showCampaignDisclosure && (
+            <NepalBidDisclosure amount={amount} acknowledged={campaignAck} onAcknowledge={setCampaignAck} />
+          )}
+
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || (showCampaignDisclosure && !campaignAck)}
             className="w-full rounded-full bg-accent px-4 py-3 text-base font-bold text-white hover:brightness-110 active:scale-[0.99] disabled:opacity-60 transition-all"
           >
-            {submitting ? "Redirecting to checkout…" : `Pay ${formatMoney(amount || 0)} & claim`}
+            {submitting
+              ? "Redirecting to checkout…"
+              : showCampaignDisclosure
+                ? `Continue to payment → ${formatMoney(amount || 0)}`
+                : `Pay ${formatMoney(amount || 0)} & claim`}
           </button>
           <p className="text-center text-[11px] text-muted">
             Payments processed securely. All sales final — see the{" "}

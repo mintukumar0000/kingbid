@@ -579,3 +579,57 @@ model MigrationClaim {
 
   @@map("migration_claims")
 }
+
+model NepalCampaignPayment {
+  id               String   @id @default(uuid())
+  publicId         String   @unique @map("public_id")
+  paymentId        String   @unique @map("payment_id")
+  bidId            String   @unique @map("bid_id")
+  amount           Int
+  bidderLabel      String   @map("bidder_label")
+  paymentStatus    String   @default("PAID") @map("payment_status")
+  settlementStatus String   @default("PENDING_SETTLEMENT") @map("settlement_status")
+  donationStatus   String   @default("PENDING") @map("donation_status")
+  settlementId     String?  @map("settlement_id")
+  settlement       NepalCampaignSettlement? @relation(fields: [settlementId], references: [id])
+  donationId       String?  @map("donation_id")
+  donation         NepalCampaignDonation? @relation(fields: [donationId], references: [id])
+  paidAt           DateTime @map("paid_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([paidAt(sort: Desc)])
+  @@index([settlementStatus])
+  @@index([donationStatus])
+  @@map("nepal_campaign_payments")
+}
+
+model NepalCampaignSettlement {
+  id               String   @id @default(uuid())
+  settlementNumber Int      @unique @map("settlement_number")
+  periodStart      DateTime @map("period_start")
+  periodEnd        DateTime @map("period_end")
+  grossAmount      Int      @map("gross_amount")
+  adjustments      Int      @default(0)
+  netAmount        Int      @map("net_amount")
+  settlementDate   DateTime @map("settlement_date")
+  status           String   @default("RECEIVED")
+  evidenceUrl      String?  @map("evidence_url")
+  createdAt        DateTime @default(now()) @map("created_at")
+  payments         NepalCampaignPayment[]
+
+  @@map("nepal_campaign_settlements")
+}
+
+model NepalCampaignDonation {
+  id             String   @id @default(uuid())
+  donationNumber Int      @unique @map("donation_number")
+  amount         Int
+  recipientName  String   @map("recipient_name")
+  donatedAt      DateTime @map("donated_at")
+  status         String   @default("CONFIRMED")
+  receiptUrl     String?  @map("receipt_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+  payments       NepalCampaignPayment[]
+
+  @@map("nepal_campaign_donations")
+}

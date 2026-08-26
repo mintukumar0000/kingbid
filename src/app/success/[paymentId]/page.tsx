@@ -15,6 +15,8 @@ import { isDodoLiveMode } from "@/lib/dodo";
 import { syncPaymentFromDodo } from "@/lib/dodo-sync";
 import { ogClaimUrl } from "@/lib/site";
 import { PAGE } from "@/lib/layout";
+import { NepalSuccessPanel } from "@/components/nepal/NepalSuccessPanel";
+import { getCampaignPaymentByPaymentId, getCampaignDashboard, isCampaignUiEnabled, isCampaignPaymentEligible } from "@/lib/nepal-campaign";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +70,26 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
   const livePayments = isDodoLiveMode();
   const rank = completed ? await getRankForListing(bid.listingId) : null;
   const total = completed ? bid.totalAfter : bid.amount;
+
+  const showCampaign =
+    completed &&
+    isCampaignUiEnabled() &&
+    bid.scope === "global" &&
+    bid.completedAt &&
+    isCampaignPaymentEligible(bid.completedAt);
+
+  let campaignPayment = null;
+  let campaignRaised = 0;
+  if (showCampaign) {
+    campaignPayment = await getCampaignPaymentByPaymentId(paymentId);
+    if (!campaignPayment) {
+      const { recordCampaignPayment } = await import("@/lib/nepal-campaign");
+      await recordCampaignPayment(paymentId).catch(() => undefined);
+      campaignPayment = await getCampaignPaymentByPaymentId(paymentId);
+    }
+    const dash = await getCampaignDashboard();
+    campaignRaised = dash.totals.raised;
+  }
 
   const shareText =
     rank === 1
@@ -131,24 +153,51 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
           </>
         ) : completed ? (
           <>
-            <div className="text-6xl">🎉</div>
-            <h1 className="mt-4 text-3xl font-extrabold">Payment confirmed!</h1>
+            <div className="text-6xl">{showCampaign ? "👑" : "🎉"}</div>
+            <h1 className="mt-4 text-3xl font-extrabold">
+              {showCampaign ? "You're on the board." : "Payment confirmed!"}
+            </h1>
             <p className="mt-3 text-muted">
-              <span className="font-semibold text-foreground">{bid.listing.title}</span> is live
-              {rank ? (
+              {showCampaign ? (
                 <>
-                  {" "}
-                  at{" "}
-                  <span
-                    className={`font-extrabold ${rank === 1 ? "text-gold" : "text-foreground"}`}
-                  >
-                    #{rank}
-                  </span>
+                  <span className="font-semibold text-foreground">{bid.listing.title}</span> is live
+                  {rank ? (
+                    <>
+                      {" "}
+                      at{" "}
+                      <span className={`font-extrabold ${rank === 1 ? "text-gold" : "text-foreground"}`}>#{rank}</span>
+                    </>
+                  ) : null}{" "}
+                  — your bid supports Nepal flood relief transparency on Kingbid.
                 </>
-              ) : null}{" "}
-              with a total bid of{" "}
-              <span className="tabular font-semibold text-foreground">{formatMoney(total)}</span>.
+              ) : (
+                <>
+                  <span className="font-semibold text-foreground">{bid.listing.title}</span> is live
+                  {rank ? (
+                    <>
+                      {" "}
+                      at{" "}
+                      <span
+                        className={`font-extrabold ${rank === 1 ? "text-gold" : "text-foreground"}`}
+                      >
+                        #{rank}
+                      </span>
+                    </>
+                  ) : null}{" "}
+                  with a total bid of{" "}
+                  <span className="tabular font-semibold text-foreground">{formatMoney(total)}</span>.
+                </>
+              )}
             </p>
+
+            {showCampaign && (
+              <NepalSuccessPanel
+                rank={rank}
+                bidAmount={bid.amount}
+                publicId={campaignPayment?.publicId ?? null}
+                campaignRaised={campaignRaised}
+              />
+            )}
 
             <div className="mt-8">
               <ShareButtons text={shareText} slug={bid.listing.slug} />

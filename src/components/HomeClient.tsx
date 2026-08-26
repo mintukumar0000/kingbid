@@ -19,11 +19,15 @@ import { HomeEcosystem } from "@/components/HomeEcosystem";
 import { HowItWorksStrip } from "@/components/HowItWorksStrip";
 import { HashScrollOnLoad } from "@/components/HashScrollOnLoad";
 import { CountryPicker } from "@/components/CountryPicker";
+import { NepalCampaignBanner } from "@/components/nepal/NepalCampaignBanner";
+import { NepalReliefDashboard } from "@/components/nepal/NepalReliefDashboard";
 import { PAGE_WIDE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
 import { COUNTRY_COOKIE } from "@/lib/brand";
 import { emptyBoardMessage, heroSubtext, HERO_TAGLINE, HERO_TAGLINE_LINE2, HERO_EYEBROW, HERO_BODY } from "@/lib/copy";
+import { isCampaignUiEnabled } from "@/lib/nepal-campaign-config";
+import Link from "next/link";
 
 const PAGE_SIZE = 50;
 
@@ -200,6 +204,8 @@ function HomeClientInner({
     return null;
   }
 
+  const showNepalCampaign = isCampaignUiEnabled() && !inCategoryRoom && scope === "global";
+
   function renderHero(variant: "home" | "room") {
     const claimLine =
       scope === "local" ? (
@@ -214,13 +220,34 @@ function HomeClientInner({
       <>
         {variant === "home" ? (
           <>
-            <p className="kb-eyebrow">{HERO_EYEBROW}</p>
+            <p className="kb-eyebrow">{showNepalCampaign ? "🇳🇵 Nepal Flood Relief Campaign" : HERO_EYEBROW}</p>
             <h1 className="font-display mt-3.5 max-w-2xl text-[40px] font-medium leading-[1.08] text-foreground sm:text-[50px]">
-              {HERO_TAGLINE}
-              <br />
-              {HERO_TAGLINE_LINE2}
+              {showNepalCampaign ? (
+                <>Compete for attention. Help Nepal. 🇳🇵</>
+              ) : (
+                <>
+                  {HERO_TAGLINE}
+                  <br />
+                  {HERO_TAGLINE_LINE2}
+                </>
+              )}
             </h1>
-            <p className="mt-4 max-w-[480px] text-[16px] leading-relaxed text-muted">{HERO_BODY}</p>
+            <p className="mt-4 max-w-[520px] text-[16px] leading-relaxed text-muted">
+              {showNepalCampaign
+                ? "Claim a position on the Kingbid leaderboard while helping fund flood relief in Nepal."
+                : HERO_BODY}
+            </p>
+            {showNepalCampaign && (
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-muted">
+                <span>
+                  Kingbid platform fee: <strong className="text-green">$0</strong>
+                </span>
+                <span>Payment processing by Dodo Payments</span>
+                <Link href="/nepal-relief" className="font-semibold text-accent hover:underline">
+                  See campaign accounting →
+                </Link>
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -420,6 +447,7 @@ function HomeClientInner({
   return (
     <>
       <HashScrollOnLoad />
+      {showNepalCampaign && <NepalCampaignBanner />}
       <div className={`${PAGE_WIDE} flex flex-col gap-3 pb-2 pt-4 sm:flex-row sm:items-center sm:justify-between`}>
         <StatsBar />
         {!inCategoryRoom && (
@@ -468,7 +496,13 @@ function HomeClientInner({
             {renderHero("home")}
           </section>
 
-          {scope === "global" && <HomeEcosystem onEnterRoom={enterRoom} />}
+          {showNepalCampaign && (
+            <section className={`${PAGE_WIDE} pb-6`}>
+              <NepalReliefDashboard compact />
+            </section>
+          )}
+
+          {scope === "global" && <HomeEcosystem onEnterRoom={enterRoom} showFallenFund={false} />}
 
           <section className={`${PAGE_WIDE} pb-6`}>
             <div className="mb-6 border-t border-border pt-10">

@@ -7,6 +7,7 @@ import { RelativeTime } from "@/components/RelativeTime";
 import { AdminInvitesPanel } from "@/components/AdminInvitesPanel";
 import { AdminRoomsPanel } from "@/components/AdminRoomsPanel";
 import { AdminCategoryProposalsPanel } from "@/components/AdminCategoryProposalsPanel";
+import { AdminVerificationPanel } from "@/components/AdminVerificationPanel";
 
 interface AdminBid {
   id: string;
@@ -145,6 +146,7 @@ export default function AdminPage() {
               </table>
             </div>
 
+            <AdminVerificationPanel password={password} />
             <AdminRoomsPanel password={password} />
             <AdminCategoryProposalsPanel password={password} />
             <AdminInvitesPanel password={password} />

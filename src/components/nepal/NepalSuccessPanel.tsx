@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import { NEPAL_CAMPAIGN, NEPAL_PAYER_REASSURANCE_SHORT } from "@/lib/nepal-campaign-config";
+import { VerificationRequestTrigger } from "@/components/nepal/VerificationRequestModal";
 
 export function NepalSuccessPanel({
   rank,
@@ -53,9 +54,11 @@ export function NepalSuccessPanel({
 
       <p className="mt-4 text-[12px] leading-relaxed text-muted">
         {NEPAL_PAYER_REASSURANCE_SHORT}{" "}
-        <a href={`mailto:${NEPAL_CAMPAIGN.contactEmail}`} className="font-medium text-accent hover:underline">
-          Request verification →
-        </a>
+        <VerificationRequestTrigger
+          className="font-medium text-accent hover:underline"
+          label="Request verification →"
+          defaultPaymentPublicId={publicId ?? undefined}
+        />
       </p>
 
       <div className="mt-5 rounded-xl border border-border bg-surface p-4">

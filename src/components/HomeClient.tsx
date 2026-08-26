@@ -22,7 +22,8 @@ import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
 import { COUNTRY_COOKIE } from "@/lib/brand";
 import { emptyBoardMessage, heroSubtext, HERO_EYEBROW, HERO_CAMPAIGN_EYEBROW, HERO_CAMPAIGN_SUBTEXT } from "@/lib/copy";
-import { isCampaignUiEnabled, NEPAL_CAMPAIGN } from "@/lib/nepal-campaign-config";
+import { isCampaignUiEnabled } from "@/lib/nepal-campaign-config";
+import { VerificationRequestTrigger } from "@/components/nepal/VerificationRequestModal";
 import Link from "next/link";
 
 const PAGE_SIZE = 50;
@@ -246,9 +247,7 @@ function HomeClientInner({
             Live transparency →
           </Link>{" "}
           ·{" "}
-          <a href={`mailto:${NEPAL_CAMPAIGN.contactEmail}`} className="font-medium text-accent hover:underline">
-            Request verification →
-          </a>
+          <VerificationRequestTrigger className="font-medium text-accent hover:underline" />
         </>
       ) : (
         heroSubtext(board.minBid, scope, scope === "local" ? countryName : (board.categoryName ?? undefined))

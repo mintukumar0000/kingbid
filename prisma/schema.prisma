@@ -633,3 +633,19 @@ model NepalCampaignDonation {
 
   @@map("nepal_campaign_donations")
 }
+
+model NepalVerificationRequest {
+  id              String   @id @default(uuid())
+  email           String
+  name            String   @default("")
+  message         String   @default("")
+  paymentPublicId String?  @map("payment_public_id")
+  listingUrl      String?  @map("listing_url")
+  status          String   @default("pending") // pending | replied
+  adminNotes      String   @default("") @map("admin_notes")
+  createdAt       DateTime @default(now()) @map("created_at")
+  repliedAt       DateTime? @map("replied_at")
+
+  @@index([status, createdAt(sort: Desc)])
+  @@map("nepal_verification_requests")
+}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import { campaignPhase, isCampaignPaymentEligible, NEPAL_CAMPAIGN, NEPAL_PAYER_REASSURANCE_SHORT } from "@/lib/nepal-campaign-config";
+import { VerificationRequestTrigger } from "@/components/nepal/VerificationRequestModal";
 
 export function NepalBidDisclosure({
   amount,
@@ -25,9 +26,7 @@ export function NepalBidDisclosure({
       {countsTowardCampaign ? (
         <p className="mt-1.5 text-[11px] leading-snug text-muted">
           {NEPAL_PAYER_REASSURANCE_SHORT}{" "}
-          <a href={`mailto:${NEPAL_CAMPAIGN.contactEmail}`} className="text-accent hover:underline">
-            Email for proof →
-          </a>{" "}
+          <VerificationRequestTrigger className="text-accent hover:underline" label="Request verification →" />{" "}
           ·{" "}
           <Link href="/nepal-relief" className="text-accent hover:underline">
             Live accounting →

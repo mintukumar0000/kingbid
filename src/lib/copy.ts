@@ -27,12 +27,10 @@ export function emptyBoardMessage(minBid: number, scope: "global" | "local", lab
   return `0 listings yet — founding #1 is ${formatMoney(minBid)}. Cheapest it will ever be.`;
 }
 
-export const HERO_TAGLINE = "Compete for attention.";
-export const HERO_TAGLINE_LINE2 = "Build your reputation.";
-export const HERO_BRAND = "KINGBID";
 export const HERO_EYEBROW = "Live Kingdom";
-export const HERO_BODY =
-  "Pay to rank. Earn reputation through rooms, discovery bets, and keeper status.";
+export const HERO_CAMPAIGN_EYEBROW = "🇳🇵 Nepal Flood Relief";
+export const HERO_CAMPAIGN_SUBTEXT = (minBid: number) =>
+  `New spots start at ${formatMoney(minBid)}. Kingbid takes $0 — every dollar supports flood relief.`;
 
 export const REVENUE_TICKER_LINE = "Total raised on Kingbid since launch";
 export const BID_MODAL_NEW = (minBid: number) =>

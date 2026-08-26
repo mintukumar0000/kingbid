@@ -21,7 +21,7 @@ import { PAGE_WIDE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
 import { COUNTRY_COOKIE } from "@/lib/brand";
-import { emptyBoardMessage, heroSubtext, HERO_TAGLINE, HERO_TAGLINE_LINE2, HERO_EYEBROW, HERO_BODY } from "@/lib/copy";
+import { emptyBoardMessage, heroSubtext, HERO_EYEBROW, HERO_CAMPAIGN_EYEBROW, HERO_CAMPAIGN_SUBTEXT } from "@/lib/copy";
 import { isCampaignUiEnabled } from "@/lib/nepal-campaign-config";
 import Link from "next/link";
 
@@ -195,80 +195,82 @@ function HomeClientInner({
   const showNepalCampaign = isCampaignUiEnabled() && !inCategoryRoom && scope === "global";
 
   function renderHero(variant: "home" | "room") {
-    const claimLine =
+    const claimHeadline =
       scope === "local" ? (
-        <>Claim #{heroRank} in {countryName} for</>
+        <>
+          Claim #{heroRank} in {countryName} for
+        </>
       ) : variant === "room" && board.categoryName ? (
-        <>Claim #{heroRank} in {board.categoryName} for</>
+        <>
+          Claim #{heroRank} in {board.categoryName} for
+        </>
+      ) : showNepalCampaign && variant === "home" ? (
+        <>
+          Claim #1 for <span className="text-accent">Nepal relief</span>
+        </>
       ) : (
-        <>Claim #{heroRank} for</>
+        <>Claim #1 for</>
       );
+
+    const priceControls = (
+      <span className="inline-flex items-center gap-1.5 sm:gap-2">
+        <button
+          type="button"
+          onClick={() => setHeroAmount(Math.max(board.minBid, heroValue - 1))}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-[22px] leading-none text-muted transition-colors hover:border-border-strong hover:text-foreground sm:h-10 sm:w-10"
+          aria-label="Decrease amount"
+        >
+          −
+        </button>
+        <span className="font-mono-label text-[34px] font-bold tabular text-accent underline decoration-accent/40 underline-offset-[8px] sm:text-[46px]">
+          {formatMoneyPlain(heroValue)}
+        </span>
+        <button
+          type="button"
+          onClick={() => setHeroAmount(Math.min(999_999, heroValue + 1))}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-[22px] leading-none text-muted transition-colors hover:border-border-strong hover:text-foreground sm:h-10 sm:w-10"
+          aria-label="Increase amount"
+        >
+          +
+        </button>
+      </span>
+    );
+
+    const heroSubline =
+      showNepalCampaign && variant === "home" && scope === "global" ? (
+        <>
+          {HERO_CAMPAIGN_SUBTEXT(board.minBid)}{" "}
+          <Link href="/nepal-relief" className="font-medium text-accent hover:underline">
+            Live transparency →
+          </Link>
+        </>
+      ) : (
+        heroSubtext(board.minBid, scope, scope === "local" ? countryName : (board.categoryName ?? undefined))
+      );
+
+    const outbidLabel = board.entries.length > 0 ? "Outbid" : "Claim #1";
 
     return (
       <>
         {variant === "home" ? (
-          <>
-            <p className="kb-eyebrow mx-auto">{HERO_EYEBROW}</p>
-            <h1 className="font-display mx-auto mt-3.5 max-w-2xl text-[40px] font-medium leading-[1.08] text-foreground sm:text-[50px]">
-              {HERO_TAGLINE}
-              <br />
-              {HERO_TAGLINE_LINE2}
-            </h1>
-            <p className="mx-auto mt-4 max-w-[480px] text-[16px] leading-relaxed text-muted">{HERO_BODY}</p>
-            {showNepalCampaign && (
-              <p className="mx-auto mt-3 max-w-[520px] text-[13px] text-muted">
-                🇳🇵 Eligible bids during the campaign window support{" "}
-                <Link href="/nepal-relief" className="font-semibold text-accent hover:underline">
-                  Nepal flood relief
-                </Link>{" "}
-                — Kingbid takes $0 platform fee.{" "}
-                <Link href="/nepal-relief" className="text-accent hover:underline">
-                  See live accounting →
-                </Link>
-              </p>
-            )}
-          </>
+          <p className="kb-eyebrow mx-auto">
+            {showNepalCampaign ? HERO_CAMPAIGN_EYEBROW : HERO_EYEBROW}
+          </p>
         ) : (
           <>
             <p className="kb-eyebrow">{HERO_EYEBROW}</p>
-            <h1 className="font-display mt-3 text-[28px] font-semibold tracking-tight text-foreground sm:text-[34px]">
+            <h2 className="font-display mt-3 text-[28px] font-semibold tracking-tight text-foreground sm:text-[34px]">
               {board.categoryName ?? "Room"}
-            </h1>
+            </h2>
           </>
         )}
 
-        <div className={`mx-auto max-w-xl text-center ${variant === "home" ? "mt-8" : "mt-6"}`}>
-          <p className="text-[14px] font-medium text-foreground/90">
-            {claimLine}
-            <span className="mx-2 inline-flex items-baseline justify-center gap-2 align-middle">
-              <button
-                type="button"
-                onClick={() => setHeroAmount(Math.max(board.minBid, heroValue - 1))}
-                className="text-[20px] leading-none text-muted hover:text-foreground"
-                aria-label="Decrease amount"
-              >
-                −
-              </button>
-              <span className="font-mono-label text-[22px] font-bold text-accent underline decoration-accent/50 underline-offset-[6px] sm:text-[26px]">
-                {formatMoneyPlain(heroValue)}
-              </span>
-              <button
-                type="button"
-                onClick={() => setHeroAmount(Math.min(999_999, heroValue + 1))}
-                className="text-[20px] leading-none text-muted hover:text-foreground"
-                aria-label="Increase amount"
-              >
-                +
-              </button>
-            </span>
-          </p>
-          <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-            {heroSubtext(
-              board.minBid,
-              scope,
-              scope === "local" ? countryName : board.categoryName ?? undefined
-            )}
-          </p>
+        <div className={`mx-auto max-w-3xl text-center ${variant === "home" ? "mt-4" : "mt-6"}`}>
+          <h1 className="font-display flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[28px] font-semibold leading-[1.1] tracking-tight text-foreground sm:text-[38px]">
+            <span>{claimHeadline}</span>
+            {priceControls}
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl text-[13px] leading-relaxed text-muted">{heroSubline}</p>
         </div>
 
         <form
@@ -287,14 +289,14 @@ function HomeClientInner({
           <input
             value={heroUrl}
             onChange={(e) => setHeroUrl(e.target.value)}
-            placeholder="Your product URL or @handle"
+            placeholder="URL or @handle"
             className="min-w-0 flex-1 bg-transparent px-2 py-3 text-[14px] outline-none placeholder:text-muted"
           />
           <button
             type="submit"
             className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
           >
-            Kingbid
+            {variant === "home" ? outbidLabel : "Kingbid"}
           </button>
         </form>
 

@@ -142,173 +142,177 @@ export function BidModal({
       onClick={onClose}
     >
       <div
-        className="modal-in w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow)]"
+        className="modal-in flex max-h-[min(90dvh,620px)] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-surface shadow-[var(--shadow)] sm:max-w-sm sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between mb-1">
-          <h2 className="text-xl font-bold">
+        <div className="shrink-0 border-b border-border px-5 pb-3 pt-5">
+          <div className="mb-1 flex items-start justify-between">
+            <h2 className="text-lg font-bold leading-tight">
+              {isTakeover
+                ? "🔒 Takeover #1 for 3 hours"
+                : prefill.targetRank
+                  ? `Claim #${prefill.targetRank}`
+                  : "Get on the board"}
+            </h2>
+            <button
+              onClick={onClose}
+              className="-mt-1 text-xl leading-none text-muted hover:text-foreground"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
+          <p className="text-[13px] leading-snug text-muted">
             {isTakeover
-              ? "🔒 Takeover #1 for 3 hours"
-              : prefill.targetRank
-                ? `Claim #${prefill.targetRank}`
-                : "Get on the board"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-muted hover:text-foreground text-xl leading-none -mt-1"
-            aria-label="Close"
-          >
-            ×
-          </button>
+              ? `Pay 5x the current top bid (${formatMoney(board.takeoverPrice)}) to lock #1 for 3 hours.`
+              : scope === "local" && countryName
+                ? `Counts on the ${countryName} board only. Payment claims your rank instantly.`
+                : prefill.targetTitle
+                  ? `Outbid “${prefill.targetTitle}”. Payment claims the rank instantly.`
+                  : BID_MODAL_NEW(board.minBid)}
+          </p>
         </div>
-        <p className="text-sm text-muted mb-5">
-          {isTakeover
-            ? `Pay 5x the current top bid (${formatMoney(board.takeoverPrice)}) to lock the #1 spot for 3 consecutive hours. Nobody can displace you until it expires.`
-            : scope === "local" && countryName
-              ? `This bid counts on the ${countryName} board only. Payment claims your rank instantly.`
-              : prefill.targetTitle
-                ? `Outbid “${prefill.targetTitle}”. Payment claims the rank — instantly.`
-                : BID_MODAL_NEW(board.minBid)}
-        </p>
 
-        <form onSubmit={submit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-muted mb-1.5">
-              Website URL or X @handle
-            </label>
-            <input
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="yoursite.com or @handle"
-              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-accent transition-colors"
-              autoFocus
-            />
-            {existing && (
-              <p className="mt-1.5 text-xs text-accent">
-                Already on the board at {formatMoney(existing.currentBid)} — you only pay the
-                difference. Your total becomes {formatMoney(resultingTotal)}.
-                {existing.creditBalance > 0 && (
-                  <> You have ${existing.creditBalance} referral credit — applied automatically at checkout.</>
+        <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-5 py-4">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted">Website URL or X @handle</label>
+              <input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="yoursite.com or @handle"
+                className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+                autoFocus
+              />
+              {existing && (
+                <p className="mt-1 text-[11px] text-accent">
+                  On board at {formatMoney(existing.currentBid)} — pay the difference. Total becomes{" "}
+                  {formatMoney(resultingTotal)}.
+                  {existing.creditBalance > 0 && <> ${existing.creditBalance} referral credit at checkout.</>}
+                </p>
+              )}
+            </div>
+
+            {!existing && (
+              <>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Title</label>
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Your product name"
+                    maxLength={80}
+                    className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">
+                    Description <span className="opacity-60">(optional)</span>
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="One or two sentences about what you do"
+                    maxLength={200}
+                    rows={2}
+                    className="w-full resize-none rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+                  />
+                </div>
+                <RevenueBandSelect value={revenueBand} onChange={setRevenueBand} required />
+              </>
+            )}
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted">
+                Email <span className="opacity-60">(optional)</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted">
+                {isTakeover ? "Takeover price" : "Amount (USD, whole dollars)"}
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAmount((a) => Math.max(minAmount, a - 1))}
+                  disabled={isTakeover}
+                  className="h-10 w-10 rounded-lg border border-border bg-surface-2 text-lg transition-colors hover:border-border-strong disabled:opacity-40"
+                >
+                  −
+                </button>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">$</span>
+                  <input
+                    type="number"
+                    min={minAmount}
+                    max={999999}
+                    step={1}
+                    value={amount}
+                    disabled={isTakeover}
+                    onChange={(e) => setAmount(parseInt(e.target.value || "0", 10))}
+                    className="tabular w-full rounded-lg border border-border bg-surface-2 py-2 pl-7 pr-3 text-base font-semibold outline-none transition-colors focus:border-accent disabled:opacity-70"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAmount((a) => Math.min(999999, a + 1))}
+                  disabled={isTakeover}
+                  className="h-10 w-10 rounded-lg border border-border bg-surface-2 text-lg transition-colors hover:border-border-strong disabled:opacity-40"
+                >
+                  +
+                </button>
+              </div>
+              <p className="mt-1 text-[11px] text-muted">
+                {isTakeover ? (
+                  <>Locks #1 for 3 hours. Beat now: {formatMoney(board.topBid)}.</>
+                ) : wouldBeTop ? (
+                  <span className="text-gold">This takes the #1 spot 👑</span>
+                ) : (
+                  <>
+                    #1 costs {formatMoney(board.claimTopPrice)}
+                    {existing ? ` (+${formatMoney(Math.max(board.claimTopPrice - existing.currentBid, 1))})` : ""}.
+                  </>
                 )}
               </p>
+            </div>
+
+            {error && (
+              <p className="rounded-lg border border-red/30 bg-red/10 px-3 py-2 text-sm text-red">{error}</p>
+            )}
+
+            {showCampaignDisclosure && (
+              <NepalBidDisclosure amount={amount} acknowledged={campaignAck} onAcknowledge={setCampaignAck} />
             )}
           </div>
 
-          {!existing && (
-            <>
-              <div>
-                <label className="block text-xs font-medium text-muted mb-1.5">Title</label>
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Your product name"
-                  maxLength={80}
-                  className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-accent transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-muted mb-1.5">
-                  Description <span className="opacity-60">(optional)</span>
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="One or two sentences about what you do"
-                  maxLength={200}
-                  rows={2}
-                  className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-accent transition-colors resize-none"
-                />
-              </div>
-              <RevenueBandSelect value={revenueBand} onChange={setRevenueBand} required />
-            </>
-          )}
-
-          <div>
-            <label className="block text-xs font-medium text-muted mb-1.5">
-              Email <span className="opacity-60">(optional — get alerted when you&apos;re outbid)</span>
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.com"
-              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-accent transition-colors"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-muted mb-1.5">
-              {isTakeover ? "Takeover price" : "Amount (USD, whole dollars)"}
-            </label>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setAmount((a) => Math.max(minAmount, a - 1))}
-                disabled={isTakeover}
-                className="h-11 w-11 rounded-lg border border-border bg-surface-2 text-lg hover:border-border-strong disabled:opacity-40 transition-colors"
-              >
-                −
-              </button>
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">$</span>
-                <input
-                  type="number"
-                  min={minAmount}
-                  max={999999}
-                  step={1}
-                  value={amount}
-                  disabled={isTakeover}
-                  onChange={(e) => setAmount(parseInt(e.target.value || "0", 10))}
-                  className="tabular w-full rounded-lg border border-border bg-surface-2 pl-7 pr-3 py-2.5 text-base font-semibold outline-none focus:border-accent transition-colors disabled:opacity-70"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => setAmount((a) => Math.min(999999, a + 1))}
-                disabled={isTakeover}
-                className="h-11 w-11 rounded-lg border border-border bg-surface-2 text-lg hover:border-border-strong disabled:opacity-40 transition-colors"
-              >
-                +
-              </button>
-            </div>
-            <p className="mt-1.5 text-xs text-muted">
-              {isTakeover ? (
-                <>Locks #1 until 3 hours after payment. Bid to beat right now: {formatMoney(board.topBid)}.</>
-              ) : wouldBeTop ? (
-                <span className="text-gold">This takes the #1 spot 👑</span>
-              ) : (
-                <>
-                  #1 costs {formatMoney(board.claimTopPrice)}
-                  {existing ? ` (pay ${formatMoney(Math.max(board.claimTopPrice - existing.currentBid, 1))} more)` : ""}. Paying
-                  less still puts you on the board at whatever rank your total can take.
-                </>
-              )}
+          <div className="shrink-0 border-t border-border bg-surface px-5 py-4">
+            <button
+              type="submit"
+              disabled={submitting || (showCampaignDisclosure && !campaignAck)}
+              className="w-full rounded-full bg-accent px-4 py-2.5 text-[15px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-60"
+            >
+              {submitting
+                ? "Redirecting to checkout…"
+                : showCampaignDisclosure
+                  ? `Continue to payment → ${formatMoney(amount || 0)}`
+                  : `Pay ${formatMoney(amount || 0)} & claim`}
+            </button>
+            <p className="mt-2 text-center text-[10px] text-muted">
+              Secure checkout. All sales final — see the{" "}
+              <a href="/rules" className="underline hover:text-foreground">
+                rules
+              </a>
+              .
             </p>
           </div>
-
-          {error && (
-            <p className="rounded-lg border border-red/30 bg-red/10 px-3 py-2 text-sm text-red">{error}</p>
-          )}
-
-          {showCampaignDisclosure && (
-            <NepalBidDisclosure amount={amount} acknowledged={campaignAck} onAcknowledge={setCampaignAck} />
-          )}
-
-          <button
-            type="submit"
-            disabled={submitting || (showCampaignDisclosure && !campaignAck)}
-            className="w-full rounded-full bg-accent px-4 py-3 text-base font-bold text-white hover:brightness-110 active:scale-[0.99] disabled:opacity-60 transition-all"
-          >
-            {submitting
-              ? "Redirecting to checkout…"
-              : showCampaignDisclosure
-                ? `Continue to payment → ${formatMoney(amount || 0)}`
-                : `Pay ${formatMoney(amount || 0)} & claim`}
-          </button>
-          <p className="text-center text-[11px] text-muted">
-            Payments processed securely. All sales final — see the{" "}
-            <a href="/rules" className="underline hover:text-foreground">rules</a>.
-          </p>
         </form>
       </div>
     </div>

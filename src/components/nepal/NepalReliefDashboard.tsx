@@ -14,8 +14,6 @@ type DashboardPayload = {
     receivedByKingbid: number;
     donated: number;
     paymentCount: number;
-    goalAmount: number;
-    progressPct: number;
   };
   updatedAt?: string;
 };
@@ -50,13 +48,11 @@ export function NepalReliefDashboard({ compact = false }: { compact?: boolean })
           <p className="font-mono-label mt-2 text-[36px] font-semibold leading-none text-accent sm:text-[44px]">
             {formatMoney(t.raised)}
           </p>
-          <p className="mt-1 text-[13px] text-muted">raised through Kingbid</p>
+          <p className="mt-1 text-[13px] text-muted">raised through Kingbid — no cap, all tracked publicly</p>
         </div>
-        {!compact && (
-          <Link href="/nepal-relief" className="text-[13px] font-semibold text-accent hover:underline">
-            Full transparency →
-          </Link>
-        )}
+        <Link href="/nepal-relief" className="text-[13px] font-semibold text-accent hover:underline">
+          Full transparency →
+        </Link>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -66,29 +62,15 @@ export function NepalReliefDashboard({ compact = false }: { compact?: boolean })
         <Metric label="Donated" value={formatMoney(t.donated)} />
       </div>
 
-      <div className="mt-5">
-        <div className="flex items-center justify-between text-[12px]">
-          <span className="font-medium text-foreground">Campaign goal</span>
-          <span className="tabular text-muted">
-            {formatMoney(t.raised)} / {formatMoney(t.goalAmount)}
-          </span>
-        </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-border/60">
-          <div
-            className="h-full rounded-full bg-accent transition-all duration-500"
-            style={{ width: `${Math.min(100, t.progressPct)}%` }}
-          />
-        </div>
-        <p className="mt-2 text-[11px] text-muted">
-          {t.paymentCount} successful payment{t.paymentCount === 1 ? "" : "s"}
-          {data.updatedAt && (
-            <>
-              {" "}
-              · Last updated <RelativeTime date={data.updatedAt} />
-            </>
-          )}
-        </p>
-      </div>
+      <p className="mt-4 text-[11px] text-muted">
+        {t.paymentCount} successful payment{t.paymentCount === 1 ? "" : "s"}
+        {data.updatedAt && (
+          <>
+            {" "}
+            · Last updated <RelativeTime date={data.updatedAt} />
+          </>
+        )}
+      </p>
     </section>
   );
 }

@@ -280,6 +280,10 @@ export function NepalReliefPageContent() {
             campaign.
           </p>
           <p>
+            <strong className="text-foreground">Fundraising cap:</strong> None. Every eligible campaign payment during
+            the window counts toward relief — there is no fixed goal. All amounts are tracked publicly on this page.
+          </p>
+          <p>
             <strong className="text-foreground">Minimum bid:</strong> ${NEPAL_CAMPAIGN.minBid} USD (same as the
             Kingbid board minimum). A successful payment means checkout completed and the bid marked paid in our
             system — not merely initiated.

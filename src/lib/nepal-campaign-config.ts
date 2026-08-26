@@ -1,13 +1,15 @@
 export const NEPAL_CAMPAIGN = {
   name: "Nepal Flood Relief",
   recipient: "Nepal Red Cross Society",
-  goalAmount: 20_000,
   minBid: 5,
   platformFee: 0,
   startDate: new Date("2026-08-17T00:00:00.000Z"),
   endDate: new Date("2026-08-25T23:59:59.999Z"),
   contactEmail: "heyquixy@gmail.com",
 } as const;
+
+/** Open-ended milestones for timeline display — not a fundraising cap. */
+export const NEPAL_FUNDRAISING_MILESTONES = [100, 500, 1_000, 5_000, 10_000, 20_000] as const;
 
 export function isCampaignUiEnabled(): boolean {
   return process.env.NEPAL_CAMPAIGN_ENABLED !== "false";

@@ -15,12 +15,9 @@ import { LiveRevenueTicker } from "@/components/LiveRevenueTicker";
 import { ReferralTracker } from "@/components/ReferralTracker";
 import { ScopeToggle } from "@/components/ScopeToggle";
 import { CategoryRoom, CategoryEmptyState } from "@/components/CategoryRoom";
-import { HomeEcosystem } from "@/components/HomeEcosystem";
-import { HowItWorksStrip } from "@/components/HowItWorksStrip";
 import { HashScrollOnLoad } from "@/components/HashScrollOnLoad";
 import { CountryPicker } from "@/components/CountryPicker";
 import { NepalCampaignBanner } from "@/components/nepal/NepalCampaignBanner";
-import { NepalReliefDashboard } from "@/components/nepal/NepalReliefDashboard";
 import { PAGE_WIDE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
@@ -178,14 +175,6 @@ function HomeClientInner({
     setModalOpen(true);
   }
 
-  function enterRoom(slug: string) {
-    setCategorySlug(slug);
-    setScope("global");
-    setPage(1);
-    setHeroAmount(null);
-    window.history.replaceState(null, "", `/?room=${encodeURIComponent(slug)}`);
-  }
-
   function exitRoom() {
     setCategorySlug(null);
     setPage(1);
@@ -220,33 +209,24 @@ function HomeClientInner({
       <>
         {variant === "home" ? (
           <>
-            <p className="kb-eyebrow">{showNepalCampaign ? "🇳🇵 Nepal Flood Relief Campaign" : HERO_EYEBROW}</p>
+            <p className="kb-eyebrow">{HERO_EYEBROW}</p>
             <h1 className="font-display mt-3.5 max-w-2xl text-[40px] font-medium leading-[1.08] text-foreground sm:text-[50px]">
-              {showNepalCampaign ? (
-                <>Compete for attention. Help Nepal. 🇳🇵</>
-              ) : (
-                <>
-                  {HERO_TAGLINE}
-                  <br />
-                  {HERO_TAGLINE_LINE2}
-                </>
-              )}
+              {HERO_TAGLINE}
+              <br />
+              {HERO_TAGLINE_LINE2}
             </h1>
-            <p className="mt-4 max-w-[520px] text-[16px] leading-relaxed text-muted">
-              {showNepalCampaign
-                ? "Claim a position on the Kingbid leaderboard while helping fund flood relief in Nepal."
-                : HERO_BODY}
-            </p>
+            <p className="mt-4 max-w-[480px] text-[16px] leading-relaxed text-muted">{HERO_BODY}</p>
             {showNepalCampaign && (
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-muted">
-                <span>
-                  Kingbid platform fee: <strong className="text-green">$0</strong>
-                </span>
-                <span>Payment processing by Dodo Payments</span>
+              <p className="mt-3 text-[13px] text-muted">
+                🇳🇵 Eligible bids during the campaign window support{" "}
                 <Link href="/nepal-relief" className="font-semibold text-accent hover:underline">
-                  See campaign accounting →
+                  Nepal flood relief
+                </Link>{" "}
+                — Kingbid takes $0 platform fee.{" "}
+                <Link href="/nepal-relief" className="text-accent hover:underline">
+                  See live accounting →
                 </Link>
-              </div>
+              </p>
             )}
           </>
         ) : (
@@ -324,8 +304,6 @@ function HomeClientInner({
             ? "Have a claim invite? Submit the same URL after opening your link."
             : "Already on the list? Enter the same URL or @handle and up your bid."}
         </p>
-
-        {variant === "home" && <HowItWorksStrip />}
       </>
     );
   }
@@ -496,16 +474,8 @@ function HomeClientInner({
             {renderHero("home")}
           </section>
 
-          {showNepalCampaign && (
-            <section className={`${PAGE_WIDE} pb-6`}>
-              <NepalReliefDashboard compact />
-            </section>
-          )}
-
-          {scope === "global" && <HomeEcosystem onEnterRoom={enterRoom} showFallenFund={false} />}
-
           <section className={`${PAGE_WIDE} pb-6`}>
-            <div className="mb-6 border-t border-border pt-10">
+            <div className="mb-6 pt-2">
               <p className="kb-eyebrow">Full board</p>
               <h2 className="font-display mt-1.5 text-[26px] font-semibold text-foreground sm:text-[28px]">
                 Leaderboard

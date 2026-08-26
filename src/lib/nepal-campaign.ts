@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/db";
 import {
   NEPAL_CAMPAIGN,
+  NEPAL_FUNDRAISING_MILESTONES,
   isCampaignPaymentEligible,
   isCampaignUiEnabled,
   campaignPhase,
 } from "@/lib/nepal-campaign-config";
 
-export { NEPAL_CAMPAIGN, isCampaignPaymentEligible, isCampaignUiEnabled, campaignPhase } from "@/lib/nepal-campaign-config";
+export { NEPAL_CAMPAIGN, NEPAL_FUNDRAISING_MILESTONES, isCampaignPaymentEligible, isCampaignUiEnabled, campaignPhase } from "@/lib/nepal-campaign-config";
 
 function bidderLabel(displayUrl: string | null | undefined, email: string | null | undefined): string {
   if (displayUrl?.trim()) return displayUrl.trim();
@@ -135,8 +136,6 @@ export async function getCampaignDashboard() {
       receivedByKingbid: totals.receivedByKingbid,
       donated: totals.donated,
       paymentCount: totals.paymentCount,
-      goalAmount: NEPAL_CAMPAIGN.goalAmount,
-      progressPct: Math.min(100, Math.round((totals.successfulTotal / NEPAL_CAMPAIGN.goalAmount) * 100)),
     },
     ledger: payments.map((p) => ({
       id: p.id,
@@ -182,11 +181,14 @@ function buildTimeline(
   phase: ReturnType<typeof campaignPhase>
 ) {
   const firstPayment = payments.length ? payments[payments.length - 1]!.paidAt : null;
-  const milestones = [0.25, 0.5, 0.75, 1].map((pct) => ({
-    pct,
-    amount: Math.round(NEPAL_CAMPAIGN.goalAmount * pct),
-    reached: totals.successfulTotal >= NEPAL_CAMPAIGN.goalAmount * pct,
-  }));
+  const milestoneEvents = NEPAL_FUNDRAISING_MILESTONES.filter((amount) => totals.successfulTotal >= amount).map(
+    (amount) => ({
+      key: `milestone_${amount}`,
+      title: `$${amount.toLocaleString()} raised`,
+      status: "completed" as const,
+      at: null as string | null,
+    })
+  );
 
   return [
     {
@@ -201,12 +203,7 @@ function buildTimeline(
       status: firstPayment ? ("completed" as const) : phase === "closed" ? ("pending" as const) : ("upcoming" as const),
       at: firstPayment?.toISOString() ?? null,
     },
-    ...milestones.map((m) => ({
-      key: `milestone_${m.pct}`,
-      title: `${Math.round(m.pct * 100)}% of goal ($${m.amount.toLocaleString()})`,
-      status: m.reached ? ("completed" as const) : phase === "closed" ? ("pending" as const) : ("upcoming" as const),
-      at: null as string | null,
-    })),
+    ...milestoneEvents,
     {
       key: "closed",
       title: "Campaign closed",

@@ -3,8 +3,8 @@ export const NEPAL_CAMPAIGN = {
   recipient: "Nepal Red Cross Society",
   minBid: 5,
   platformFee: 0,
-  startDate: new Date("2026-08-17T00:00:00.000Z"),
-  endDate: new Date("2026-08-25T23:59:59.999Z"),
+  startDate: new Date("2026-08-27T00:00:00.000Z"),
+  endDate: new Date("2026-09-03T23:59:59.999Z"),
   contactEmail: "heyquixy@gmail.com",
 } as const;
 

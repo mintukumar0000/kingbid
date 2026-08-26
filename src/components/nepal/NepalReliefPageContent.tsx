@@ -275,7 +275,7 @@ export function NepalReliefPageContent() {
         <h2 className="font-display text-[22px] font-semibold">Campaign rules</h2>
         <div className="mt-4 space-y-4 text-[14px] leading-relaxed text-muted">
           <p>
-            <strong className="text-foreground">Campaign period:</strong> August 17 – August 25, 2026 (UTC). Only
+            <strong className="text-foreground">Campaign period:</strong> August 27 – September 3, 2026 (UTC). Only
             successful global leaderboard payments completed during this window count toward the Nepal Flood Relief
             campaign.
           </p>

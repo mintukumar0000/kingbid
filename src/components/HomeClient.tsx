@@ -17,7 +17,6 @@ import { ScopeToggle } from "@/components/ScopeToggle";
 import { CategoryRoom, CategoryEmptyState } from "@/components/CategoryRoom";
 import { HashScrollOnLoad } from "@/components/HashScrollOnLoad";
 import { CountryPicker } from "@/components/CountryPicker";
-import { NepalCampaignBanner } from "@/components/nepal/NepalCampaignBanner";
 import { PAGE_WIDE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
@@ -425,7 +424,6 @@ function HomeClientInner({
   return (
     <>
       <HashScrollOnLoad />
-      {showNepalCampaign && <NepalCampaignBanner />}
       <div className={`${PAGE_WIDE} flex flex-col items-center gap-3 pb-2 pt-4`}>
         <StatsBar />
         {!inCategoryRoom && (

@@ -40,7 +40,7 @@ export function NepalBidDisclosure({
         </p>
       ) : (
         <p className="mt-3 text-[12px] leading-relaxed text-muted">
-          Campaign window ended Aug 25, 2026 — this bid still claims leaderboard rank. See{" "}
+          Campaign window: Aug 27 – Sep 3, 2026. This bid still claims leaderboard rank. See{" "}
           <Link href="/nepal-relief" className="text-accent hover:underline">
             campaign accounting
           </Link>{" "}

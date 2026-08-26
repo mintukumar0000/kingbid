@@ -209,15 +209,15 @@ function HomeClientInner({
       <>
         {variant === "home" ? (
           <>
-            <p className="kb-eyebrow">{HERO_EYEBROW}</p>
-            <h1 className="font-display mt-3.5 max-w-2xl text-[40px] font-medium leading-[1.08] text-foreground sm:text-[50px]">
+            <p className="kb-eyebrow mx-auto">{HERO_EYEBROW}</p>
+            <h1 className="font-display mx-auto mt-3.5 max-w-2xl text-[40px] font-medium leading-[1.08] text-foreground sm:text-[50px]">
               {HERO_TAGLINE}
               <br />
               {HERO_TAGLINE_LINE2}
             </h1>
-            <p className="mt-4 max-w-[480px] text-[16px] leading-relaxed text-muted">{HERO_BODY}</p>
+            <p className="mx-auto mt-4 max-w-[480px] text-[16px] leading-relaxed text-muted">{HERO_BODY}</p>
             {showNepalCampaign && (
-              <p className="mt-3 text-[13px] text-muted">
+              <p className="mx-auto mt-3 max-w-[520px] text-[13px] text-muted">
                 🇳🇵 Eligible bids during the campaign window support{" "}
                 <Link href="/nepal-relief" className="font-semibold text-accent hover:underline">
                   Nepal flood relief
@@ -238,10 +238,10 @@ function HomeClientInner({
           </>
         )}
 
-        <div className={`max-w-xl ${variant === "home" ? "mt-8" : "mt-6"}`}>
+        <div className={`mx-auto max-w-xl text-center ${variant === "home" ? "mt-8" : "mt-6"}`}>
           <p className="text-[14px] font-medium text-foreground/90">
             {claimLine}
-            <span className="mx-2 inline-flex items-baseline gap-2 align-middle">
+            <span className="mx-2 inline-flex items-baseline justify-center gap-2 align-middle">
               <button
                 type="button"
                 onClick={() => setHeroAmount(Math.max(board.minBid, heroValue - 1))}
@@ -273,7 +273,7 @@ function HomeClientInner({
         </div>
 
         <form
-          className="mt-5 flex max-w-2xl items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-[var(--shadow)]"
+          className="mx-auto mt-5 flex w-full max-w-2xl items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-[var(--shadow)]"
           onSubmit={(e) => {
             e.preventDefault();
             openHeroBid();
@@ -299,7 +299,7 @@ function HomeClientInner({
           </button>
         </form>
 
-        <p className="mt-3 max-w-2xl text-[12.5px] text-muted">
+        <p className="mx-auto mt-3 max-w-2xl text-center text-[12.5px] text-muted">
           {variant === "room"
             ? "Have a claim invite? Submit the same URL after opening your link."
             : "Already on the list? Enter the same URL or @handle and up your bid."}
@@ -426,10 +426,10 @@ function HomeClientInner({
     <>
       <HashScrollOnLoad />
       {showNepalCampaign && <NepalCampaignBanner />}
-      <div className={`${PAGE_WIDE} flex flex-col gap-3 pb-2 pt-4 sm:flex-row sm:items-center sm:justify-between`}>
+      <div className={`${PAGE_WIDE} flex flex-col items-center gap-3 pb-2 pt-4`}>
         <StatsBar />
         {!inCategoryRoom && (
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <ScopeToggle
               scope={scope}
               countryCode={selectedCountry}
@@ -470,12 +470,12 @@ function HomeClientInner({
         </CategoryRoom>
       ) : (
         <>
-          <section id="claim" className={`${PAGE_WIDE} scroll-mt-24 pb-2 pt-8`}>
+          <section id="claim" className={`${PAGE_WIDE} flex scroll-mt-24 flex-col items-center pb-2 pt-8 text-center`}>
             {renderHero("home")}
           </section>
 
-          <section className={`${PAGE_WIDE} pb-6`}>
-            <div className="mb-6 pt-2">
+          <section className={`${PAGE_WIDE} mt-16 pb-6 md:mt-24`}>
+            <div className="mb-6 text-center">
               <p className="kb-eyebrow">Full board</p>
               <h2 className="font-display mt-1.5 text-[26px] font-semibold text-foreground sm:text-[28px]">
                 Leaderboard

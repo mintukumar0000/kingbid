@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Billboard, ContactShadows, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { ContactShadows, Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { CrownSpotState } from "@/lib/crown-spots-data";
 import { faviconFor } from "@/lib/format";
@@ -13,24 +13,28 @@ const BASE_DISTANCE = 1.85;
 
 useGLTF.preload(CROWN_URL);
 
+export interface ProjectedSpot {
+  id: string;
+  x: number;
+  y: number;
+  visible: boolean;
+  scale: number;
+}
+
 function RankbidStar() {
   return (
-    <svg viewBox="0 0 24 24" width={12} height={12} aria-hidden className="crown-spot-star">
+    <svg viewBox="0 0 16 16" width={14} height={14} aria-hidden className="crown-spot-star">
       <path
         fill="currentColor"
-        d="M12 2l1.2 4.1L17 7.5l-4.1 1.2L12 12.7 9.1 8.7 5 7.5l4.1-1.4L12 2z"
+        d="M8 1.2 9.1 5.4 13.2 6.5 9.1 7.6 8 11.8 6.9 7.6 2.8 6.5 6.9 5.4 8 1.2z"
       />
     </svg>
   );
 }
 
-function markerDistance(tier: CrownSpotState["tier"], active: boolean): number {
-  const base = tier === "crown" ? 38 : tier === "diamond" ? 42 : tier === "royal" ? 44 : 46;
-  return active ? base - 4 : base;
-}
-
-function logoSize(tier: CrownSpotState["tier"]): number {
-  return tier === "crown" ? 22 : tier === "diamond" ? 18 : 16;
+function spotBrand(spot: CrownSpotState): string {
+  const raw = spot.ownerHandle ?? spot.ownerTitle ?? "";
+  return raw.replace(/^@/, "").toUpperCase().slice(0, 16);
 }
 
 function GLBCrown() {
@@ -42,123 +46,11 @@ function GLBCrown() {
       if (mesh.isMesh) {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        if (mesh.material) {
-          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-          mats.forEach((mat) => {
-            if ("envMapIntensity" in mat) mat.envMapIntensity = 1.35;
-          });
-        }
       }
     });
     return root;
   }, [scene]);
-
   return <primitive object={clone} />;
-}
-
-function spotBrand(spot: CrownSpotState): string {
-  const raw = spot.ownerHandle ?? spot.ownerTitle ?? "";
-  return raw.replace(/^@/, "").toUpperCase().slice(0, 18);
-}
-
-function SpotMarker({
-  spot,
-  crownGroup,
-  hovered,
-  selected,
-  onHover,
-  onSelect,
-}: {
-  spot: CrownSpotState;
-  crownGroup: RefObject<THREE.Group | null>;
-  hovered: boolean;
-  selected: boolean;
-  onHover: (id: string | null) => void;
-  onSelect: (id: string) => void;
-}) {
-  const active = hovered || selected;
-  const { camera } = useThree();
-  const [visible, setVisible] = useState(true);
-  const visibleRef = useRef(true);
-
-  useFrame(() => {
-    const group = crownGroup.current;
-    if (!group) return;
-
-    const [x, y, z] = spot.position;
-    if (Math.hypot(x, z) < 0.01) {
-      if (!visibleRef.current) {
-        visibleRef.current = true;
-        setVisible(true);
-      }
-      return;
-    }
-
-    const camLocal = camera.position.clone();
-    group.worldToLocal(camLocal);
-    const spotPos = new THREE.Vector3(x, y, z);
-    const outward = new THREE.Vector3(x, 0, z).normalize();
-    const toCam = camLocal.sub(spotPos);
-    toCam.y = 0;
-    if (toCam.lengthSq() < 0.0001) {
-      return;
-    }
-    toCam.normalize();
-    const facing = outward.dot(toCam) > 0.15;
-    const shouldShow = facing || active;
-    if (shouldShow !== visibleRef.current) {
-      visibleRef.current = shouldShow;
-      setVisible(shouldShow);
-    }
-  });
-
-  if (!visible) return null;
-
-  return (
-    <Billboard position={spot.position} follow>
-      <Html
-        center
-        occlude
-        distanceFactor={markerDistance(spot.tier, active)}
-        style={{ pointerEvents: "auto" }}
-        zIndexRange={[active ? 50 : 10, 0]}
-      >
-        <button
-          type="button"
-          className={`crown-surface-marker crown-surface-marker--${spot.tier} ${spot.hasOwner ? "crown-surface-marker--owned" : "crown-surface-marker--open"} ${active ? "crown-surface-marker--active" : ""}`}
-          onPointerEnter={() => {
-            onHover(spot.id);
-            document.body.style.cursor = "pointer";
-          }}
-          onPointerLeave={() => {
-            onHover(null);
-            document.body.style.cursor = "auto";
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(spot.id);
-          }}
-        >
-          {spot.hasOwner && spot.ownerUrl ? (
-            <>
-              <img
-                src={faviconFor(spot.ownerUrl)}
-                alt=""
-                width={logoSize(spot.tier)}
-                height={logoSize(spot.tier)}
-              />
-              <span className="crown-spot-brand">{spotBrand(spot)}</span>
-            </>
-          ) : (
-            <>
-              <RankbidStar />
-              <span className="crown-spot-available">Available</span>
-            </>
-          )}
-        </button>
-      </Html>
-    </Billboard>
-  );
 }
 
 function SceneBackground({ dark }: { dark: boolean }) {
@@ -179,12 +71,74 @@ function CameraZoom({ zoom }: { zoom: number }) {
   return null;
 }
 
+function SpotProjector({
+  spots,
+  crownGroup,
+  hoveredId,
+  selectedId,
+  onProject,
+}: {
+  spots: CrownSpotState[];
+  crownGroup: RefObject<THREE.Group | null>;
+  hoveredId: string | null;
+  selectedId: string | null;
+  onProject: (projected: ProjectedSpot[]) => void;
+}) {
+  const { camera, gl } = useThree();
+  const vec = useMemo(() => new THREE.Vector3(), []);
+  const worldPos = useMemo(() => new THREE.Vector3(), []);
+  const center = useMemo(() => new THREE.Vector3(), []);
+  const onProjectRef = useRef(onProject);
+  onProjectRef.current = onProject;
+
+  useFrame(() => {
+    const group = crownGroup.current;
+    if (!group || !spots.length) return;
+
+    const w = gl.domElement.clientWidth;
+    const h = gl.domElement.clientHeight;
+    if (!w || !h) return;
+
+    center.set(...CROWN_TARGET);
+    group.localToWorld(center);
+
+    const projected: ProjectedSpot[] = spots.map((spot) => {
+      const active = spot.id === hoveredId || spot.id === selectedId;
+      worldPos.set(...spot.position);
+      group.localToWorld(worldPos);
+
+      const outward = worldPos.clone().sub(center);
+      if (outward.lengthSq() > 0.0001) outward.normalize();
+      else outward.set(0, 0, 1);
+
+      const toCam = camera.position.clone().sub(worldPos).normalize();
+      const facing = outward.dot(toCam) > 0.08;
+
+      vec.copy(worldPos);
+      vec.project(camera);
+      const behind = vec.z > 1;
+      const visible = !behind && (facing || active);
+
+      const x = (vec.x * 0.5 + 0.5) * w;
+      const y = (-vec.y * 0.5 + 0.5) * h;
+
+      const dist = camera.position.distanceTo(worldPos);
+      const scale = THREE.MathUtils.clamp(1.85 / dist, 0.72, 1.12);
+
+      return { id: spot.id, x, y, visible, scale };
+    });
+
+    onProjectRef.current(projected);
+  });
+
+  return null;
+}
+
 function CrownScene({
   spots,
   selectedId,
   hoveredId,
-  onHover,
-  onSelect,
+  onProject,
   paused,
   setPaused,
   zoom,
@@ -193,8 +147,7 @@ function CrownScene({
   spots: CrownSpotState[];
   selectedId: string | null;
   hoveredId: string | null;
-  onHover: (id: string | null) => void;
-  onSelect: (id: string) => void;
+  onProject: (projected: ProjectedSpot[]) => void;
   paused: boolean;
   setPaused: (v: boolean) => void;
   zoom: number;
@@ -216,17 +169,13 @@ function CrownScene({
       <Environment preset="studio" />
       <group ref={groupRef}>
         <GLBCrown />
-        {spots.map((spot) => (
-          <SpotMarker
-            key={spot.id}
-            spot={spot}
-            crownGroup={groupRef}
-            hovered={hoveredId === spot.id}
-            selected={selectedId === spot.id}
-            onHover={onHover}
-            onSelect={onSelect}
-          />
-        ))}
+        <SpotProjector
+          spots={spots}
+          crownGroup={groupRef}
+          hoveredId={hoveredId}
+          selectedId={selectedId}
+          onProject={onProject}
+        />
       </group>
       <ContactShadows position={[0, 0, 0]} opacity={dark ? 0.4 : 0.28} scale={2.2} blur={2.5} far={0.9} />
       <OrbitControls
@@ -243,6 +192,68 @@ function CrownScene({
   );
 }
 
+function CrownSpotOverlay({
+  spots,
+  projected,
+  hoveredId,
+  selectedId,
+  onHover,
+  onSelect,
+}: {
+  spots: CrownSpotState[];
+  projected: ProjectedSpot[];
+  hoveredId: string | null;
+  selectedId: string | null;
+  onHover: (id: string | null) => void;
+  onSelect: (id: string) => void;
+}) {
+  const byId = useMemo(() => new Map(projected.map((p) => [p.id, p])), [projected]);
+
+  return (
+    <div className="crown-spot-overlay" aria-hidden={false}>
+      {spots.map((spot) => {
+        const pin = byId.get(spot.id);
+        if (!pin?.visible) return null;
+        const active = spot.id === hoveredId || spot.id === selectedId;
+
+        return (
+          <button
+            key={spot.id}
+            type="button"
+            className={`crown-spot-pin crown-spot-pin--${spot.tier} ${spot.hasOwner ? "crown-spot-pin--owned" : "crown-spot-pin--open"} ${active ? "crown-spot-pin--active" : ""}`}
+            style={{
+              left: pin.x,
+              top: pin.y,
+              transform: `translate(-50%, -50%) scale(${pin.scale})`,
+            }}
+            onPointerEnter={() => {
+              onHover(spot.id);
+              document.body.style.cursor = "pointer";
+            }}
+            onPointerLeave={() => {
+              onHover(null);
+              document.body.style.cursor = "auto";
+            }}
+            onClick={() => onSelect(spot.id)}
+          >
+            {spot.hasOwner && spot.ownerUrl ? (
+              <>
+                <img src={faviconFor(spot.ownerUrl)} alt="" width={20} height={20} />
+                <span className="crown-spot-brand">{spotBrand(spot)}</span>
+              </>
+            ) : (
+              <>
+                <RankbidStar />
+                <span className="crown-spot-available">Available</span>
+              </>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function CrownArena3D({
   spots,
   selectedId,
@@ -256,6 +267,7 @@ export function CrownArena3D({
   const [paused, setPaused] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [dark, setDark] = useState(false);
+  const [projected, setProjected] = useState<ProjectedSpot[]>([]);
 
   useEffect(() => {
     const sync = () => setDark(document.documentElement.classList.contains("dark"));
@@ -285,8 +297,7 @@ export function CrownArena3D({
             spots={spots}
             selectedId={selectedId}
             hoveredId={hoveredId}
-            onHover={setHoveredId}
-            onSelect={onSelect}
+            onProject={setProjected}
             paused={paused}
             setPaused={setPaused}
             zoom={zoom}
@@ -294,6 +305,15 @@ export function CrownArena3D({
           />
         </Suspense>
       </Canvas>
+
+      <CrownSpotOverlay
+        spots={spots}
+        projected={projected}
+        hoveredId={hoveredId}
+        selectedId={selectedId}
+        onHover={setHoveredId}
+        onSelect={onSelect}
+      />
 
       <div className="crown-zoom-controls" aria-label="Zoom controls">
         <button type="button" onClick={() => setZoom((z) => Math.min(140, z + 10))} aria-label="Zoom in">

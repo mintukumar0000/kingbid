@@ -12,7 +12,7 @@ export interface CrownSpotDef {
   tierLabel: string;
   personality: string;
   startingBid: number;
-  /** Hotspot position in GLB space (Y-up, crown ~1 unit wide). */
+  /** Hotspot position in GLB space (Y-up, crown bbox y 0–0.56). */
   position: [number, number, number];
   hotspotScale: number;
 }
@@ -33,9 +33,9 @@ export const CROWN_SPOTS: CrownSpotDef[] = [
     label: "Crown Owner",
     shortLabel: "👑",
     tierLabel: "The King",
-    personality: "Top-center emblem on the crown",
+    personality: "Front medallion — main emblem",
     startingBid: 2500,
-    position: [0, 0.54, 0.1],
+    position: [0, 0.31, 0.47],
     hotspotScale: 0.055,
   },
   ...diamondSpots(),
@@ -45,12 +45,12 @@ export const CROWN_SPOTS: CrownSpotDef[] = [
 
 function diamondSpots(): CrownSpotDef[] {
   const configs = [
-    { deg: 0, y: 0.27, r: 0.5, label: "Front", price: 500 },
-    { deg: 58, y: 0.25, r: 0.5, label: "Front Right", price: 450 },
-    { deg: 118, y: 0.24, r: 0.49, label: "Rear Right", price: 400 },
-    { deg: 180, y: 0.26, r: 0.48, label: "Back", price: 450 },
-    { deg: 238, y: 0.24, r: 0.49, label: "Rear Left", price: 350 },
-    { deg: 302, y: 0.25, r: 0.5, label: "Front Left", price: 400 },
+    { deg: 12, y: 0.29, r: 0.46, label: "Front", price: 500 },
+    { deg: 62, y: 0.27, r: 0.47, label: "Front Right", price: 450 },
+    { deg: 118, y: 0.26, r: 0.46, label: "Rear Right", price: 400 },
+    { deg: 180, y: 0.28, r: 0.45, label: "Back", price: 450 },
+    { deg: 238, y: 0.26, r: 0.46, label: "Rear Left", price: 350 },
+    { deg: 298, y: 0.27, r: 0.47, label: "Front Left", price: 400 },
   ];
   return configs.map((c, i) => ({
     id: String(2 + i).padStart(2, "0"),
@@ -69,16 +69,16 @@ function diamondSpots(): CrownSpotDef[] {
 
 function royalTriangleSpots(): CrownSpotDef[] {
   const configs = [
-    { deg: 0, y: 0.54, r: 0.1 },
-    { deg: 36, y: 0.51, r: 0.26 },
-    { deg: 72, y: 0.48, r: 0.4 },
-    { deg: 108, y: 0.46, r: 0.48 },
-    { deg: 144, y: 0.48, r: 0.4 },
-    { deg: 180, y: 0.51, r: 0.26 },
-    { deg: 216, y: 0.46, r: 0.48 },
-    { deg: 252, y: 0.48, r: 0.4 },
-    { deg: 288, y: 0.46, r: 0.48 },
-    { deg: 324, y: 0.51, r: 0.26 },
+    { deg: 0, y: 0.55, r: 0.08 },
+    { deg: 36, y: 0.52, r: 0.22 },
+    { deg: 72, y: 0.49, r: 0.36 },
+    { deg: 108, y: 0.47, r: 0.44 },
+    { deg: 144, y: 0.49, r: 0.36 },
+    { deg: 180, y: 0.52, r: 0.22 },
+    { deg: 216, y: 0.47, r: 0.44 },
+    { deg: 252, y: 0.49, r: 0.36 },
+    { deg: 288, y: 0.47, r: 0.44 },
+    { deg: 324, y: 0.52, r: 0.22 },
   ];
   const prices = [250, 230, 220, 200, 190, 180, 170, 150, 130, 110];
   return configs.map((c, i) => ({
@@ -98,10 +98,10 @@ function royalTriangleSpots(): CrownSpotDef[] {
 
 function courtSpots(): CrownSpotDef[] {
   const configs = [
-    { deg: 20, y: 0.12, r: 0.52 },
-    { deg: 110, y: 0.1, r: 0.51 },
-    { deg: 200, y: 0.11, r: 0.5 },
-    { deg: 290, y: 0.1, r: 0.51 },
+    { deg: 24, y: 0.14, r: 0.5 },
+    { deg: 108, y: 0.12, r: 0.49 },
+    { deg: 196, y: 0.13, r: 0.48 },
+    { deg: 284, y: 0.12, r: 0.49 },
   ];
   const prices = [90, 70, 50, 25];
   return configs.map((c, i) => ({

@@ -27,11 +27,7 @@ export function emptyBoardMessage(minBid: number, scope: "global" | "local", lab
   return `0 listings yet — founding #1 is ${formatMoney(minBid)}. Cheapest it will ever be.`;
 }
 
-export const HERO_EYEBROW = "Live Kingdom";
-export const HERO_CAMPAIGN_EYEBROW = "🇳🇵 Nepal Flood Relief";
-export const HERO_CAMPAIGN_SUBTEXT = (minBid: number) =>
-  `New spots start at ${formatMoney(minBid)}. After Dodo checkout, 100% goes to Nepal charity — Kingbid takes $0. Verification available on request.`;
-
-export const REVENUE_TICKER_LINE = "Total raised on Kingbid since launch";
+export const HERO_EYEBROW = "Digital Crowns";
+export const REVENUE_TICKER_LINE = "Total raised on KingBid since launch";
 export const BID_MODAL_NEW = (minBid: number) =>
-  `Minimum ${formatMoney(minBid)}. Rank is set only by how much you pay — nothing else.`;
+  `Minimum ${formatMoney(minBid)} to steal the crown. Highest valid bid wins.`;

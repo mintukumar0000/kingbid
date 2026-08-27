@@ -1,42 +1,54 @@
 @import "tailwindcss";
 
-/* Light (kingbid.lol) — cream page, coral money, peach featured cards */
+/* Digital Crowns — dark championship aesthetic */
 :root {
+  --background: #0a0908;
+  --surface: #12100e;
+  --surface-2: #1a1612;
+  --border: #2a2420;
+  --border-strong: #3d342c;
+  --foreground: #f5efe6;
+  --muted: #9a9088;
+  --accent: #c9a227;
+  --accent-soft: rgba(201, 162, 39, 0.12);
+  --crown-gold: #c9a227;
+  --green: #34d399;
+  --red: #e07070;
+  --gold: #c9a227;
+  --silver: #8a8078;
+  --bronze: #a67c52;
+  --peach: #1a1410;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
+html.light {
   --background: #fcfbf7;
   --surface: #ffffff;
-  --surface-2: #fff7f3;
-  --border: #efe6df;
-  --border-strong: #e8d8cf;
+  --surface-2: #f8f4ef;
+  --border: #e8e0d8;
+  --border-strong: #d4ccc4;
   --foreground: #1c1917;
   --muted: #8a7e76;
-  --accent: #e55b3c;
-  --accent-soft: #fff1ec;
-  --green: #22a06b;
-  --red: #e55b3c;
-  --gold: #e55b3c;
-  --silver: #c4b8b0;
-  --bronze: #c98a6a;
-  --peach: #fff5f2;
-  --shadow: 0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(229, 91, 60, 0.05);
+  --accent: #a8841a;
+  --accent-soft: rgba(168, 132, 26, 0.1);
+  --crown-gold: #a8841a;
+  --peach: #fff8f0;
+  --shadow: 0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 html.dark {
-  --background: #0f0d0c;
-  --surface: #171412;
-  --surface-2: #1e1a18;
-  --border: #2a2421;
-  --border-strong: #3a322e;
-  --foreground: #f5efe9;
-  --muted: #9a8e86;
-  --accent: #f07155;
-  --accent-soft: rgba(240, 113, 85, 0.12);
-  --green: #34d399;
-  --red: #f07155;
-  --gold: #f07155;
-  --silver: #8a8078;
-  --bronze: #c98a6a;
-  --peach: #241c18;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --background: #0a0908;
+  --surface: #12100e;
+  --surface-2: #1a1612;
+  --border: #2a2420;
+  --border-strong: #3d342c;
+  --foreground: #f5efe6;
+  --muted: #9a9088;
+  --accent: #c9a227;
+  --accent-soft: rgba(201, 162, 39, 0.12);
+  --crown-gold: #c9a227;
+  --peach: #1a1410;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
 }
 
 @theme inline {
@@ -405,26 +417,34 @@ html.dark .eco-room-tile {
   border-radius: 6px;
 }
 
-/* Nepal Flood Relief campaign layer */
-.nepal-banner {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--surface)) 0%, var(--surface-2) 100%);
-}
-
-.nepal-dashboard-card {
-  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
-  background: linear-gradient(160deg, var(--surface) 0%, color-mix(in srgb, var(--accent) 6%, var(--surface-2)) 100%);
+/* Digital Crowns */
+.crown-card {
   box-shadow: var(--shadow);
 }
 
-.nepal-commitment-card {
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface)) 0%, var(--surface-2) 100%);
+.crown-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
-html.dark .nepal-banner {
-  background: linear-gradient(135deg, rgba(240, 113, 85, 0.08) 0%, var(--surface-2) 100%);
+.crown-new-king {
+  animation: crown-pulse 2s ease-in-out 2;
 }
 
-html.dark .nepal-dashboard-card {
-  background: linear-gradient(160deg, var(--surface) 0%, rgba(240, 113, 85, 0.06) 100%);
+@keyframes crown-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0); }
+  50% { box-shadow: 0 0 24px 2px rgba(201, 162, 39, 0.25); }
+}
+
+.crown-share-card {
+  box-shadow: 0 8px 40px rgba(201, 162, 39, 0.08);
+}
+
+.ticker-up {
+  animation: ticker-up 0.5s ease-out;
+}
+
+@keyframes ticker-up {
+  from { opacity: 0.5; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

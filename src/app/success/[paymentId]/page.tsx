@@ -15,8 +15,6 @@ import { isDodoLiveMode } from "@/lib/dodo";
 import { syncPaymentFromDodo } from "@/lib/dodo-sync";
 import { ogClaimUrl } from "@/lib/site";
 import { PAGE } from "@/lib/layout";
-import { NepalSuccessPanel } from "@/components/nepal/NepalSuccessPanel";
-import { getCampaignPaymentByPaymentId, getCampaignDashboard, isCampaignUiEnabled, isCampaignPaymentEligible } from "@/lib/nepal-campaign";
 
 export const dynamic = "force-dynamic";
 
@@ -71,32 +69,12 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
   const rank = completed ? await getRankForListing(bid.listingId) : null;
   const total = completed ? bid.totalAfter : bid.amount;
 
-  const showCampaign =
-    completed &&
-    isCampaignUiEnabled() &&
-    bid.scope === "global" &&
-    bid.completedAt &&
-    isCampaignPaymentEligible(bid.completedAt);
-
-  let campaignPayment = null;
-  let campaignRaised = 0;
-  if (showCampaign) {
-    campaignPayment = await getCampaignPaymentByPaymentId(paymentId);
-    if (!campaignPayment) {
-      const { recordCampaignPayment } = await import("@/lib/nepal-campaign");
-      await recordCampaignPayment(paymentId).catch(() => undefined);
-      campaignPayment = await getCampaignPaymentByPaymentId(paymentId);
-    }
-    const dash = await getCampaignDashboard();
-    campaignRaised = dash.totals.raised;
-  }
-
   const shareText =
     rank === 1
-      ? `I just claimed #1 on ${SITE_NAME} for ${formatMoney(total)}! Think you can outbid me? 👑`
+      ? `👑 I'm officially King on ${SITE_NAME} — ${formatMoney(total)}. Someone can steal my crown.`
       : rank
-        ? `I claimed #${rank} on ${SITE_NAME} for ${formatMoney(total)}. Think you can outbid me?`
-        : `I just claimed my rank on ${SITE_NAME}. Think you can outbid me?`;
+        ? `I bid ${formatMoney(total)} on ${SITE_NAME}. Think you can steal the crown?`
+        : `I just claimed a crown on ${SITE_NAME}.`;
 
   return (
     <main className="flex-1">
@@ -153,50 +131,32 @@ export default async function SuccessPaymentPage({ params, searchParams }: Props
           </>
         ) : completed ? (
           <>
-            <div className="text-6xl">{showCampaign ? "👑" : "🎉"}</div>
+            <div className="text-6xl">👑</div>
             <h1 className="mt-4 text-3xl font-extrabold">
-              {showCampaign ? "You're on the board." : "Payment confirmed!"}
+              {rank === 1 ? "You are now King" : "Crown secured"}
             </h1>
             <p className="mt-3 text-muted">
-              {showCampaign ? (
+              <span className="font-semibold text-foreground">{bid.listing.title}</span> is live
+              {rank ? (
                 <>
-                  <span className="font-semibold text-foreground">{bid.listing.title}</span> is live
-                  {rank ? (
-                    <>
-                      {" "}
-                      at{" "}
-                      <span className={`font-extrabold ${rank === 1 ? "text-gold" : "text-foreground"}`}>#{rank}</span>
-                    </>
-                  ) : null}{" "}
-                  — your bid supports Nepal flood relief transparency on Kingbid.
+                  {" "}
+                  at{" "}
+                  <span className={`font-extrabold ${rank === 1 ? "text-[var(--crown-gold)]" : "text-foreground"}`}>
+                    #{rank}
+                  </span>
                 </>
-              ) : (
-                <>
-                  <span className="font-semibold text-foreground">{bid.listing.title}</span> is live
-                  {rank ? (
-                    <>
-                      {" "}
-                      at{" "}
-                      <span
-                        className={`font-extrabold ${rank === 1 ? "text-gold" : "text-foreground"}`}
-                      >
-                        #{rank}
-                      </span>
-                    </>
-                  ) : null}{" "}
-                  with a total bid of{" "}
-                  <span className="tabular font-semibold text-foreground">{formatMoney(total)}</span>.
-                </>
-              )}
+              ) : null}{" "}
+              with a total bid of{" "}
+              <span className="tabular font-semibold text-[var(--crown-gold)]">{formatMoney(total)}</span>.
             </p>
 
-            {showCampaign && (
-              <NepalSuccessPanel
-                rank={rank}
-                bidAmount={bid.amount}
-                publicId={campaignPayment?.publicId ?? null}
-                campaignRaised={campaignRaised}
-              />
+            {rank === 1 && (
+              <div className="crown-share-card mx-auto mt-6 max-w-sm rounded-2xl border border-[var(--crown-gold)]/30 bg-gradient-to-b from-[#1a1612] to-[#0f0d0b] p-6">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--crown-gold)]">Current King</p>
+                <p className="mt-2 text-[18px] font-bold">{bid.listing.displayUrl}</p>
+                <p className="font-mono-label mt-3 text-[36px] font-bold tabular text-[var(--crown-gold)]">{formatMoney(total)}</p>
+                <p className="mt-2 text-[12px] text-muted">Someone can steal the crown.</p>
+              </div>
             )}
 
             <div className="mt-8">

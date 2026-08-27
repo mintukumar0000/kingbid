@@ -8,8 +8,6 @@ import { REF_COOKIE } from "@/lib/brand";
 import type { BoardScope } from "@/lib/geo";
 import { BID_MODAL_NEW } from "@/lib/copy";
 import { RevenueBandSelect } from "@/components/RevenueBandSelect";
-import { NepalBidDisclosure } from "@/components/nepal/NepalBidDisclosure";
-import { isCampaignUiEnabled } from "@/lib/nepal-campaign-config";
 import type { RevenueBand } from "@/lib/revenue-bands";
 
 export interface BidPrefill {
@@ -47,7 +45,6 @@ export function BidModal({
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState(prefill.amount);
   const [revenueBand, setRevenueBand] = useState<RevenueBand | "">("");
-  const [campaignAck, setCampaignAck] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const convertedRaise = useRef(false);
@@ -57,7 +54,6 @@ export function BidModal({
       setAmount(prefill.amount);
       setUrl(prefill.url ?? "");
       setError(null);
-      setCampaignAck(false);
       convertedRaise.current = false;
     }
   }, [open, prefill]);
@@ -98,7 +94,6 @@ export function BidModal({
 
   const isTakeover = prefill.mode === "takeover";
   const minAmount = isTakeover ? board.takeoverPrice : existing ? 1 : board.minBid;
-  const showCampaignDisclosure = isCampaignUiEnabled() && scope === "global" && !isTakeover;
   const resultingTotal = (existing?.currentBid ?? 0) + amount;
   const wouldBeTop = resultingTotal >= board.claimTopPrice || isTakeover;
 
@@ -120,9 +115,6 @@ export function BidModal({
       return setError("Pick a revenue band for Underdog rank.");
     }
     if (!Number.isInteger(amount) || amount < 1) return setError("Enter a whole dollar amount.");
-    if (showCampaignDisclosure && !campaignAck) {
-      return setError("Please confirm you understand the campaign settlement process.");
-    }
 
     setSubmitting(true);
     try {
@@ -171,8 +163,8 @@ export function BidModal({
               {isTakeover
                 ? "🔒 Takeover #1 for 3 hours"
                 : prefill.targetRank
-                  ? `Claim #${prefill.targetRank}`
-                  : "Get on the board"}
+                  ? `Steal rank #${prefill.targetRank}`
+                  : "Steal the Crown"}
             </h2>
             <button
               onClick={onClose}
@@ -294,7 +286,7 @@ export function BidModal({
                 {isTakeover ? (
                   <>Locks #1 for 3 hours. Beat now: {formatMoney(board.topBid)}.</>
                 ) : wouldBeTop ? (
-                  <span className="text-gold">This takes the #1 spot 👑</span>
+                  <span className="text-[var(--crown-gold)]">This takes the crown 👑</span>
                 ) : (
                   <>
                     #1 costs {formatMoney(board.claimTopPrice)}
@@ -307,23 +299,15 @@ export function BidModal({
             {error && (
               <p className="rounded-lg border border-red/30 bg-red/10 px-3 py-2 text-sm text-red">{error}</p>
             )}
-
-            {showCampaignDisclosure && (
-              <NepalBidDisclosure amount={amount} acknowledged={campaignAck} onAcknowledge={setCampaignAck} />
-            )}
           </div>
 
           <div className="shrink-0 border-t border-border bg-surface px-5 py-4">
             <button
               type="submit"
-              disabled={submitting || (showCampaignDisclosure && !campaignAck)}
-              className="w-full rounded-full bg-accent px-4 py-2.5 text-[15px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-60"
+              disabled={submitting}
+              className="w-full rounded-full bg-[var(--crown-gold)] px-4 py-2.5 text-[15px] font-bold text-[#0a0908] transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-60"
             >
-              {submitting
-                ? "Redirecting to checkout…"
-                : showCampaignDisclosure
-                  ? `Continue to payment → ${formatMoney(amount || 0)}`
-                  : `Pay ${formatMoney(amount || 0)} & claim`}
+              {submitting ? "Redirecting to checkout…" : `🔥 Steal for ${formatMoney(amount || 0)}`}
             </button>
             <p className="mt-2 text-center text-[10px] text-muted">
               Secure checkout. All sales final — see the{" "}

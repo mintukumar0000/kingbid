@@ -24,35 +24,35 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — the leaderboard money can buy`,
+    default: `${SITE_NAME} — WHO'S KING? 👑`,
     template: `%s · ${SITE_NAME}`,
   },
   description:
-    "A public pay-to-rank leaderboard. List your product or X handle — the only ranking factor is how much you bid. Higher bid, higher rank.",
+    "Bid for digital crowns. Keep the title until someone outbids you. Highest valid bid wins.",
   openGraph: {
-    title: `${SITE_NAME} — the leaderboard money can buy`,
-    description: "The only ranking factor is your bid. Claim #1 before someone outbids you.",
+    title: `${SITE_NAME} — WHO'S KING? 👑`,
+    description: "Bid for the crown. Keep it until someone steals it.",
     url: SITE_URL,
     siteName: SITE_NAME,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — the leaderboard money can buy`,
-    description: "The only ranking factor is your bid. Claim #1 before someone outbids you.",
+    title: `${SITE_NAME} — WHO'S KING? 👑`,
+    description: "Bid for digital crowns. Highest bid wins.",
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${fraunces.variable} ${ibmPlexMono.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}`,
+            __html: `try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.classList.remove('dark');else document.documentElement.classList.add('dark')}catch(e){document.documentElement.classList.add('dark')}`,
           }}
         />
         <ThemeProvider>

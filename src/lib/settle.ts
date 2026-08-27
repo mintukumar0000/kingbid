@@ -13,7 +13,6 @@ import { getGlobalBoardId, recordReignChange } from "@/lib/reign";
 import { writePlatformEvent } from "@/lib/platform-events";
 import { recomputeUnderdogForListing } from "@/lib/underdog";
 import { emitRivalGapEvents } from "@/lib/rivals-feed";
-import { recordCampaignPayment } from "@/lib/nepal-campaign";
 
 async function handleTopSpotChange(
   boardId: string,
@@ -95,8 +94,6 @@ export async function settlePayment(paymentId: string): Promise<void> {
     }
 
     await emitRivalGapEvents(result.listingId, result.newTotal);
-
-    await recordCampaignPayment(paymentId).catch(() => undefined);
   }
 
   const rank = await getRankForListing(result.listingId);

@@ -21,9 +21,7 @@ import { PAGE_WIDE } from "@/lib/layout";
 import type { BoardScope } from "@/lib/geo";
 import { countryDisplayName } from "@/lib/geo";
 import { COUNTRY_COOKIE } from "@/lib/brand";
-import { emptyBoardMessage, heroSubtext, HERO_EYEBROW, HERO_CAMPAIGN_EYEBROW, HERO_CAMPAIGN_SUBTEXT } from "@/lib/copy";
-import { isCampaignUiEnabled } from "@/lib/nepal-campaign-config";
-import { VerificationRequestTrigger } from "@/components/nepal/VerificationRequestModal";
+import { emptyBoardMessage, heroSubtext, HERO_EYEBROW } from "@/lib/copy";
 import Link from "next/link";
 
 const PAGE_SIZE = 50;
@@ -195,8 +193,6 @@ function HomeClientInner({
     return null;
   }
 
-  const showNepalCampaign = isCampaignUiEnabled() && !inCategoryRoom && scope === "global";
-
   function renderHero(variant: "home" | "room") {
     const claimHeadline =
       scope === "local" ? (
@@ -206,10 +202,6 @@ function HomeClientInner({
       ) : variant === "room" && board.categoryName ? (
         <>
           Claim #{heroRank} in {board.categoryName} for
-        </>
-      ) : showNepalCampaign && variant === "home" ? (
-        <>
-          Claim #1 for <span className="text-accent">Nepal relief</span>
         </>
       ) : (
         <>Claim #1 for</>
@@ -239,28 +231,18 @@ function HomeClientInner({
       </span>
     );
 
-    const heroSubline =
-      showNepalCampaign && variant === "home" && scope === "global" ? (
-        <>
-          {HERO_CAMPAIGN_SUBTEXT(board.minBid)}{" "}
-          <Link href="/nepal-relief" className="font-medium text-accent hover:underline">
-            Live transparency →
-          </Link>{" "}
-          ·{" "}
-          <VerificationRequestTrigger className="font-medium text-accent hover:underline" />
-        </>
-      ) : (
-        heroSubtext(board.minBid, scope, scope === "local" ? countryName : (board.categoryName ?? undefined))
-      );
+    const heroSubline = heroSubtext(
+      board.minBid,
+      scope,
+      scope === "local" ? countryName : (board.categoryName ?? undefined)
+    );
 
-    const outbidLabel = board.entries.length > 0 ? "Outbid" : "Claim #1";
+    const outbidLabel = board.entries.length > 0 ? "Steal the Crown" : "Claim the Crown";
 
     return (
       <>
         {variant === "home" ? (
-          <p className="kb-eyebrow mx-auto">
-            {showNepalCampaign ? HERO_CAMPAIGN_EYEBROW : HERO_EYEBROW}
-          </p>
+          <p className="kb-eyebrow mx-auto">{HERO_EYEBROW}</p>
         ) : (
           <>
             <p className="kb-eyebrow">{HERO_EYEBROW}</p>

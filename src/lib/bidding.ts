@@ -22,6 +22,7 @@ import { cleanTarget, UrlPolicyError } from "@/lib/url-cleaner";
 import { slugFromDisplayUrl, uniqueSlug } from "@/lib/slug";
 import { countryDisplayName, type BoardScope } from "@/lib/geo";
 import { assertConsentedListing } from "@/lib/guardrails";
+import { getSpotByCategorySlug, nextBidForSpot } from "@/lib/crown-spots";
 
 const IS_POSTGRES = (process.env.DATABASE_URL ?? "").startsWith("postgres");
 
@@ -68,6 +69,7 @@ export interface BidIntentInput {
   scope?: BoardScope;
   countryCode?: string | null;
   boardId?: string | null;
+  categorySlug?: string | null;
   revenueBand?: string | null;
 }
 
@@ -153,7 +155,16 @@ export async function createBidIntent(input: BidIntentInput): Promise<BidIntent>
       );
     }
   } else {
-    if (input.amount < MIN_BID) throw new BidError(`New listings start at $${MIN_BID}.`);
+    const spot = input.categorySlug ? getSpotByCategorySlug(input.categorySlug) : undefined;
+    const spotMin = spot ? nextBidForSpot(spot, topBid) : MIN_BID;
+    if (input.amount < spotMin) {
+      throw new BidError(
+        spot
+          ? `This spot requires at least $${spotMin.toLocaleString()}.`
+          : `New listings start at $${MIN_BID}.`
+      );
+    }
+    if (!spot && input.amount < MIN_BID) throw new BidError(`New listings start at $${MIN_BID}.`);
     if (input.amount > topBid && input.amount < topBid + TOP_SPOT_INCREMENT) {
       throw new BidError(
         `Taking #1 requires at least $${TOP_SPOT_INCREMENT} more than the current top bid ` +

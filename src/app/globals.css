@@ -2307,3 +2307,240 @@ html.dark .site-stats-bar {
     text-align: right;
   }
 }
+
+/* Flagship 3D crown */
+.crowns-section-heading {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.crowns-section-heading h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.crowns-section-heading p {
+  margin-top: 0.35rem;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.flagship-crown-section {
+  padding-bottom: 2.5rem;
+}
+
+.flagship-crown-intro {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.flagship-crown-sub {
+  margin-top: 0.35rem;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.flagship-crown-value {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--accent);
+}
+
+.flagship-crown-stage {
+  position: relative;
+  border-radius: 1.25rem;
+  border: 1px solid var(--crown-stage-border);
+  background: var(--crown-stage-bg);
+  box-shadow: var(--crown-stage-shadow);
+  overflow: hidden;
+}
+
+.crown-arena-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: min(72vh, 560px);
+  min-height: 380px;
+  background: radial-gradient(ellipse at 50% 40%, var(--accent-soft), transparent 65%);
+}
+
+html.dark .crown-arena-canvas-wrap {
+  background: radial-gradient(ellipse at 50% 40%, rgba(212, 160, 23, 0.08), transparent 65%);
+}
+
+.crown-arena-loading {
+  display: grid;
+  place-items: center;
+}
+
+.crown-arena-loading-inner {
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.crown-arena-hint {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.crown-spot-hover-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.5rem;
+  background: rgba(12, 10, 9, 0.82);
+  color: #fafaf9;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+
+.crown-spot-hover-label strong {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.crown-spot-panel {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 10;
+  width: min(100% - 2rem, 280px);
+  padding: 1.125rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.crown-spot-panel-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.625rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.crown-spot-panel-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.crown-spot-panel-title {
+  margin-top: 0.25rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.crown-spot-panel-owner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.crown-spot-panel-price {
+  margin-top: 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.crown-spot-panel-copy {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.crown-spot-panel-meta {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.crown-spot-panel-cta {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: 9999px;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 0.15s ease;
+}
+
+.crown-spot-panel-cta:hover {
+  opacity: 0.9;
+}
+
+.flagship-crown-live {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.flagship-crown-live-sep {
+  color: var(--muted);
+}
+
+.flagship-crown-live-cta {
+  margin-left: 0.25rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.flagship-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .flagship-tier-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.flagship-tier-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.flagship-tier-pill .text-muted {
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.flagship-crown-tagline {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}

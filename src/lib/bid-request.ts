@@ -83,6 +83,7 @@ export async function handleBidRequest(request: Request): Promise<NextResponse> 
       scope,
       countryCode,
       boardId,
+      categorySlug: parsed.data.categorySlug ?? null,
       revenueBand: parsed.data.revenueBand ?? null,
     });
 

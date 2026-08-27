@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { useLiveUpdates } from "@/hooks/useLiveUpdates";
 import { LiveCrownsArena } from "@/components/crowns/LiveCrownsArena";
+import { FlagshipCrownSection } from "@/components/crowns/FlagshipCrownSection";
 import {
   CrownsTrending,
   CrownsMostWanted,
@@ -14,6 +15,7 @@ import {
 import { BidModal, type BidPrefill } from "@/components/BidModal";
 import { getCrown, crownBidParams, type CrownGroup } from "@/lib/crowns";
 import type { CrownState, DethronementFeedItem } from "@/lib/crowns-data";
+import type { CrownSpotState } from "@/lib/crown-spots-data";
 import type { LeaderboardData } from "@/lib/leaderboard";
 import { PAGE_WIDE } from "@/lib/layout";
 
@@ -56,6 +58,14 @@ export function CrownsHome() {
 
   const placeCrowns = useMemo(() => data?.crowns.filter((c) => c.group === "places") ?? [], [data]);
 
+  function openBoardBid(boardData: LeaderboardData, bidPrefill: BidPrefill) {
+    setBoardScope("global");
+    setCountryCode(undefined);
+    setBoard(boardData);
+    setPrefill(bidPrefill);
+    setModalOpen(true);
+  }
+
   async function openSteal(crown: CrownState) {
     const def = getCrown(crown.slug);
     if (!def) return;
@@ -69,53 +79,51 @@ export function CrownsHome() {
 
     const res = await fetch(`/api/listings?${qs}`);
     const boardData = (await res.json()) as LeaderboardData;
-    setBoard(boardData);
-    setPrefill({
+    openBoardBid(boardData, {
       mode: "new",
       amount: crown.nextBid,
       amountIsTargetTotal: true,
     });
-    setModalOpen(true);
+  }
+
+  function openSpotBid(spot: CrownSpotState, boardData: LeaderboardData, bidPrefill: BidPrefill) {
+    openBoardBid(boardData, bidPrefill);
   }
 
   const crowns = data?.crowns ?? [];
 
   return (
     <>
-      {/* Hero */}
-      <section className={`crowns-hero ${PAGE_WIDE} pb-8 pt-12 text-center sm:pt-16`}>
+      <section className={`crowns-hero ${PAGE_WIDE} pb-6 pt-12 text-center sm:pt-16`}>
         <div className="crowns-hero-glow" aria-hidden />
-        <p className="kb-eyebrow relative">Live digital crowns</p>
+        <p className="kb-eyebrow relative">KingBid</p>
         <h1 className="relative mt-3 text-[40px] font-semibold leading-[1.05] tracking-tight sm:text-[56px]">
           Who&apos;s <span className="arena-headline-accent">king</span>?
         </h1>
-        <p className="relative mx-auto mt-4 max-w-md text-[16px] leading-relaxed text-muted">
-          Bid for the crown. Keep it until someone outbids you.
+        <p className="relative mx-auto mt-4 max-w-lg text-[16px] leading-relaxed text-muted">
+          21 spots. One crown.
+          <br />
+          Bid for your place. Keep it until someone takes it.
         </p>
         <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              const first = crowns[0];
-              if (first) openSteal(first);
-              else {
-                setBoard(EMPTY_BOARD);
-                setPrefill({ mode: "new", amount: 5, amountIsTargetTotal: true });
-                setModalOpen(true);
-              }
-            }}
-            className="crowns-cta-primary"
-          >
-            Claim a Crown
-          </button>
-          <a href="#live-crowns" className="crowns-cta-secondary">
-            Explore Crowns
+          <a href="#explore-crown" className="crowns-cta-primary">
+            Explore the crown
+          </a>
+          <a href="#crowns-to-claim" className="crowns-cta-secondary">
+            Crowns to claim
           </a>
         </div>
       </section>
 
-      {/* Live Crowns */}
-      <section id="live-crowns" className={`${PAGE_WIDE} pb-12`}>
+      <div className={PAGE_WIDE}>
+        <FlagshipCrownSection onOpenBid={openSpotBid} />
+      </div>
+
+      <section id="crowns-to-claim" className={`${PAGE_WIDE} pb-12 pt-4`}>
+        <div className="crowns-section-heading">
+          <h2>Crowns to claim</h2>
+          <p>Category kingdoms · separate live auctions</p>
+        </div>
         <LiveCrownsArena crowns={crowns} onSteal={openSteal} filter={filter} onFilterChange={setFilter} />
       </section>
 

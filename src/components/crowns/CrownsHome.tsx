@@ -94,32 +94,11 @@ export function CrownsHome() {
 
   return (
     <>
-      <section className={`crowns-hero ${PAGE_WIDE} pb-6 pt-12 text-center sm:pt-16`}>
-        <div className="crowns-hero-glow" aria-hidden />
-        <p className="kb-eyebrow relative">KingBid</p>
-        <h1 className="relative mt-3 text-[40px] font-semibold leading-[1.05] tracking-tight sm:text-[56px]">
-          Who&apos;s <span className="arena-headline-accent">king</span>?
-        </h1>
-        <p className="relative mx-auto mt-4 max-w-lg text-[16px] leading-relaxed text-muted">
-          21 spots. One crown.
-          <br />
-          Bid for your place. Keep it until someone takes it.
-        </p>
-        <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
-          <a href="#explore-crown" className="crowns-cta-primary">
-            Explore the crown
-          </a>
-          <a href="#crowns-to-claim" className="crowns-cta-secondary">
-            Crowns to claim
-          </a>
-        </div>
-      </section>
-
       <div className={PAGE_WIDE}>
         <FlagshipCrownSection onOpenBid={openSpotBid} />
       </div>
 
-      <section id="crowns-to-claim" className={`${PAGE_WIDE} pb-12 pt-4`}>
+      <section id="crowns-to-claim" className={`${PAGE_WIDE} pb-12 pt-8`}>
         <div className="crowns-section-heading">
           <h2>Crowns to claim</h2>
           <p>Category kingdoms · separate live auctions</p>

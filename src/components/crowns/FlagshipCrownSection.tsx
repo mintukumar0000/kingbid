@@ -1,15 +1,17 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import useSWR from "swr";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
-import { TIER_SUMMARY } from "@/lib/crown-spots";
+import { liveStat } from "@/lib/copy";
 import type { CrownSpotState } from "@/lib/crown-spots-data";
 import { CrownSpotPanel } from "@/components/crowns/CrownSpotPanel";
 import type { LeaderboardData } from "@/lib/leaderboard";
 import type { BidPrefill } from "@/components/BidModal";
+import type { PlatformStats } from "@/components/StatsBar";
 
 const CrownArena3D = dynamic(
   () => import("@/components/crowns/CrownArena3D").then((m) => m.CrownArena3D),
@@ -34,11 +36,11 @@ interface Props {
 
 export function FlagshipCrownSection({ onOpenBid }: Props) {
   const { data } = useSWR<SpotsPayload>("/api/crown-spots", fetcher, { refreshInterval: 8_000 });
+  const { data: platform } = useSWR<PlatformStats>("/api/stats", fetcher, { refreshInterval: 8_000 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const spots = data?.spots ?? [];
   const stats = data?.stats ?? { totalValue: 0, claimed: 0, total: 21 };
-  const crownOwner = useMemo(() => spots.find((s) => s.tier === "crown"), [spots]);
   const selected = spots.find((s) => s.id === selectedId) ?? null;
 
   async function openBid(spot: CrownSpotState) {
@@ -60,56 +62,48 @@ export function FlagshipCrownSection({ onOpenBid }: Props) {
 
   return (
     <section id="explore-crown" className="flagship-crown-section">
-      <div className="flagship-crown-intro">
-        <p className="kb-eyebrow">21 ownable spots</p>
-        <p className="flagship-crown-sub">
-          1 Crown · 4 Diamonds · 8 Royal · 8 Court
-        </p>
-        {stats.totalValue > 0 && (
-          <p className="flagship-crown-value tabular">
-            Currently worth {formatMoney(stats.totalValue)}
-          </p>
-        )}
+      <div className="flagship-crown-stats">
+        <span className="flagship-stat flagship-stat--green tabular">
+          {formatMoney(stats.totalValue || platform?.totalRevenue || 0)} on the crown
+        </span>
+        <span className="flagship-stat-sep">·</span>
+        <span className="flagship-stat tabular">{liveStat(platform?.online)} watching</span>
+        <span className="flagship-stat-sep">·</span>
+        <span className="flagship-stat tabular">{liveStat(platform?.totalVisitors)} visitors</span>
+        <span className="flagship-stat-sep">·</span>
+        <Link href="/stats" className="flagship-stat flagship-stat--link">
+          Full stats →
+        </Link>
       </div>
+
+      <h1 className="flagship-crown-headline">
+        Put your logo on{" "}
+        <span className="flagship-crown-headline-accent">the crown.</span>
+      </h1>
+      <p className="flagship-crown-deck">
+        <span className="tabular">{stats.claimed}</span> of {stats.total} spots claimed · ongoing, no deadline
+      </p>
 
       <div className="flagship-crown-stage">
         <CrownArena3D spots={spots} selectedId={selectedId} onSelect={setSelectedId} />
         {selected && (
-          <CrownSpotPanel
-            spot={selected}
-            onBid={() => openBid(selected)}
-            onClose={() => setSelectedId(null)}
-          />
+          <>
+            <button
+              type="button"
+              className="crown-spot-backdrop"
+              aria-label="Close spot panel"
+              onClick={() => setSelectedId(null)}
+            />
+            <div className="crown-spot-panel-wrap">
+              <CrownSpotPanel
+                spot={selected}
+                onBid={() => openBid(selected)}
+                onClose={() => setSelectedId(null)}
+              />
+            </div>
+          </>
         )}
       </div>
-
-      {crownOwner && (
-        <div className="flagship-crown-live">
-          <span className="pulse-dot h-2 w-2 rounded-full bg-green" aria-hidden />
-          <span>Live auction</span>
-          <span className="flagship-crown-live-sep">·</span>
-          <strong>Crown Owner</strong>
-          <span className="tabular">
-            {crownOwner.hasOwner
-              ? `@${crownOwner.ownerHandle} · ${formatMoney(crownOwner.currentBid)}`
-              : `Open · from ${formatMoney(crownOwner.startingBid)}`}
-          </span>
-          <button type="button" className="flagship-crown-live-cta" onClick={() => openBid(crownOwner)}>
-            Claim the crown →
-          </button>
-        </div>
-      )}
-
-      <div className="flagship-tier-grid">
-        {TIER_SUMMARY.map((t) => (
-          <div key={t.tier} className="flagship-tier-pill">
-            <span>{t.label}</span>
-            <span className="text-muted">{t.count} · {t.range}</span>
-          </div>
-        ))}
-      </div>
-
-      <p className="flagship-crown-tagline">Own your piece of the internet.</p>
     </section>
   );
 }

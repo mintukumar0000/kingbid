@@ -58,7 +58,17 @@ function SpotCell({ crown, index }: { crown: CrownState; index: number }) {
         <Link href={`/crown/${crown.slug}`} className="crown-spot-name truncate hover:text-[var(--crown-gold)]">
           {crown.name}
         </Link>
-        <p className="crown-spot-sub truncate">{crown.headline}</p>
+        <p className="crown-spot-sub truncate">
+          {crown.hasKing
+            ? crown.kingTitle || crown.kingHandle || crown.headline
+            : crown.description}
+        </p>
+        {crown.hasKing && crown.kingDescription && (
+          <p className="mt-0.5 line-clamp-1 text-[11px] text-muted">{crown.kingDescription}</p>
+        )}
+        {crown.hasKing && crown.clickCount > 0 && (
+          <p className="mt-0.5 text-[10px] tabular text-muted">{crown.clickCount.toLocaleString()} clicks</p>
+        )}
       </div>
     </div>
   );

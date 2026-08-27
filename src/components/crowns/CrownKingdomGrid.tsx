@@ -3,6 +3,7 @@
 import { formatMoney, faviconFor } from "@/lib/format";
 import type { CrownState } from "@/lib/crowns-data";
 import { crownVisual } from "@/lib/crown-visuals";
+import { CrownImage } from "@/components/crowns/CrownImage";
 import {
   GRID_CSS_CLASS,
   gridSlotsForVariant,
@@ -10,32 +11,26 @@ import {
   type GridVariant,
 } from "@/lib/crown-grid-layout";
 
-function CrownSvg({ className }: { className?: string }) {
+function TileMeta({ crown, occupied }: { crown: CrownState; occupied: boolean }) {
+  if (occupied) {
+    return (
+      <div className="mt-1 space-y-0.5">
+        {crown.kingTitle && (
+          <p className="truncate text-[11px] font-semibold text-foreground">{crown.kingTitle}</p>
+        )}
+        {(crown.kingDescription || crown.kingHandle) && (
+          <p className="line-clamp-2 text-[10px] leading-snug text-muted">
+            {crown.kingDescription || crown.kingHandle}
+          </p>
+        )}
+        {crown.clickCount > 0 && (
+          <p className="text-[10px] font-medium tabular text-muted">{crown.clickCount.toLocaleString()} clicks</p>
+        )}
+      </div>
+    );
+  }
   return (
-    <svg viewBox="0 0 64 48" fill="none" className={className} aria-hidden>
-      <defs>
-        <linearGradient id="crown-gold" x1="32" y1="4" x2="32" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#ffe08a" />
-          <stop offset="0.45" stopColor="#c9a227" />
-          <stop offset="1" stopColor="#8a6520" />
-        </linearGradient>
-        <filter id="crown-glow">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      <path
-        d="M8 38h48l-4-22-10 12-6-18-6 18-10-12-4 22z"
-        fill="url(#crown-gold)"
-        filter="url(#crown-glow)"
-      />
-      <circle cx="14" cy="36" r="2.5" fill="#ffe08a" opacity="0.9" />
-      <circle cx="32" cy="36" r="2.5" fill="#ffe08a" opacity="0.9" />
-      <circle cx="50" cy="36" r="2.5" fill="#ffe08a" opacity="0.9" />
-    </svg>
+    <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-muted">{crown.description}</p>
   );
 }
 
@@ -55,6 +50,56 @@ function KingdomTile({
   const occupied = crown.hasKing;
   const isCenter = size === "xl";
   const isTerritory = variant === "places" && size === "lg";
+  const isCategory = variant !== "all";
+
+  if (isCategory) {
+    return (
+      <button
+        type="button"
+        onClick={() => onSteal(crown)}
+        className={[
+          "kingdom-tile group",
+          `kingdom-tile-${size}`,
+          occupied ? "kingdom-tile-claimed" : "kingdom-tile-open",
+          isCenter ? "kingdom-tile-center" : "",
+          isTerritory ? "kingdom-tile-territory" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={
+          slot
+            ? ({
+                gridArea: slot.area,
+                "--crown-accent": visual.accent,
+                "--crown-accent-rgb": visual.accentRgb,
+              } as React.CSSProperties)
+            : ({
+                "--crown-accent": visual.accent,
+                "--crown-accent-rgb": visual.accentRgb,
+              } as React.CSSProperties)
+        }
+      >
+        <span className="kingdom-tile-border" aria-hidden />
+        <div className="kingdom-tile-glow" aria-hidden />
+        <div className="relative flex h-full min-h-0 flex-col p-3 sm:p-4 text-left">
+          <div className="flex items-center gap-2">
+            <CrownImage size="xs" glow />
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: visual.accent }}>
+              {slot?.label ?? crown.headline}
+            </p>
+          </div>
+          {!occupied && <p className="kingdom-open-label mt-1 text-[9px]">Available</p>}
+          <TileMeta crown={crown} occupied={occupied} />
+          <p
+            className="kingdom-price mt-auto pt-2 font-mono-label text-[18px] font-bold tabular leading-none sm:text-[22px]"
+            style={{ color: visual.accent }}
+          >
+            {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
+          </p>
+        </div>
+      </button>
+    );
+  }
 
   return (
     <button
@@ -99,8 +144,11 @@ function KingdomTile({
         {isTerritory ? (
           <>
             <div className="flex flex-1 flex-col items-center justify-center text-center">
-              <span className="text-[40px] leading-none sm:text-[48px]">{crown.flag}</span>
-              <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.18em]">{crown.headline}</p>
+              <span className="text-[36px] leading-none sm:text-[42px]">{crown.flag}</span>
+              <div className="mt-2 flex items-center gap-1.5">
+                <CrownImage size="xs" glow />
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em]">{crown.headline}</p>
+              </div>
               {occupied ? (
                 <div className="mt-3 flex flex-col items-center gap-2">
                   <div className="kingdom-king-halo">
@@ -132,11 +180,8 @@ function KingdomTile({
               <div className="kingdom-throne">
                 <span className="kingdom-throne-ring" aria-hidden />
                 <span className="kingdom-throne-ring kingdom-throne-ring-2" aria-hidden />
-                {variant === "tech" ? (
-                  <span className="relative z-10 text-[48px] leading-none sm:text-[56px]">{visual.icon}</span>
-                ) : (
-                  <CrownSvg className="kingdom-crown-svg relative z-10 h-14 w-auto sm:h-[72px]" />
-                )}
+                <span className="kingdom-throne-beam" aria-hidden />
+                <CrownImage size="hero" float glow className="relative z-10" />
               </div>
               <p
                 className="mt-3 text-[10px] font-bold uppercase tracking-[0.24em] sm:text-[11px]"
@@ -157,9 +202,18 @@ function KingdomTile({
                     />
                   </div>
                   <p className="max-w-full truncate text-[13px] font-semibold">{crown.kingHandle}</p>
+                  {crown.clickCount > 0 && (
+                    <p className="text-[10px] tabular text-muted">{crown.clickCount.toLocaleString()} clicks</p>
+                  )}
+                  {crown.kingDescription && (
+                    <p className="line-clamp-2 max-w-full px-2 text-[10px] text-muted">{crown.kingDescription}</p>
+                  )}
                 </div>
               ) : (
-                <p className="kingdom-open-label mt-3">Throne open</p>
+                <>
+                  <p className="kingdom-open-label mt-3">Throne open</p>
+                  <p className="mt-2 line-clamp-2 max-w-full px-2 text-[10px] text-muted">{crown.description}</p>
+                </>
               )}
             </div>
             <p
@@ -172,8 +226,8 @@ function KingdomTile({
         ) : (
           <>
             <div className="flex items-start justify-between gap-2">
-              <span className="kingdom-icon-halo text-[18px] leading-none sm:text-[22px]" aria-hidden>
-                {visual.icon}
+              <span className="kingdom-icon-halo" aria-hidden>
+                <CrownImage size="sm" glow />
               </span>
               {occupied && crown.kingUrl && (
                 <div className="kingdom-king-halo kingdom-king-halo-sm">
@@ -192,9 +246,12 @@ function KingdomTile({
               {slot?.label ?? crown.name}
             </p>
             {occupied ? (
-              <p className="mt-0.5 truncate text-[11px] text-muted">{crown.kingHandle}</p>
+              <TileMeta crown={crown} occupied />
             ) : (
-              <p className="kingdom-open-label mt-0.5 text-[9px] sm:text-[10px]">Available</p>
+              <>
+                <p className="kingdom-open-label mt-0.5 text-[9px] sm:text-[10px]">Available</p>
+                <TileMeta crown={crown} occupied={false} />
+              </>
             )}
             <p
               className="kingdom-price mt-auto pt-2 font-mono-label text-[16px] font-bold tabular leading-none sm:text-[19px]"

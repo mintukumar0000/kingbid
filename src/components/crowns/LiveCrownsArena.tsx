@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { CrownState } from "@/lib/crowns-data";
 import type { CrownGroup } from "@/lib/crowns";
 import { formatMoney } from "@/lib/format";
+import { CrownImage } from "@/components/crowns/CrownImage";
 import { CrownKingdomGrid } from "@/components/crowns/CrownKingdomGrid";
 import { CrownLiveTable } from "@/components/crowns/CrownLiveTable";
 import { gridVariantForFilter } from "@/lib/crown-grid-layout";
@@ -101,19 +102,24 @@ export function LiveCrownsArena({
           <p className="kb-eyebrow mb-3 opacity-80">
             {categoryMeta?.eyebrow ?? "Live digital thrones"}
           </p>
-          <h3 className="arena-headline font-display text-[28px] font-semibold leading-[1.08] sm:text-[38px]">
-            {categoryMeta ? (
-              categoryMeta.title
-            ) : (
-              <>
-                Put your brand on{" "}
-                <span className="arena-headline-glow relative inline-block">
-                  <span className="relative z-10">the crown.</span>
-                  <span className="crown-headline-mark absolute -inset-x-2 bottom-0 top-[50%] -skew-y-1 rounded-sm" aria-hidden />
-                </span>
-              </>
-            )}
-          </h3>
+          <div className="arena-headline-row mx-auto flex max-w-2xl flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <div className="arena-headline-crown shrink-0">
+              <CrownImage size="lg" float glow />
+            </div>
+            <h3 className="arena-headline font-display text-[28px] font-semibold leading-[1.08] sm:text-[38px]">
+              {categoryMeta ? (
+                categoryMeta.title
+              ) : (
+                <>
+                  Put your brand on{" "}
+                  <span className="arena-headline-glow relative inline-block">
+                    <span className="relative z-10">the crown.</span>
+                    <span className="crown-headline-mark absolute -inset-x-2 bottom-0 top-[50%] -skew-y-1 rounded-sm" aria-hidden />
+                  </span>
+                </>
+              )}
+            </h3>
+          </div>
           <p className="mx-auto mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
             {categoryMeta?.description ??
               "Fourteen live jewels. One kingdom. Highest bid wears the crown until someone steals it."}

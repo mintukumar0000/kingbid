@@ -30,9 +30,9 @@ export const CROWN_GRID_SLOTS: Record<string, CrownGridSlot> = {
   "king-of-threads": { area: "threads", size: "sm", label: "Threads" },
 };
 
-/** Tech vertical — AI throne at center */
+/** Tech vertical — AI · SaaS · Startups centered row */
 export const TECH_GRID_SLOTS: Record<string, CrownGridSlot> = {
-  "king-of-ai": { area: "hub", size: "xl", label: "AI" },
+  "king-of-ai": { area: "ai", size: "sm", label: "AI" },
   "king-of-saas": { area: "saas", size: "sm", label: "SaaS" },
   "king-of-startups": { area: "startups", size: "sm", label: "Startups" },
   "king-of-developers": { area: "dev", size: "md", label: "Developers" },

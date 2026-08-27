@@ -7,8 +7,6 @@ import { raisePayment } from "@/lib/pricing";
 import { REF_COOKIE } from "@/lib/brand";
 import type { BoardScope } from "@/lib/geo";
 import { BID_MODAL_NEW } from "@/lib/copy";
-import { RevenueBandSelect } from "@/components/RevenueBandSelect";
-import type { RevenueBand } from "@/lib/revenue-bands";
 
 export interface BidPrefill {
   mode: "new" | "claim" | "takeover";
@@ -44,7 +42,6 @@ export function BidModal({
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState(prefill.amount);
-  const [revenueBand, setRevenueBand] = useState<RevenueBand | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const convertedRaise = useRef(false);
@@ -111,9 +108,6 @@ export function BidModal({
 
     if (!url.trim()) return setError("Enter a URL or @handle.");
     if (!existing && !title.trim() && !isTakeover) return setError("Enter a title for your listing.");
-    if (!existing && !isTakeover && !revenueBand) {
-      return setError("Pick a revenue band for Underdog rank.");
-    }
     if (!Number.isInteger(amount) || amount < 1) return setError("Enter a whole dollar amount.");
 
     setSubmitting(true);
@@ -132,7 +126,6 @@ export function BidModal({
           scope,
           countryCode: scope === "local" ? countryCode : undefined,
           categorySlug: board.categorySlug ?? undefined,
-          revenueBand: !existing && revenueBand ? revenueBand : undefined,
         }),
       });
       const data = await res.json();
@@ -230,7 +223,6 @@ export function BidModal({
                     className="w-full resize-none rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
                   />
                 </div>
-                <RevenueBandSelect value={revenueBand} onChange={setRevenueBand} required />
               </>
             )}
 

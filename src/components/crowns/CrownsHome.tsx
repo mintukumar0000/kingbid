@@ -60,7 +60,7 @@ export function CrownsHome() {
   const [countryCode, setCountryCode] = useState<string | undefined>();
 
   const apiFilter = filter === "all" ? "" : `?filter=${filter}`;
-  const { data } = useSWR<Payload>(`/api/crowns${apiFilter}`, fetcher, { refreshInterval: 12_000 });
+  const { data } = useSWR<Payload>(`/api/crowns${apiFilter}`, fetcher, { refreshInterval: 8_000 });
 
   const placeCrowns = useMemo(() => data?.crowns.filter((c) => c.group === "places") ?? [], [data]);
 

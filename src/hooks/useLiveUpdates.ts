@@ -22,12 +22,15 @@ export function useLiveUpdates() {
 
       if (event.type === "bid") {
         mutate((key) => typeof key === "string" && key.startsWith("/api/listings"));
+        mutate((key) => typeof key === "string" && key.startsWith("/api/crowns"));
         mutate("/api/activity");
         mutate("/api/stats");
         mutate("/api/trending");
       } else if (event.type === "click") {
+        mutate((key) => typeof key === "string" && key.startsWith("/api/crowns"));
         mutate("/api/trending");
         mutate((key) => typeof key === "string" && key.startsWith("/api/listings"));
+        mutate("/api/stats");
       } else if (event.type === "presence") {
         mutate("/api/stats");
       }

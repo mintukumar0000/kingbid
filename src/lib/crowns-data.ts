@@ -19,6 +19,9 @@ export interface CrownState {
   kingUrl: string | null;
   kingListingId: string | null;
   kingSlug: string | null;
+  kingTitle: string | null;
+  kingDescription: string | null;
+  clickCount: number;
   currentBid: number;
   nextBid: number;
   bidCount: number;
@@ -122,6 +125,9 @@ export async function getCrownState(crown: CrownDefinition): Promise<CrownState>
     kingUrl: king?.url ?? null,
     kingListingId: king?.id ?? null,
     kingSlug: king?.slug ?? null,
+    kingTitle: king?.title ?? null,
+    kingDescription: king?.description || null,
+    clickCount: king?.clickCount ?? 0,
     currentBid: king?.currentBid ?? 0,
     nextBid: king ? board.claimTopPrice : MIN_BID,
     bidCount,

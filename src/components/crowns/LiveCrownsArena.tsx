@@ -6,6 +6,7 @@ import type { CrownGroup } from "@/lib/crowns";
 import { formatMoney } from "@/lib/format";
 import { CrownKingdomGrid } from "@/components/crowns/CrownKingdomGrid";
 import { CrownLiveTable } from "@/components/crowns/CrownLiveTable";
+import { gridVariantForFilter } from "@/lib/crown-grid-layout";
 
 export type ArenaFilter = "all" | "trending" | CrownGroup;
 
@@ -53,7 +54,9 @@ export function LiveCrownsArena({
   onSteal: (c: CrownState) => void;
   filter?: ArenaFilter;
 }) {
+  const gridVariant = gridVariantForFilter(filter);
   const isFullKingdom = filter === "all" && crowns.length >= 12;
+  const isCategoryGrid = gridVariant !== null && gridVariant !== "all";
   const categoryMeta = filter !== "all" ? CATEGORY_META[filter] : null;
 
   const sortedCrowns = useMemo(() => {
@@ -125,13 +128,15 @@ export function LiveCrownsArena({
           <span className="text-[12px] text-muted">· ongoing, no deadline</span>
         </div>
         <p className="text-[12px] text-muted">
-          {isFullKingdom ? "Kingdom map or live table below" : "Tap outbid on any row"}
+          {isFullKingdom || isCategoryGrid
+            ? "Bento map + live table below"
+            : "Tap outbid on any row"}
         </p>
       </div>
 
       {isFullKingdom ? (
         <>
-          <CrownKingdomGrid crowns={crowns} onSteal={onSteal} />
+          <CrownKingdomGrid crowns={crowns} onSteal={onSteal} variant="all" />
           <div className="space-y-3">
             <p className="text-center text-[12px] font-semibold uppercase tracking-[0.14em] text-muted">
               Or browse the full auction
@@ -142,6 +147,16 @@ export function LiveCrownsArena({
               showGroup
               groupSections={["tech", "places", "internet"]}
             />
+          </div>
+        </>
+      ) : isCategoryGrid ? (
+        <>
+          <CrownKingdomGrid crowns={crowns} onSteal={onSteal} variant={gridVariant} />
+          <div className="space-y-3">
+            <p className="text-center text-[12px] font-semibold uppercase tracking-[0.14em] text-muted">
+              Or browse the live table
+            </p>
+            <CrownLiveTable crowns={sortedCrowns} onSteal={onSteal} />
           </div>
         </>
       ) : (

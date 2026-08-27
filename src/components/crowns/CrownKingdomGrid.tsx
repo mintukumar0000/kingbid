@@ -3,7 +3,12 @@
 import { formatMoney, faviconFor } from "@/lib/format";
 import type { CrownState } from "@/lib/crowns-data";
 import { crownVisual } from "@/lib/crown-visuals";
-import { CROWN_GRID_SLOTS } from "@/lib/crown-grid-layout";
+import {
+  GRID_CSS_CLASS,
+  gridSlotsForVariant,
+  type CrownGridSlot,
+  type GridVariant,
+} from "@/lib/crown-grid-layout";
 
 function CrownSvg({ className }: { className?: string }) {
   return (
@@ -37,15 +42,19 @@ function CrownSvg({ className }: { className?: string }) {
 function KingdomTile({
   crown,
   onSteal,
+  slot,
+  variant,
 }: {
   crown: CrownState;
   onSteal: (c: CrownState) => void;
+  slot?: CrownGridSlot;
+  variant: GridVariant;
 }) {
-  const slot = CROWN_GRID_SLOTS[crown.slug];
   const visual = crownVisual(crown.slug);
   const size = slot?.size ?? "sm";
   const occupied = crown.hasKing;
   const isCenter = size === "xl";
+  const isTerritory = variant === "places" && size === "lg";
 
   return (
     <button
@@ -59,6 +68,7 @@ function KingdomTile({
         crown.isHot ? "kingdom-tile-hot" : "",
         crown.isNewKing ? "kingdom-tile-new" : "",
         isCenter ? "kingdom-tile-center" : "",
+        isTerritory ? "kingdom-tile-territory" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -80,19 +90,53 @@ function KingdomTile({
       <div className="kingdom-tile-shimmer" aria-hidden />
 
       <div className="relative flex h-full min-h-0 flex-col p-3 sm:p-4">
-        {(crown.isHot || crown.isNewKing) && !isCenter && (
+        {(crown.isHot || crown.isNewKing) && !isCenter && !isTerritory && (
           <span className={`kingdom-badge ${crown.isNewKing ? "kingdom-badge-new" : "kingdom-badge-hot"}`}>
             {crown.isNewKing ? "New King" : "Hot"}
           </span>
         )}
 
-        {isCenter ? (
+        {isTerritory ? (
+          <>
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <span className="text-[40px] leading-none sm:text-[48px]">{crown.flag}</span>
+              <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.18em]">{crown.headline}</p>
+              {occupied ? (
+                <div className="mt-3 flex flex-col items-center gap-2">
+                  <div className="kingdom-king-halo">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={faviconFor(crown.kingUrl!)}
+                      alt=""
+                      width={40}
+                      height={40}
+                      className="rounded-xl bg-surface object-cover"
+                    />
+                  </div>
+                  <p className="max-w-full truncate text-[13px] font-semibold">{crown.kingHandle}</p>
+                </div>
+              ) : (
+                <p className="kingdom-open-label mt-3">Unclaimed</p>
+              )}
+            </div>
+            <p
+              className="kingdom-price mt-auto text-center font-mono-label text-[22px] font-bold tabular sm:text-[28px]"
+              style={{ color: visual.accent }}
+            >
+              {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
+            </p>
+          </>
+        ) : isCenter ? (
           <>
             <div className="flex flex-1 flex-col items-center justify-center text-center">
               <div className="kingdom-throne">
                 <span className="kingdom-throne-ring" aria-hidden />
                 <span className="kingdom-throne-ring kingdom-throne-ring-2" aria-hidden />
-                <CrownSvg className="kingdom-crown-svg relative z-10 h-14 w-auto sm:h-[72px]" />
+                {variant === "tech" ? (
+                  <span className="relative z-10 text-[48px] leading-none sm:text-[56px]">{visual.icon}</span>
+                ) : (
+                  <CrownSvg className="kingdom-crown-svg relative z-10 h-14 w-auto sm:h-[72px]" />
+                )}
               </div>
               <p
                 className="mt-3 text-[10px] font-bold uppercase tracking-[0.24em] sm:text-[11px]"
@@ -168,10 +212,10 @@ function KingdomTile({
   );
 }
 
-function KingdomBackdrop() {
+function KingdomBackdrop({ variant }: { variant: GridVariant }) {
   return (
     <div className="kingdom-backdrop" aria-hidden>
-      <div className="kingdom-aurora" />
+      <div className={`kingdom-aurora ${variant !== "all" ? `kingdom-aurora-${variant}` : ""}`} />
       <div className="kingdom-grid-lines" />
       <div className="kingdom-orb kingdom-orb-1" />
       <div className="kingdom-orb kingdom-orb-2" />
@@ -182,27 +226,43 @@ function KingdomBackdrop() {
   );
 }
 
+const HINT: Record<GridVariant, string> = {
+  all: "Tap any jewel to claim or outbid",
+  tech: "Tap any tech throne to claim or outbid",
+  places: "Tap any territory to claim or outbid",
+  internet: "Tap any platform throne to claim or outbid",
+};
+
 export function CrownKingdomGrid({
   crowns,
   onSteal,
+  variant = "all",
 }: {
   crowns: CrownState[];
   onSteal: (c: CrownState) => void;
+  variant?: GridVariant;
 }) {
-  const useFullMap = crowns.length >= 12;
+  const slots = gridSlotsForVariant(variant);
+  const gridClass = GRID_CSS_CLASS[variant];
 
   return (
-    <div className="kingdom-stage group/stage">
-      <KingdomBackdrop />
+    <div className={`kingdom-stage group/stage kingdom-stage-${variant}`}>
+      <KingdomBackdrop variant={variant} />
       <div className="kingdom-stage-ring" aria-hidden />
       <div className="kingdom-stage-scanline" aria-hidden />
-      <div className={useFullMap ? "kingdom-grid" : "kingdom-grid-compact"}>
+      <div className={gridClass}>
         {crowns.map((crown) => (
-          <KingdomTile key={crown.slug} crown={crown} onSteal={onSteal} />
+          <KingdomTile
+            key={crown.slug}
+            crown={crown}
+            onSteal={onSteal}
+            slot={slots[crown.slug]}
+            variant={variant}
+          />
         ))}
       </div>
       <p className="kingdom-hint mt-5 text-center text-[12px] tracking-wide text-muted">
-        <span className="text-[var(--crown-gold)]">✦</span> Tap any jewel to claim or outbid{" "}
+        <span className="text-[var(--crown-gold)]">✦</span> {HINT[variant]}{" "}
         <span className="text-[var(--crown-gold)]">✦</span>
       </p>
     </div>

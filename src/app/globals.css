@@ -891,6 +891,92 @@ html.dark .eco-room-tile {
   grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
 }
 
+/* Tech vertical — AI throne center */
+.kingdom-grid-tech {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 0.625rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-areas:
+    ". ai saas startups . ."
+    "dev dev hub hub coding coding"
+    "design design hub hub marketing marketing";
+}
+
+@media (max-width: 640px) {
+  .kingdom-grid-tech {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "hub hub"
+      "ai saas"
+      "startups dev"
+      "coding design"
+      "marketing marketing";
+  }
+}
+
+/* Places — 2×2 territory map */
+.kingdom-grid-places {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 0.625rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-areas:
+    "usa usa india india"
+    "nepal nepal uk uk";
+}
+
+@media (max-width: 640px) {
+  .kingdom-grid-places {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "usa india"
+      "nepal uk";
+  }
+}
+
+/* Internet — platform hub */
+.kingdom-grid-internet {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 0.625rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-areas:
+    "x x center center"
+    "threads threads center center";
+}
+
+@media (max-width: 640px) {
+  .kingdom-grid-internet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "center center"
+      "x threads";
+  }
+}
+
+.kingdom-tile-lg { min-height: 140px; }
+.kingdom-tile-territory { min-height: 160px; }
+
+.kingdom-aurora-tech {
+  background: conic-gradient(from 180deg at 50% 50%, rgba(110, 231, 255, 0.1), rgba(139, 156, 255, 0.08), rgba(52, 211, 153, 0.06), rgba(110, 231, 255, 0.1));
+}
+
+.kingdom-aurora-places {
+  background: conic-gradient(from 180deg at 50% 50%, rgba(96, 165, 250, 0.1), rgba(251, 146, 60, 0.08), rgba(248, 113, 113, 0.06), rgba(96, 165, 250, 0.1));
+}
+
+.kingdom-aurora-internet {
+  background: conic-gradient(from 180deg at 50% 50%, rgba(201, 162, 39, 0.1), rgba(231, 229, 228, 0.06), rgba(201, 162, 39, 0.1));
+}
+
+.kingdom-stage-tech { border-color: rgba(110, 231, 255, 0.2); }
+.kingdom-stage-places { border-color: rgba(96, 165, 250, 0.2); }
+.kingdom-stage-internet { border-color: rgba(201, 162, 39, 0.25); }
+
 .kingdom-tile {
   position: relative;
   isolation: isolate;

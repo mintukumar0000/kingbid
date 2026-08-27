@@ -3,44 +3,17 @@
 import { useMemo } from "react";
 import type { CrownState } from "@/lib/crowns-data";
 import type { CrownGroup } from "@/lib/crowns";
-import { formatMoney } from "@/lib/format";
 import { CrownKingdomGrid } from "@/components/crowns/CrownKingdomGrid";
 import { CrownLiveTable } from "@/components/crowns/CrownLiveTable";
 import { gridVariantForFilter } from "@/lib/crown-grid-layout";
 
 export type ArenaFilter = "all" | "trending" | CrownGroup;
 
-const CATEGORY_META: Record<
-  Exclude<ArenaFilter, "all">,
-  { eyebrow: string; title: string; description: string }
-> = {
-  trending: {
-    eyebrow: "Momentum",
-    title: "Trending crowns, live.",
-    description: "Most bid activity in the last 24 hours — steal any throne.",
-  },
-  tech: {
-    eyebrow: "Tech verticals",
-    title: "Tech crowns, live.",
-    description: "AI, SaaS, startups, dev tools — bid for the throne in your category.",
-  },
-  places: {
-    eyebrow: "Territories",
-    title: "Places crowns, live.",
-    description: "Fictional digital titles — not real-world sovereignty.",
-  },
-  internet: {
-    eyebrow: "Platforms",
-    title: "Internet crowns, live.",
-    description: "X, Threads, and the open web — claim your platform throne.",
-  },
-};
-
-function StatChip({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function LiveAuctionHeading() {
   return (
-    <div className="arena-stat-chip">
-      <span className={`arena-stat-value ${accent ? "arena-stat-gold" : ""}`}>{value}</span>
-      <span className="arena-stat-label">{label}</span>
+    <div className="arena-live-heading">
+      <span className="pulse-dot h-2 w-2 rounded-full bg-green" aria-hidden />
+      <span>Live auction</span>
     </div>
   );
 }
@@ -57,7 +30,7 @@ export function LiveCrownsArena({
   const gridVariant = gridVariantForFilter(filter);
   const isFullKingdom = filter === "all" && crowns.length >= 12;
   const isCategoryGrid = gridVariant !== null && gridVariant !== "all";
-  const categoryMeta = filter !== "all" ? CATEGORY_META[filter] : null;
+  const showBento = isFullKingdom || isCategoryGrid;
 
   const sortedCrowns = useMemo(() => {
     if (filter === "trending") {
@@ -74,62 +47,9 @@ export function LiveCrownsArena({
     );
   }
 
-  const claimed = crowns.filter((c) => c.hasKing).length;
-  const totalRaised = crowns.filter((c) => c.hasKing).reduce((s, c) => s + c.currentBid, 0);
-  const totalWatching = crowns.reduce((s, c) => s + c.watchers, 0);
-  const totalBids = crowns.reduce((s, c) => s + c.bidCount, 0);
-
   return (
-    <div className="arena-shell space-y-8">
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <StatChip label="raised" value={formatMoney(totalRaised)} accent />
-        <StatChip
-          label={totalWatching > 0 ? "watching" : "bids placed"}
-          value={String(totalWatching || totalBids)}
-        />
-        <div className="arena-stat-chip arena-stat-live">
-          <span className="pulse-dot h-2 w-2 rounded-full bg-green" />
-          <span className="arena-stat-value arena-stat-gold">
-            {claimed}/{crowns.length}
-          </span>
-          <span className="arena-stat-label">claimed</span>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center gap-4 text-center">
-        <div>
-          <p className="kb-eyebrow mb-2">
-            {categoryMeta?.eyebrow ?? "Live auction"}
-          </p>
-          <h3 className="arena-headline text-[26px] font-semibold leading-[1.12] tracking-tight sm:text-[34px]">
-            {categoryMeta ? (
-              categoryMeta.title
-            ) : (
-              <>
-                Put your brand on{" "}
-                <span className="arena-headline-accent">the crown</span>
-              </>
-            )}
-          </h3>
-          <p className="mx-auto mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
-            {categoryMeta?.description ??
-              "Fourteen live jewels. One kingdom. Highest bid wears the crown until someone steals it."}
-          </p>
-        </div>
-      </div>
-
-      <div className="arena-live-bar">
-        <div className="flex items-center gap-2.5">
-          <span className="pulse-dot h-2 w-2 rounded-full bg-green shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-          <span className="text-[13px] font-semibold tracking-wide">Live auction</span>
-          <span className="text-[12px] text-muted">· ongoing, no deadline</span>
-        </div>
-        <p className="text-[12px] text-muted">
-          {isFullKingdom || isCategoryGrid
-            ? "Bento map + live table below"
-            : "Tap outbid on any row"}
-        </p>
-      </div>
+    <div className="arena-shell space-y-6">
+      {showBento && <LiveAuctionHeading />}
 
       {isFullKingdom ? (
         <>

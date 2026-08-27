@@ -640,6 +640,17 @@ html.dark .arena-headline-glow {
   100% { background-position: 200% center; }
 }
 
+.arena-live-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
 .arena-stat-chip {
   display: flex;
   align-items: center;

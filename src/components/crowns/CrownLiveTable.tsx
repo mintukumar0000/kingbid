@@ -46,6 +46,22 @@ function HolderCell({ crown }: { crown: CrownState }) {
   );
 }
 
+function RowTags({ crown, showGroup }: { crown: CrownState; showGroup?: boolean }) {
+  const hasTags = !crown.hasKing || crown.isNewKing || crown.isHot;
+  if (!hasTags && !showGroup) return null;
+
+  return (
+    <div className="crown-row-tags">
+      {!crown.hasKing && <span className="crowns-pill crowns-pill-open">Open</span>}
+      {crown.isNewKing && <span className="crown-pill crown-pill-live">New king</span>}
+      {crown.isHot && !crown.isNewKing && <span className="crown-pill crown-pill-hot">Hot</span>}
+      {showGroup && (
+        <span className="crown-type-pill crown-type-pill-inline crown-type-pill-mobile">{GROUP_LABELS[crown.group]}</span>
+      )}
+    </div>
+  );
+}
+
 function SpotCell({ crown, index }: { crown: CrownState; index: number }) {
   const visual = crownVisual(crown.slug);
   return (
@@ -54,20 +70,20 @@ function SpotCell({ crown, index }: { crown: CrownState; index: number }) {
       <span className="crown-spot-icon" style={{ color: visual.accent }}>
         {crown.flag ?? visual.icon}
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <Link href={`/crown/${crown.slug}`} className="crown-spot-name truncate hover:text-[var(--crown-gold)]">
           {crown.name}
         </Link>
-        <p className="crown-spot-sub truncate">
+        <p className="crown-spot-desc line-clamp-2">
           {crown.hasKing
             ? crown.kingTitle || crown.kingHandle || crown.headline
             : crown.description}
         </p>
         {crown.hasKing && crown.kingDescription && (
-          <p className="mt-0.5 line-clamp-1 text-[11px] text-muted">{crown.kingDescription}</p>
+          <p className="crown-spot-meta line-clamp-1">{crown.kingDescription}</p>
         )}
         {crown.hasKing && crown.clickCount > 0 && (
-          <p className="mt-0.5 text-[10px] tabular text-muted">{crown.clickCount.toLocaleString()} clicks</p>
+          <p className="crown-spot-meta tabular">{crown.clickCount.toLocaleString()} clicks</p>
         )}
       </div>
     </div>
@@ -94,15 +110,16 @@ function CrownTableRow({
       <div className={`crown-table-row-inner ${showGroup ? "crown-table-row-grouped" : ""}`}>
         <div className="crown-table-col crown-table-col-spot">
           <SpotCell crown={crown} index={index} />
+          <RowTags crown={crown} showGroup={showGroup} />
         </div>
 
         {showGroup && (
-          <div className="crown-table-col crown-table-col-type hidden lg:flex">
+          <div className="crown-table-col crown-table-col-type">
             <span className="crown-type-pill">{GROUP_LABELS[crown.group]}</span>
           </div>
         )}
 
-        <div className="crown-table-col crown-table-col-held hidden md:flex">
+        <div className="crown-table-col crown-table-col-held">
           <HolderCell crown={crown} />
         </div>
 
@@ -132,33 +149,21 @@ function CrownTableRow({
         </div>
       </div>
 
-      <div className="crown-table-mobile-held md:hidden">
-        <HolderCell crown={crown} />
-      </div>
-
-      {(crown.isHot || crown.isNewKing || !crown.hasKing) && (
-        <div className="crown-table-tags">
-          {!crown.hasKing && <span className="crowns-pill crowns-pill-open">Open</span>}
-          {crown.isNewKing && <span className="crown-pill crown-pill-live">New king</span>}
-          {crown.isHot && !crown.isNewKing && <span className="crown-pill crown-pill-hot">Hot</span>}
-          {showGroup && (
-            <span className="crown-type-pill lg:hidden">{GROUP_LABELS[crown.group]}</span>
+      {(crown.previousKing || crown.lastBidAt) && (
+        <div className="crown-table-row-footer">
+          {crown.previousKing && (
+            <div className="crown-table-previous">
+              <span className="crown-table-previous-label">Previous</span>
+              <span className="truncate">{crown.previousKing.handle}</span>
+              <span className="ml-auto tabular">{formatMoney(crown.previousKing.bid)}</span>
+            </div>
+          )}
+          {crown.lastBidAt && (
+            <p className="crown-table-time">
+              Last bid <RelativeTime date={crown.lastBidAt} />
+            </p>
           )}
         </div>
-      )}
-
-      {crown.previousKing && (
-        <div className="crown-table-previous">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted">Previous</span>
-          <span className="truncate text-[12px] text-muted">{crown.previousKing.handle}</span>
-          <span className="ml-auto tabular text-[12px] text-muted">{formatMoney(crown.previousKing.bid)}</span>
-        </div>
-      )}
-
-      {crown.lastBidAt && (
-        <p className="crown-table-time">
-          Last bid <RelativeTime date={crown.lastBidAt} />
-        </p>
       )}
     </div>
   );
@@ -188,14 +193,12 @@ export function CrownLiveTable({
 
   return (
     <div className="crown-live-table">
-      <div
-        className={`crown-table-header hidden md:grid ${showGroup ? "crown-table-header-grouped" : ""}`}
-      >
+      <div className={`crown-table-header ${showGroup ? "crown-table-header-grouped" : ""}`}>
         <span>Crown</span>
-        {showGroup && <span className="hidden lg:block">Category</span>}
+        {showGroup && <span>Category</span>}
         <span>Held by</span>
         <span>{showToday ? "Today" : "Top bid"}</span>
-        <span />
+        <span aria-hidden />
       </div>
 
       {groupSections ? (

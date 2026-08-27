@@ -1372,7 +1372,7 @@ html.light .site-logo-crown {
   z-index: 3;
 }
 
-/* Crown live table — Brand My Mac column layout */
+/* Crown live table — aligned column grid, no vertical dividers */
 .crown-live-table {
   overflow: hidden;
   border-radius: 20px;
@@ -1382,19 +1382,21 @@ html.light .site-logo-crown {
 }
 
 .crown-table-header {
-  gap: 1rem;
-  padding: 0.75rem 1.25rem;
+  display: none;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 0.7rem 1.25rem;
   border-bottom: 1px solid var(--border);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
-  grid-template-columns: 1.5fr 1.2fr 0.7fr 120px;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.15fr) minmax(0, 0.85fr) 7.5rem;
 }
 
 .crown-table-header-grouped {
-  grid-template-columns: 1.5fr 0.55fr 1.1fr 0.7fr 120px;
+  grid-template-columns: minmax(0, 2.2fr) 5.5rem minmax(0, 1.15fr) minmax(0, 0.85fr) 7.5rem;
 }
 
 .crown-table-section + .crown-table-section {
@@ -1421,27 +1423,58 @@ html.light .site-logo-crown {
 
 .crown-table-row-inner {
   display: grid;
-  gap: 1rem;
+  gap: 1rem 1.25rem;
   align-items: center;
-  grid-template-columns: 1fr auto;
-  padding: 1rem 1.25rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.75fr) 7.5rem;
+  padding: 0.9rem 1.25rem;
 }
 
-@media (min-width: 768px) {
-  .crown-table-row-inner {
-    grid-template-columns: 1.5fr 1.2fr 0.7fr 120px;
-  }
+.crown-table-row-grouped {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.75fr) 7.5rem;
+}
 
-  .crown-table-row-grouped {
-    grid-template-columns: 1.5fr 0.55fr 1.1fr 0.7fr 120px;
-  }
+.crown-table-col {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.crown-table-col-spot {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+}
+
+.crown-table-col-type {
+  display: none;
+}
+
+.crown-table-col-bid {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.crown-table-col-action {
+  justify-content: flex-end;
+}
+
+.crown-row-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.crown-type-pill-mobile {
+  display: inline-flex;
 }
 
 .crown-spot-cell {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.65rem;
   min-width: 0;
+  width: 100%;
 }
 
 .crown-spot-rank {
@@ -1456,6 +1489,7 @@ html.light .site-logo-crown {
   font-size: 11px;
   font-weight: 700;
   color: var(--muted);
+  margin-top: 0.1rem;
 }
 
 .crown-spot-icon {
@@ -1474,14 +1508,19 @@ html.light .site-logo-crown {
   display: block;
   font-size: 14px;
   font-weight: 700;
+  line-height: 1.25;
 }
 
-.crown-spot-sub {
-  margin-top: 0.1rem;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.crown-spot-desc {
+  margin-top: 0.2rem;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.crown-spot-meta {
+  margin-top: 0.15rem;
+  font-size: 11px;
   color: var(--muted);
 }
 
@@ -1495,6 +1534,7 @@ html.light .site-logo-crown {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .crown-held-cell {
@@ -1502,6 +1542,7 @@ html.light .site-logo-crown {
   align-items: center;
   gap: 0.65rem;
   min-width: 0;
+  width: 100%;
 }
 
 .crown-held-empty {
@@ -1530,37 +1571,43 @@ html.light .site-logo-crown {
 .crown-held-name {
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .crown-held-sub {
+  margin-top: 0.1rem;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: var(--muted);
 }
 
 .crown-bid-amount {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1;
 }
 
 .crown-bid-meta {
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
   font-size: 11px;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .crown-table-outbid {
   width: 100%;
+  max-width: 7.5rem;
   border-radius: 9999px;
   border: 1.5px solid rgba(201, 162, 39, 0.45);
   background: transparent;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.85rem;
   font-size: 12px;
   font-weight: 700;
   color: var(--crown-gold);
+  white-space: nowrap;
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
@@ -1574,14 +1621,7 @@ html.light .crown-table-outbid {
   border-color: rgba(168, 132, 26, 0.45);
 }
 
-.crown-table-mobile-held {
-  padding: 0 1.25rem 0.75rem;
-}
-
-.crown-table-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+.crown-table-row-footer {
   padding: 0 1.25rem 0.75rem;
 }
 
@@ -1589,36 +1629,104 @@ html.light .crown-table-outbid {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  margin: 0 1.25rem 0.75rem;
   padding: 0.45rem 0.65rem;
   border-radius: 8px;
   background: var(--crown-row-hover);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.crown-table-previous-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .crown-table-time {
-  padding: 0 1.25rem 0.75rem;
+  margin-top: 0.35rem;
   font-size: 11px;
   color: var(--muted);
 }
 
-@media (max-width: 767px) {
+@media (min-width: 768px) {
+  .crown-table-header {
+    display: grid;
+  }
+
   .crown-table-row-inner {
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.15fr) minmax(0, 0.85fr) 7.5rem;
+  }
+
+  .crown-table-row-grouped {
+    grid-template-columns: minmax(0, 2.2fr) 5.5rem minmax(0, 1.15fr) minmax(0, 0.85fr) 7.5rem;
   }
 
   .crown-table-col-spot {
-    grid-column: 1 / -1;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .crown-table-col-type {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .crown-type-pill-mobile {
+    display: none;
+  }
+
+  .crown-row-tags {
+    padding-left: 3.55rem;
+  }
+
+  .crown-bid-amount {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 767px) {
+  .crown-table-row-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.65fr) 6.5rem;
+    grid-template-areas:
+      "spot spot spot"
+      "held bid action";
+    gap: 0.65rem 0.75rem;
+  }
+
+  .crown-table-row-grouped {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.65fr) 6.5rem;
+    grid-template-areas:
+      "spot spot spot"
+      "held bid action";
+  }
+
+  .crown-table-col-spot {
+    grid-area: spot;
+  }
+
+  .crown-table-col-held {
+    grid-area: held;
+    display: flex;
   }
 
   .crown-table-col-bid {
-    grid-column: 1;
-    align-self: end;
+    grid-area: bid;
   }
 
   .crown-table-col-action {
-    grid-column: 2;
-    align-self: end;
+    grid-area: action;
+  }
+
+  .crown-table-outbid {
+    max-width: 6.5rem;
+    padding-inline: 0.65rem;
+  }
+
+  .crown-table-row-footer {
+    border-top: 1px dashed var(--crown-row-border);
+    margin-top: -0.15rem;
+    padding-top: 0.65rem;
   }
 }
 

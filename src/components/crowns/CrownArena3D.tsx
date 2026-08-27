@@ -32,6 +32,19 @@ function RankbidStar() {
   );
 }
 
+function outlineSize(tier: CrownSpotState["tier"]): { w: number; h: number } {
+  switch (tier) {
+    case "crown":
+      return { w: 92, h: 80 };
+    case "diamond":
+      return { w: 76, h: 68 };
+    case "royal":
+      return { w: 64, h: 56 };
+    default:
+      return { w: 56, h: 48 };
+  }
+}
+
 function spotBrand(spot: CrownSpotState): string {
   const raw = spot.ownerHandle ?? spot.ownerTitle ?? "";
   return raw.replace(/^@/, "").toUpperCase().slice(0, 16);
@@ -156,7 +169,7 @@ function CrownScene({
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((_, delta) => {
-    if (!groupRef.current || paused) return;
+    if (!groupRef.current || paused || selectedId) return;
     groupRef.current.rotation.y += delta * 0.1;
   });
 
@@ -208,13 +221,45 @@ function CrownSpotOverlay({
   onSelect: (id: string) => void;
 }) {
   const byId = useMemo(() => new Map(projected.map((p) => [p.id, p])), [projected]);
+  const selectedSpot = selectedId ? spots.find((s) => s.id === selectedId) : null;
+  const selectedPin = selectedId ? byId.get(selectedId) : null;
 
   return (
     <div className="crown-spot-overlay" aria-hidden={false}>
+      {selectedSpot && selectedPin?.visible && (
+        <div
+          className={`crown-spot-outline crown-spot-outline--${selectedSpot.tier}`}
+          style={{
+            left: selectedPin.x,
+            top: selectedPin.y,
+            width: outlineSize(selectedSpot.tier).w * selectedPin.scale,
+            height: outlineSize(selectedSpot.tier).h * selectedPin.scale,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <div className="crown-spot-outline-inner">
+            {selectedSpot.hasOwner && selectedSpot.ownerUrl ? (
+              <>
+                <img src={faviconFor(selectedSpot.ownerUrl)} alt="" width={28} height={28} />
+                <span className="crown-spot-brand">{spotBrand(selectedSpot)}</span>
+              </>
+            ) : (
+              <>
+                <RankbidStar />
+                <span className="crown-spot-available">Available</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {spots.map((spot) => {
         const pin = byId.get(spot.id);
         if (!pin?.visible) return null;
-        const active = spot.id === hoveredId || spot.id === selectedId;
+        const isSelected = spot.id === selectedId;
+        if (isSelected) return null;
+
+        const active = spot.id === hoveredId;
 
         return (
           <button

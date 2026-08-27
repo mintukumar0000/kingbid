@@ -8,7 +8,7 @@ import { fetcher } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/format";
 import { liveStat } from "@/lib/copy";
 import type { CrownSpotState } from "@/lib/crown-spots-data";
-import { CrownSpotPanel } from "@/components/crowns/CrownSpotPanel";
+import { CrownClaimBar } from "@/components/crowns/CrownClaimBar";
 import type { LeaderboardData } from "@/lib/leaderboard";
 import type { BidPrefill } from "@/components/BidModal";
 import type { PlatformStats } from "@/components/StatsBar";
@@ -87,21 +87,11 @@ export function FlagshipCrownSection({ onOpenBid }: Props) {
       <div className="flagship-crown-stage">
         <CrownArena3D spots={spots} selectedId={selectedId} onSelect={setSelectedId} />
         {selected && (
-          <>
-            <button
-              type="button"
-              className="crown-spot-backdrop"
-              aria-label="Close spot panel"
-              onClick={() => setSelectedId(null)}
-            />
-            <div className="crown-spot-panel-wrap">
-              <CrownSpotPanel
-                spot={selected}
-                onBid={() => openBid(selected)}
-                onClose={() => setSelectedId(null)}
-              />
-            </div>
-          </>
+          <CrownClaimBar
+            spot={selected}
+            onBid={() => openBid(selected)}
+            onClose={() => setSelectedId(null)}
+          />
         )}
       </div>
     </section>

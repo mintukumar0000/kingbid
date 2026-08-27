@@ -11,10 +11,11 @@ import {
   type GridVariant,
 } from "@/lib/crown-grid-layout";
 
-function TileMeta({ crown, occupied }: { crown: CrownState; occupied: boolean }) {
+function TileMeta({ crown, occupied, centered }: { crown: CrownState; occupied: boolean; centered?: boolean }) {
+  const align = centered ? "text-center" : "";
   if (occupied) {
     return (
-      <div className="mt-1 space-y-0.5">
+      <div className={`mt-1 space-y-0.5 ${align}`}>
         {crown.kingTitle && (
           <p className="truncate text-[11px] font-semibold text-foreground">{crown.kingTitle}</p>
         )}
@@ -30,7 +31,7 @@ function TileMeta({ crown, occupied }: { crown: CrownState; occupied: boolean })
     );
   }
   return (
-    <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-muted">{crown.description}</p>
+    <p className={`mt-1 line-clamp-2 text-[10px] leading-snug text-muted ${align}`}>{crown.description}</p>
   );
 }
 
@@ -52,55 +53,6 @@ function KingdomTile({
   const isTerritory = variant === "places" && size === "lg";
   const isCategory = variant !== "all";
 
-  if (isCategory) {
-    return (
-      <button
-        type="button"
-        onClick={() => onSteal(crown)}
-        className={[
-          "kingdom-tile group",
-          `kingdom-tile-${size}`,
-          occupied ? "kingdom-tile-claimed" : "kingdom-tile-open",
-          isCenter ? "kingdom-tile-center" : "",
-          isTerritory ? "kingdom-tile-territory" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        style={
-          slot
-            ? ({
-                gridArea: slot.area,
-                "--crown-accent": visual.accent,
-                "--crown-accent-rgb": visual.accentRgb,
-              } as React.CSSProperties)
-            : ({
-                "--crown-accent": visual.accent,
-                "--crown-accent-rgb": visual.accentRgb,
-              } as React.CSSProperties)
-        }
-      >
-        <span className="kingdom-tile-border" aria-hidden />
-        <div className="kingdom-tile-glow" aria-hidden />
-        <div className="relative flex h-full min-h-0 flex-col p-3 sm:p-4 text-left">
-          <div className="flex items-center gap-2">
-            <CrownImage size="xs" glow />
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: visual.accent }}>
-              {slot?.label ?? crown.headline}
-            </p>
-          </div>
-          {!occupied && <p className="kingdom-open-label mt-1 text-[9px]">Available</p>}
-          <TileMeta crown={crown} occupied={occupied} />
-          <p
-            className="kingdom-price mt-auto pt-2 font-mono-label text-[18px] font-bold tabular leading-none sm:text-[22px]"
-            style={{ color: visual.accent }}
-          >
-            {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
-          </p>
-        </div>
-      </button>
-    );
-  }
-
   return (
     <button
       type="button"
@@ -114,6 +66,7 @@ function KingdomTile({
         crown.isNewKing ? "kingdom-tile-new" : "",
         isCenter ? "kingdom-tile-center" : "",
         isTerritory ? "kingdom-tile-territory" : "",
+        isCategory && !isCenter && !isTerritory ? "kingdom-tile-category" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -150,7 +103,7 @@ function KingdomTile({
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em]">{crown.headline}</p>
               </div>
               {occupied ? (
-                <div className="mt-3 flex flex-col items-center gap-2">
+                <div className="mt-3 flex w-full flex-col items-center gap-2 px-2">
                   <div className="kingdom-king-halo">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -161,10 +114,13 @@ function KingdomTile({
                       className="rounded-xl bg-surface object-cover"
                     />
                   </div>
-                  <p className="max-w-full truncate text-[13px] font-semibold">{crown.kingHandle}</p>
+                  <TileMeta crown={crown} occupied centered />
                 </div>
               ) : (
-                <p className="kingdom-open-label mt-3">Unclaimed</p>
+                <>
+                  <p className="kingdom-open-label mt-3">Unclaimed</p>
+                  <TileMeta crown={crown} occupied={false} centered />
+                </>
               )}
             </div>
             <p
@@ -173,6 +129,9 @@ function KingdomTile({
             >
               {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
             </p>
+            <span className="kingdom-tile-cta mt-2 text-center text-[9px] font-bold uppercase tracking-[0.14em] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:text-[10px]">
+              {occupied ? "Outbid →" : "Claim →"}
+            </span>
           </>
         ) : isCenter ? (
           <>
@@ -222,6 +181,9 @@ function KingdomTile({
             >
               {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
             </p>
+            <span className="kingdom-tile-cta mt-2 text-center text-[9px] font-bold uppercase tracking-[0.14em] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:text-[10px]">
+              {occupied ? "Outbid →" : "Claim →"}
+            </span>
           </>
         ) : (
           <>

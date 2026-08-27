@@ -913,7 +913,7 @@ html.dark .eco-room-tile {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   grid-template-areas:
     "dev dev ai saas startups coding"
-    "design design . marketing marketing .";
+    "design design design marketing marketing marketing";
 }
 
 @media (max-width: 640px) {
@@ -986,6 +986,43 @@ html.dark .eco-room-tile {
 .kingdom-stage-tech { border-color: rgba(110, 231, 255, 0.2); }
 .kingdom-stage-places { border-color: rgba(96, 165, 250, 0.2); }
 .kingdom-stage-internet { border-color: rgba(201, 162, 39, 0.25); }
+
+.kingdom-stage-tech::before {
+  background: radial-gradient(ellipse 70% 100% at 50% 0%, rgba(110, 231, 255, 0.12), transparent 72%);
+}
+
+.kingdom-stage-places::before {
+  background: radial-gradient(ellipse 80% 90% at 50% 40%, rgba(96, 165, 250, 0.1), transparent 70%);
+}
+
+.kingdom-stage-internet::before {
+  background: radial-gradient(ellipse 60% 80% at 65% 35%, rgba(201, 162, 39, 0.18), transparent 72%);
+}
+
+.kingdom-stage-places .kingdom-tile-territory {
+  min-height: 200px;
+}
+
+.kingdom-stage-places .kingdom-tile-territory .kingdom-tile-glow {
+  opacity: 0.9;
+  background: radial-gradient(ellipse 90% 70% at 50% 20%, rgba(var(--crown-accent-rgb, 201, 162, 39), 0.2), transparent 68%);
+}
+
+.kingdom-tile-category.kingdom-tile-md {
+  min-height: 128px;
+}
+
+.kingdom-stage-internet .kingdom-tile-md {
+  min-height: 140px;
+}
+
+.kingdom-stage-tech .kingdom-tile-sm {
+  min-height: 118px;
+}
+
+.kingdom-stage-tech .kingdom-tile-md {
+  min-height: 128px;
+}
 
 .kingdom-tile {
   position: relative;

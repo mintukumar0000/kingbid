@@ -47,7 +47,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md">
       <div className={`${PAGE_WIDE} flex h-[56px] items-center justify-between gap-4`}>
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
           <span className="site-logo-crown flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a1508] to-[#0a0908] ring-1 ring-[var(--crown-gold)]/30">

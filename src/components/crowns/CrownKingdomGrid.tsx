@@ -11,16 +11,44 @@ import {
   type GridVariant,
 } from "@/lib/crown-grid-layout";
 
+function StatusBadge({ open }: { open: boolean }) {
+  return (
+    <span className={`kingdom-status ${open ? "kingdom-status-open" : "kingdom-status-claimed"}`}>
+      {open ? "Open" : "Claimed"}
+    </span>
+  );
+}
+
+function TileFooter({
+  price,
+  accent,
+  occupied,
+}: {
+  price: string;
+  accent: string;
+  occupied: boolean;
+}) {
+  return (
+    <div className="kingdom-tile-foot">
+      <p className="kingdom-price font-mono-label text-[18px] font-semibold tabular sm:text-[20px]" style={{ color: accent }}>
+        {price}
+      </p>
+      <span className="kingdom-tile-cta text-[11px] font-medium text-muted group-hover:text-[var(--crown-gold)]">
+        {occupied ? "Outbid →" : "Claim →"}
+      </span>
+    </div>
+  );
+}
 function TileMeta({ crown, occupied, centered }: { crown: CrownState; occupied: boolean; centered?: boolean }) {
   const align = centered ? "text-center" : "";
   if (occupied) {
     return (
-      <div className={`mt-1 space-y-0.5 ${align}`}>
+      <div className={`mt-2 space-y-1 ${align}`}>
         {crown.kingTitle && (
-          <p className="truncate text-[11px] font-semibold text-foreground">{crown.kingTitle}</p>
+          <p className="truncate text-[12px] font-semibold text-foreground">{crown.kingTitle}</p>
         )}
         {(crown.kingDescription || crown.kingHandle) && (
-          <p className="line-clamp-2 text-[10px] leading-snug text-muted">
+          <p className="line-clamp-2 text-[11px] leading-snug text-muted">
             {crown.kingDescription || crown.kingHandle}
           </p>
         )}
@@ -31,7 +59,7 @@ function TileMeta({ crown, occupied, centered }: { crown: CrownState; occupied: 
     );
   }
   return (
-    <p className={`mt-1 line-clamp-2 text-[10px] leading-snug text-muted ${align}`}>{crown.description}</p>
+    <p className={`mt-2 line-clamp-2 text-[11px] leading-relaxed text-muted ${align}`}>{crown.description}</p>
   );
 }
 
@@ -83,12 +111,11 @@ function KingdomTile({
             } as React.CSSProperties)
       }
     >
-      <span className="kingdom-tile-border" aria-hidden />
+      <span className="kingdom-tile-wash" aria-hidden />
       <div className="kingdom-tile-glow" aria-hidden />
-      {!isCenter && <span className="kingdom-tile-accent" aria-hidden />}
       <div className="kingdom-tile-shimmer" aria-hidden />
 
-      <div className="relative flex h-full min-h-0 flex-col p-3 sm:p-4">
+      <div className="kingdom-tile-inner">
         {(crown.isHot || crown.isNewKing) && !isCenter && !isTerritory && (
           <span className={`kingdom-badge ${crown.isNewKing ? "kingdom-badge-new" : "kingdom-badge-hot"}`}>
             {crown.isNewKing ? "New King" : "Hot"}
@@ -116,20 +143,18 @@ function KingdomTile({
                 </div>
               ) : (
                 <>
-                  <p className="kingdom-open-label mt-3">Unclaimed</p>
+                  <div className="mt-3">
+                    <StatusBadge open />
+                  </div>
                   <TileMeta crown={crown} occupied={false} centered />
                 </>
               )}
             </div>
-            <p
-              className="kingdom-price mt-auto text-center font-mono-label text-[22px] font-bold tabular sm:text-[28px]"
-              style={{ color: visual.accent }}
-            >
-              {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
-            </p>
-            <span className="kingdom-tile-cta mt-2 text-center text-[9px] font-bold uppercase tracking-[0.14em] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:text-[10px]">
-              {occupied ? "Outbid →" : "Claim →"}
-            </span>
+            <TileFooter
+              price={formatMoney(occupied ? crown.currentBid : crown.nextBid)}
+              accent={visual.accent}
+              occupied={occupied}
+            />
           </>
         ) : isCenter ? (
           <>
@@ -141,7 +166,7 @@ function KingdomTile({
                 <CrownImage size="hero" float glow className="relative z-10" />
               </div>
               <p
-                className="mt-3 text-[10px] font-bold uppercase tracking-[0.24em] sm:text-[11px]"
+                className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em]"
                 style={{ color: visual.accent }}
               >
                 {crown.headline}
@@ -158,67 +183,53 @@ function KingdomTile({
                       className="rounded-xl bg-surface object-cover"
                     />
                   </div>
-                  <p className="max-w-full truncate text-[13px] font-semibold">{crown.kingHandle}</p>
-                  {crown.clickCount > 0 && (
-                    <p className="text-[10px] tabular text-muted">{crown.clickCount.toLocaleString()} clicks</p>
-                  )}
-                  {crown.kingDescription && (
-                    <p className="line-clamp-2 max-w-full px-2 text-[10px] text-muted">{crown.kingDescription}</p>
-                  )}
+                  <TileMeta crown={crown} occupied centered />
                 </div>
               ) : (
                 <>
-                  <p className="kingdom-open-label mt-3">Throne open</p>
-                  <p className="mt-2 line-clamp-2 max-w-full px-2 text-[10px] text-muted">{crown.description}</p>
+                  <div className="mt-3">
+                    <StatusBadge open />
+                  </div>
+                  <TileMeta crown={crown} occupied={false} centered />
                 </>
               )}
             </div>
-            <p
-              className="kingdom-price mt-auto text-center font-mono-label text-[24px] font-bold tabular sm:text-[32px]"
-              style={{ color: visual.accent }}
-            >
-              {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
-            </p>
-            <span className="kingdom-tile-cta mt-2 text-center text-[9px] font-bold uppercase tracking-[0.14em] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:text-[10px]">
-              {occupied ? "Outbid →" : "Claim →"}
-            </span>
+            <TileFooter
+              price={formatMoney(occupied ? crown.currentBid : crown.nextBid)}
+              accent={visual.accent}
+              occupied={occupied}
+            />
           </>
         ) : (
           <>
-            <div className="flex items-start justify-between gap-2 pl-2">
-              <p className="truncate text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground/90">
+            <div className="kingdom-tile-head">
+              <p className="kingdom-tile-label" style={{ color: visual.accent }}>
                 {slot?.label ?? crown.name}
               </p>
-              {occupied && crown.kingUrl && (
-                <div className="kingdom-king-halo kingdom-king-halo-sm shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={faviconFor(crown.kingUrl)}
-                    alt=""
-                    width={28}
-                    height={28}
-                    className="rounded-lg bg-surface object-cover"
-                  />
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {occupied && crown.kingUrl && (
+                  <div className="kingdom-king-halo kingdom-king-halo-sm shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={faviconFor(crown.kingUrl)}
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="rounded-md bg-surface object-cover"
+                    />
+                  </div>
+                )}
+                <StatusBadge open={!occupied} />
+              </div>
             </div>
-            {occupied ? (
-              <TileMeta crown={crown} occupied />
-            ) : (
-              <>
-                <p className="kingdom-open-label mt-0.5 pl-2 text-[9px] sm:text-[10px]">Available</p>
-                <TileMeta crown={crown} occupied={false} />
-              </>
-            )}
-            <p
-              className="kingdom-price mt-auto pl-2 pt-2 font-mono-label text-[16px] font-bold tabular leading-none sm:text-[19px]"
-              style={{ color: visual.accent }}
-            >
-              {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
-            </p>
-            <span className="kingdom-tile-cta mt-2 pl-2 text-[9px] font-semibold text-muted opacity-0 transition-opacity group-hover:text-[var(--crown-gold)] group-hover:opacity-100 group-focus-visible:opacity-100 sm:text-[10px]">
-              {occupied ? "Outbid →" : "Claim →"}
-            </span>
+            <div className="kingdom-tile-body">
+              <TileMeta crown={crown} occupied={occupied} />
+            </div>
+            <TileFooter
+              price={formatMoney(occupied ? crown.currentBid : crown.nextBid)}
+              accent={visual.accent}
+              occupied={occupied}
+            />
           </>
         )}
       </div>
@@ -275,7 +286,7 @@ export function CrownKingdomGrid({
           />
         ))}
       </div>
-      <p className="kingdom-hint mt-4 text-center text-[12px] text-muted">
+      <p className="kingdom-hint mt-5 text-center text-[13px] text-muted">
         {HINT[variant]}
       </p>
     </div>

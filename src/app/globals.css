@@ -728,22 +728,42 @@ html.dark .arena-stat-live {
 .kingdom-stage {
   position: relative;
   overflow: hidden;
-  padding: 1.25rem;
-  border-radius: 16px;
+  padding: 1.5rem;
+  border-radius: 20px;
   border: 1px solid var(--crown-stage-border);
   background: var(--crown-stage-bg);
   box-shadow: var(--crown-stage-shadow);
 }
 
-html.light .kingdom-stage::before,
+html.light .kingdom-stage {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8f7 100%);
+  box-shadow:
+    0 1px 2px rgba(12, 10, 9, 0.04),
+    0 20px 48px rgba(12, 10, 9, 0.06);
+}
+
+html.light .kingdom-stage::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse 55% 45% at 50% 42%, rgba(146, 104, 10, 0.05), transparent 70%);
+}
+
 html.light .kingdom-star,
 html.light .kingdom-stage-scanline,
-html.light .kingdom-stage-ring {
+html.light .kingdom-stage-ring,
+html.light .kingdom-aurora {
   display: none;
 }
 
+html.light .kingdom-grid {
+  gap: 0.75rem;
+}
+
 html.light .kingdom-orb {
-  opacity: 0.35;
+  opacity: 0.25;
 }
 
 html.dark .kingdom-stage::before {
@@ -1024,34 +1044,159 @@ html.dark .kingdom-stage::before {
   border: none;
   min-height: 88px;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--crown-tile-bg);
   box-shadow: var(--crown-tile-shadow);
+  overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  text-align: left;
 }
 
 html.light .kingdom-tile {
   border: 1px solid var(--border);
-  box-shadow: none;
+  box-shadow: 0 1px 2px rgba(12, 10, 9, 0.03);
+}
+
+html.light .kingdom-tile:hover,
+html.light .kingdom-tile:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(12, 10, 9, 0.08);
+  border-color: color-mix(in srgb, var(--crown-accent, var(--crown-gold)) 35%, var(--border));
 }
 
 html.light .kingdom-tile-open {
   animation: none;
 }
 
-html.light .kingdom-tile-open .kingdom-tile-border {
-  animation: none;
-  opacity: 0.5;
+html.light .kingdom-tile-border,
+html.light .kingdom-tile-shimmer {
+  display: none;
+}
+
+.kingdom-tile-wash {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    165deg,
+    rgba(var(--crown-accent-rgb, 146, 104, 10), 0.1) 0%,
+    rgba(var(--crown-accent-rgb, 146, 104, 10), 0.03) 28%,
+    transparent 55%
+  );
+}
+
+html.dark .kingdom-tile-wash {
+  background: linear-gradient(
+    165deg,
+    rgba(var(--crown-accent-rgb, 212, 160, 23), 0.12) 0%,
+    transparent 50%
+  );
+}
+
+.kingdom-tile-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100%;
+  min-height: inherit;
+  flex-direction: column;
+  padding: 0.85rem 1rem 0;
+}
+
+.kingdom-tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.kingdom-tile-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.kingdom-tile-body {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 0.5rem;
+}
+
+.kingdom-tile-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  margin-inline: -1rem;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+}
+
+html.dark .kingdom-tile-foot {
+  background: rgba(255, 255, 255, 0.02);
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.kingdom-status {
+  display: inline-flex;
+  shrink: 0;
+  border-radius: 9999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.kingdom-status-open {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
+}
+
+html.dark .kingdom-status-open {
+  background: rgba(52, 211, 153, 0.12);
+  color: #34d399;
+}
+
+.kingdom-status-claimed {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.kingdom-tile-sm { min-height: 132px; }
+.kingdom-tile-md { min-height: 140px; }
+.kingdom-tile-lg { min-height: 168px; }
+.kingdom-tile-xl { min-height: 240px; }
+
+.kingdom-tile-center {
+  border-color: color-mix(in srgb, var(--crown-gold) 30%, var(--border));
+}
+
+html.light .kingdom-tile-center {
+  background: linear-gradient(180deg, #fffdf8 0%, #ffffff 100%);
+  box-shadow:
+    0 1px 2px rgba(146, 104, 10, 0.06),
+    0 12px 32px rgba(146, 104, 10, 0.08);
+}
+
+html.light .kingdom-tile-center .kingdom-tile-wash {
+  background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(146, 104, 10, 0.1), transparent 70%);
+}
+
+html.light .kingdom-tile-center .kingdom-tile-foot {
+  background: rgba(146, 104, 10, 0.04);
+  border-top-color: rgba(146, 104, 10, 0.12);
+}
+
+.kingdom-tile-center .kingdom-tile-glow {
+  opacity: 1;
 }
 
 .kingdom-tile-accent {
-  position: absolute;
-  left: 0;
-  top: 12px;
-  bottom: 12px;
-  width: 3px;
-  border-radius: 0 2px 2px 0;
-  background: var(--crown-accent, var(--crown-gold));
+  display: none;
 }
 
 .kingdom-tile-border {
@@ -1122,26 +1267,6 @@ html.light .kingdom-tile-open .kingdom-tile-border {
   animation: crown-pulse 2s ease-in-out 3;
 }
 
-.kingdom-tile-sm { min-height: 108px; }
-.kingdom-tile-md { min-height: 118px; }
-.kingdom-tile-lg { min-height: 130px; }
-.kingdom-tile-xl { min-height: 220px; }
-
-.kingdom-tile-center {
-  background: var(--crown-tile-center-bg);
-  box-shadow:
-    0 0 0 1px rgba(201, 162, 39, 0.25) inset,
-    0 0 80px rgba(201, 162, 39, 0.16),
-    var(--crown-tile-hover-shadow);
-}
-
-.kingdom-tile-center .kingdom-tile-glow {
-  opacity: 1;
-  background:
-    radial-gradient(ellipse 80% 55% at 50% 15%, rgba(201, 162, 39, 0.28), transparent 68%),
-    radial-gradient(ellipse 60% 40% at 50% 80%, rgba(255, 224, 138, 0.06), transparent 70%);
-}
-
 .kingdom-tile-glow {
   pointer-events: none;
   position: absolute;
@@ -1151,6 +1276,10 @@ html.light .kingdom-tile-open .kingdom-tile-border {
   background: radial-gradient(ellipse 90% 65% at 50% 0%, rgba(var(--crown-accent-rgb, 201, 162, 39), 0.18), transparent 68%);
   opacity: 0.75;
   transition: opacity 0.25s ease;
+}
+
+html.light .kingdom-tile-glow {
+  opacity: 0;
 }
 
 .kingdom-tile-shimmer {

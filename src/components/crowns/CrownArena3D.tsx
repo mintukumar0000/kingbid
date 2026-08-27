@@ -15,13 +15,22 @@ useGLTF.preload(CROWN_URL);
 
 function RankbidStar() {
   return (
-    <svg viewBox="0 0 32 32" width={26} height={26} aria-hidden className="crown-spot-star">
+    <svg viewBox="0 0 24 24" width={12} height={12} aria-hidden className="crown-spot-star">
       <path
         fill="currentColor"
-        d="M16 3l1.8 6.2L24 11l-6.2 1.8L16 19l-1.8-6.2L8 11l6.2-1.8L16 3zm0 22l-1.2 4.2L10.5 27l4.3-1.2L16 21.5l1.2 4.3 4.3 1.2-4.3-1.2L16 25z"
+        d="M12 2l1.2 4.1L17 7.5l-4.1 1.2L12 12.7 9.1 8.7 5 7.5l4.1-1.4L12 2z"
       />
     </svg>
   );
+}
+
+function markerDistance(tier: CrownSpotState["tier"], active: boolean): number {
+  const base = tier === "crown" ? 38 : tier === "diamond" ? 42 : tier === "royal" ? 44 : 46;
+  return active ? base - 4 : base;
+}
+
+function logoSize(tier: CrownSpotState["tier"]): number {
+  return tier === "crown" ? 22 : tier === "diamond" ? 18 : 16;
 }
 
 function GLBCrown() {
@@ -105,20 +114,18 @@ function SpotMarker({
 
   if (!visible) return null;
 
-  const distFactor = spot.tier === "crown" ? 14 : spot.tier === "diamond" ? 15 : 16;
-
   return (
     <Billboard position={spot.position} follow>
       <Html
         center
         occlude
-        distanceFactor={distFactor}
+        distanceFactor={markerDistance(spot.tier, active)}
         style={{ pointerEvents: "auto" }}
         zIndexRange={[active ? 50 : 10, 0]}
       >
         <button
           type="button"
-          className={`crown-surface-marker ${spot.hasOwner ? "crown-surface-marker--owned" : "crown-surface-marker--open"} ${active ? "crown-surface-marker--active" : ""}`}
+          className={`crown-surface-marker crown-surface-marker--${spot.tier} ${spot.hasOwner ? "crown-surface-marker--owned" : "crown-surface-marker--open"} ${active ? "crown-surface-marker--active" : ""}`}
           onPointerEnter={() => {
             onHover(spot.id);
             document.body.style.cursor = "pointer";
@@ -137,15 +144,15 @@ function SpotMarker({
               <img
                 src={faviconFor(spot.ownerUrl)}
                 alt=""
-                width={spot.tier === "crown" ? 40 : 32}
-                height={spot.tier === "crown" ? 40 : 32}
+                width={logoSize(spot.tier)}
+                height={logoSize(spot.tier)}
               />
               <span className="crown-spot-brand">{spotBrand(spot)}</span>
             </>
           ) : (
             <>
               <RankbidStar />
-              <span>Available</span>
+              <span className="crown-spot-available">Available</span>
             </>
           )}
         </button>

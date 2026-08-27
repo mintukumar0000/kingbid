@@ -67,9 +67,11 @@ function SpotCell({ crown, index }: { crown: CrownState; index: number }) {
   return (
     <div className="crown-spot-cell">
       <span className="crown-spot-rank">{index + 1}</span>
-      <span className="crown-spot-icon" style={{ color: visual.accent }}>
-        {crown.flag ?? visual.icon}
-      </span>
+      <span
+        className="crown-spot-dot"
+        style={{ background: visual.accent }}
+        aria-hidden
+      />
       <div className="min-w-0 flex-1">
         <Link href={`/crown/${crown.slug}`} className="crown-spot-name truncate hover:text-[var(--crown-gold)]">
           {crown.name}

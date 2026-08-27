@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
@@ -38,7 +37,7 @@ export function Header() {
       <Link
         href={href}
         className={`text-[14px] transition-colors ${
-          active ? "font-semibold text-foreground" : "font-normal text-muted hover:text-foreground"
+          active ? "font-medium text-foreground" : "font-normal text-muted hover:text-foreground"
         }`}
       >
         {label}
@@ -47,18 +46,13 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md">
       <div className={`${PAGE_WIDE} flex h-[56px] items-center justify-between gap-4`}>
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="site-logo-crown flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a1508] to-[#0a0908] ring-1 ring-[var(--crown-gold)]/30">
-            <Image src="/crown-gold.png" alt="" width={26} height={26} className="site-logo-crown-img" aria-hidden />
-          </span>
-          <span className="text-[17px] font-semibold tracking-tight text-foreground">
-            king<span className="text-[var(--crown-gold)]">bid</span>
-          </span>
+        <Link href="/" className="shrink-0 text-[18px] font-semibold tracking-tight text-foreground">
+          kingbid
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {link("/#live-crowns", "Crowns")}
           {link("/#live-crowns", "Trending")}
           {link("/#kingdom", "Kingdom")}
@@ -70,7 +64,7 @@ export function Header() {
           <ThemeToggle />
           <Link
             href="/#live-crowns"
-            className="hidden rounded-full bg-foreground px-4 py-2 text-[13px] font-semibold text-background transition-opacity hover:opacity-90 sm:inline-block"
+            className="hidden rounded-full bg-foreground px-4 py-2 text-[13px] font-medium text-background transition-opacity hover:opacity-90 sm:inline-block"
           >
             Claim a crown
           </Link>

@@ -91,14 +91,11 @@ export function CrownsHome() {
   return (
     <>
       {/* Hero */}
-      <section className={`crowns-hero ${PAGE_WIDE} pb-6 pt-10 text-center sm:pt-14`}>
+      <section className={`crowns-hero ${PAGE_WIDE} pb-8 pt-12 text-center sm:pt-16`}>
         <div className="crowns-hero-glow" aria-hidden />
-        <p className="kb-eyebrow relative">KingBid</p>
-        <h1 className="font-display relative mt-4 text-[42px] font-semibold leading-[1.02] tracking-tight sm:text-[58px]">
-          <span className="arena-headline-glow">WHO&apos;S KING?</span>
-          <span className="ml-2 inline-block animate-[crown-float_3s_ease-in-out_infinite]" aria-hidden>
-            👑
-          </span>
+        <p className="kb-eyebrow relative">Live digital crowns</p>
+        <h1 className="relative mt-3 text-[40px] font-semibold leading-[1.05] tracking-tight sm:text-[56px]">
+          Who&apos;s <span className="arena-headline-accent">king</span>?
         </h1>
         <p className="relative mx-auto mt-4 max-w-md text-[16px] leading-relaxed text-muted">
           Bid for the crown. Keep it until someone outbids you.

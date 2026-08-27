@@ -85,6 +85,7 @@ function KingdomTile({
     >
       <span className="kingdom-tile-border" aria-hidden />
       <div className="kingdom-tile-glow" aria-hidden />
+      {!isCenter && <span className="kingdom-tile-accent" aria-hidden />}
       <div className="kingdom-tile-shimmer" aria-hidden />
 
       <div className="relative flex h-full min-h-0 flex-col p-3 sm:p-4">
@@ -98,10 +99,7 @@ function KingdomTile({
           <>
             <div className="flex flex-1 flex-col items-center justify-center text-center">
               <span className="text-[36px] leading-none sm:text-[42px]">{crown.flag}</span>
-              <div className="mt-2 flex items-center gap-1.5">
-                <CrownImage size="xs" glow />
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em]">{crown.headline}</p>
-              </div>
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.12em]">{crown.headline}</p>
               {occupied ? (
                 <div className="mt-3 flex w-full flex-col items-center gap-2 px-2">
                   <div className="kingdom-king-halo">
@@ -187,12 +185,12 @@ function KingdomTile({
           </>
         ) : (
           <>
-            <div className="flex items-start justify-between gap-2">
-              <span className="kingdom-icon-halo" aria-hidden>
-                <CrownImage size="sm" glow />
-              </span>
+            <div className="flex items-start justify-between gap-2 pl-2">
+              <p className="truncate text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground/90">
+                {slot?.label ?? crown.name}
+              </p>
               {occupied && crown.kingUrl && (
-                <div className="kingdom-king-halo kingdom-king-halo-sm">
+                <div className="kingdom-king-halo kingdom-king-halo-sm shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={faviconFor(crown.kingUrl)}
@@ -204,24 +202,21 @@ function KingdomTile({
                 </div>
               )}
             </div>
-            <p className="mt-2 truncate text-[10px] font-bold uppercase tracking-[0.12em] text-foreground/95 sm:text-[11px]">
-              {slot?.label ?? crown.name}
-            </p>
             {occupied ? (
               <TileMeta crown={crown} occupied />
             ) : (
               <>
-                <p className="kingdom-open-label mt-0.5 text-[9px] sm:text-[10px]">Available</p>
+                <p className="kingdom-open-label mt-0.5 pl-2 text-[9px] sm:text-[10px]">Available</p>
                 <TileMeta crown={crown} occupied={false} />
               </>
             )}
             <p
-              className="kingdom-price mt-auto pt-2 font-mono-label text-[16px] font-bold tabular leading-none sm:text-[19px]"
+              className="kingdom-price mt-auto pl-2 pt-2 font-mono-label text-[16px] font-bold tabular leading-none sm:text-[19px]"
               style={{ color: visual.accent }}
             >
               {formatMoney(occupied ? crown.currentBid : crown.nextBid)}
             </p>
-            <span className="kingdom-tile-cta mt-2 text-[9px] font-bold uppercase tracking-[0.14em] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:text-[10px]">
+            <span className="kingdom-tile-cta mt-2 pl-2 text-[9px] font-semibold text-muted opacity-0 transition-opacity group-hover:text-[var(--crown-gold)] group-hover:opacity-100 group-focus-visible:opacity-100 sm:text-[10px]">
               {occupied ? "Outbid →" : "Claim →"}
             </span>
           </>
@@ -280,9 +275,8 @@ export function CrownKingdomGrid({
           />
         ))}
       </div>
-      <p className="kingdom-hint mt-5 text-center text-[12px] tracking-wide text-muted">
-        <span className="text-[var(--crown-gold)]">✦</span> {HINT[variant]}{" "}
-        <span className="text-[var(--crown-gold)]">✦</span>
+      <p className="kingdom-hint mt-4 text-center text-[12px] text-muted">
+        {HINT[variant]}
       </p>
     </div>
   );

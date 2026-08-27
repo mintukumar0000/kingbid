@@ -44,14 +44,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${fraunces.variable} ${ibmPlexMono.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light')}else{document.documentElement.classList.add('dark');document.documentElement.classList.remove('light')}}catch(e){document.documentElement.classList.add('dark');document.documentElement.classList.remove('light')}`,
+            __html: `try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.remove('light');document.documentElement.classList.add('dark')}else{document.documentElement.classList.add('light');document.documentElement.classList.remove('dark')}}catch(e){document.documentElement.classList.add('light');document.documentElement.classList.remove('dark')}`,
           }}
         />
         <ThemeProvider>

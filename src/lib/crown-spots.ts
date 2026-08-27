@@ -1,4 +1,4 @@
-/** KingBid flagship crown — 21 ownable logo spots on one 3D object. */
+/** KingBid flagship crown — 21 ownable logo spots on the GLB crown mesh. */
 
 export type SpotTier = "crown" | "diamond" | "royal" | "court";
 
@@ -12,12 +12,18 @@ export interface CrownSpotDef {
   tierLabel: string;
   personality: string;
   startingBid: number;
-  /** Hotspot position on the crown (meters, Y-up). */
+  /** Hotspot position in GLB space (Y-up, crown ~1 unit wide). */
   position: [number, number, number];
   hotspotScale: number;
 }
 
 export const CROWN_SPOT_PREFIX = "kingbid-spot-";
+
+/** Positions tuned to royal-crown.glb bbox (x/z ±0.53, y 0–0.56). */
+function pos(angleDeg: number, y: number, r: number): [number, number, number] {
+  const rad = (angleDeg * Math.PI) / 180;
+  return [Math.sin(rad) * r, y, Math.cos(rad) * r];
+}
 
 export const CROWN_SPOTS: CrownSpotDef[] = [
   {
@@ -28,110 +34,72 @@ export const CROWN_SPOTS: CrownSpotDef[] = [
     label: "Crown Owner",
     shortLabel: "👑",
     tierLabel: "The King",
-    personality: "Own the KingBid Crown",
+    personality: "Top-center emblem on the crown",
     startingBid: 2500,
-    position: [0, 1.05, 0],
-    hotspotScale: 0.14,
+    position: [0, 0.52, 0.14],
+    hotspotScale: 0.055,
   },
-  {
-    id: "02",
-    slug: "diamond-front",
-    categorySlug: "kingbid-spot-02",
-    tier: "diamond",
-    label: "Diamond 01 — Front",
-    shortLabel: "💎",
-    tierLabel: "Royal Gem",
-    personality: "Front-facing premium jewel",
-    startingBid: 500,
-    position: [0, 0.72, 0.52],
-    hotspotScale: 0.11,
-  },
-  {
-    id: "03",
-    slug: "diamond-left",
-    categorySlug: "kingbid-spot-03",
-    tier: "diamond",
-    label: "Diamond 02 — Left",
-    shortLabel: "💎",
-    tierLabel: "Royal Gem",
-    personality: "Left-side premium jewel",
-    startingBid: 400,
-    position: [-0.52, 0.65, 0.08],
-    hotspotScale: 0.1,
-  },
-  {
-    id: "04",
-    slug: "diamond-right",
-    categorySlug: "kingbid-spot-04",
-    tier: "diamond",
-    label: "Diamond 03 — Right",
-    shortLabel: "💎",
-    tierLabel: "Royal Gem",
-    personality: "Right-side premium jewel",
-    startingBid: 400,
-    position: [0.52, 0.65, 0.08],
-    hotspotScale: 0.1,
-  },
-  {
-    id: "05",
-    slug: "diamond-back",
-    categorySlug: "kingbid-spot-05",
-    tier: "diamond",
-    label: "Diamond 04 — Back",
-    shortLabel: "💎",
-    tierLabel: "Royal Gem",
-    personality: "Rear premium jewel",
-    startingBid: 300,
-    position: [0, 0.62, -0.5],
-    hotspotScale: 0.1,
-  },
-  ...royalPanels(),
+  ...diamondSpots(),
+  ...royalTriangleSpots(),
   ...courtSpots(),
 ];
 
-function royalPanels(): CrownSpotDef[] {
-  const angles = [0, 45, 90, 135, 180, 225, 270, 315];
-  const prices = [220, 200, 180, 160, 150, 140, 120, 100];
-  return angles.map((deg, i) => {
-    const rad = (deg * Math.PI) / 180;
-    const r = 0.62;
-    const y = 0.38 + (i % 2) * 0.06;
+function diamondSpots(): CrownSpotDef[] {
+  const angles = [0, 60, 120, 180, 240, 300];
+  const labels = ["Front", "Front Right", "Rear Right", "Back", "Rear Left", "Front Left"];
+  const prices = [500, 450, 400, 450, 350, 400];
+  return angles.map((deg, i) => ({
+    id: String(2 + i).padStart(2, "0"),
+    slug: `diamond-${String(i + 1).padStart(2, "0")}`,
+    categorySlug: `kingbid-spot-${String(2 + i).padStart(2, "0")}`,
+    tier: "diamond" as const,
+    label: `Diamond ${String(i + 1).padStart(2, "0")} — ${labels[i]}`,
+    shortLabel: "💎",
+    tierLabel: "Royal Gem",
+    personality: "Premium jewel on the crown band",
+    startingBid: prices[i]!,
+    position: pos(deg, 0.34, 0.44),
+    hotspotScale: 0.042,
+  }));
+}
+
+function royalTriangleSpots(): CrownSpotDef[] {
+  const prices = [250, 230, 220, 200, 190, 180, 170, 150, 130, 110];
+  return Array.from({ length: 10 }, (_, i) => {
+    const deg = i * 36;
+    const y = 0.44 + (i % 2) * 0.04;
     return {
-      id: String(6 + i).padStart(2, "0"),
+      id: String(8 + i).padStart(2, "0"),
       slug: `royal-${String(i + 1).padStart(2, "0")}`,
-      categorySlug: `kingbid-spot-${String(6 + i).padStart(2, "0")}`,
+      categorySlug: `kingbid-spot-${String(8 + i).padStart(2, "0")}`,
       tier: "royal" as const,
       label: `Royal Panel #${String(i + 1).padStart(2, "0")}`,
       shortLabel: "🔺",
       tierLabel: "The Royal Court",
-      personality: "Large logo panel on the crown",
+      personality: "Top triangle panel on the crown",
       startingBid: prices[i]!,
-      position: [Math.sin(rad) * r, y, Math.cos(rad) * r] as [number, number, number],
-      hotspotScale: 0.09,
+      position: pos(deg, y, 0.3),
+      hotspotScale: 0.038,
     };
   });
 }
 
 function courtSpots(): CrownSpotDef[] {
-  const angles = [22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5];
-  const prices = [90, 80, 70, 60, 50, 40, 30, 25];
-  return angles.map((deg, i) => {
-    const rad = (deg * Math.PI) / 180;
-    const r = 0.78;
-    return {
-      id: String(14 + i).padStart(2, "0"),
-      slug: `court-${String(i + 1).padStart(2, "0")}`,
-      categorySlug: `kingbid-spot-${String(14 + i).padStart(2, "0")}`,
-      tier: "court" as const,
-      label: `Court Spot #${String(i + 1).padStart(2, "0")}`,
-      shortLabel: "🔹",
-      tierLabel: "The King's Court",
-      personality: "Accessible court panel for startups",
-      startingBid: prices[i]!,
-      position: [Math.sin(rad) * r, 0.12, Math.cos(rad) * r] as [number, number, number],
-      hotspotScale: 0.075,
-    };
-  });
+  const angles = [30, 110, 190, 270];
+  const prices = [90, 70, 50, 25];
+  return angles.map((deg, i) => ({
+    id: String(18 + i).padStart(2, "0"),
+    slug: `court-${String(i + 1).padStart(2, "0")}`,
+    categorySlug: `kingbid-spot-${String(18 + i).padStart(2, "0")}`,
+    tier: "court" as const,
+    label: `Court Spot #${String(i + 1).padStart(2, "0")}`,
+    shortLabel: "🔹",
+    tierLabel: "The King's Court",
+    personality: "Lower band panel for startups",
+    startingBid: prices[i]!,
+    position: pos(deg, 0.1, 0.5),
+    hotspotScale: 0.034,
+  }));
 }
 
 export function getSpotByCategorySlug(slug: string): CrownSpotDef | undefined {
@@ -153,7 +121,7 @@ export function nextBidForSpot(spot: CrownSpotDef, currentBid: number): number {
 
 export const TIER_SUMMARY = [
   { tier: "crown" as const, label: "👑 Crown", count: 1, range: "$2,500" },
-  { tier: "diamond" as const, label: "💎 Royal Gems", count: 4, range: "$300–$500" },
-  { tier: "royal" as const, label: "🔺 Royal Panels", count: 8, range: "$100–$250" },
-  { tier: "court" as const, label: "🔹 Court Spots", count: 8, range: "$25–$100" },
+  { tier: "diamond" as const, label: "💎 Royal Gems", count: 6, range: "$300–$500" },
+  { tier: "royal" as const, label: "🔺 Royal Panels", count: 10, range: "$110–$250" },
+  { tier: "court" as const, label: "🔹 Court Spots", count: 4, range: "$25–$90" },
 ];

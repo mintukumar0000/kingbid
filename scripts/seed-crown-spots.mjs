@@ -9,16 +9,18 @@ const prisma = new PrismaClient();
 const SPOTS = [
   { slug: "kingbid-spot-01", name: "Crown Owner", description: "Own the KingBid Crown — the king emblem." },
   { slug: "kingbid-spot-02", name: "Diamond 01 — Front", description: "Front royal gem on the crown." },
-  { slug: "kingbid-spot-03", name: "Diamond 02 — Left", description: "Left royal gem on the crown." },
-  { slug: "kingbid-spot-04", name: "Diamond 03 — Right", description: "Right royal gem on the crown." },
+  { slug: "kingbid-spot-03", name: "Diamond 02 — Front Right", description: "Front-right royal gem on the crown." },
+  { slug: "kingbid-spot-04", name: "Diamond 03 — Rear Right", description: "Rear-right royal gem on the crown." },
   { slug: "kingbid-spot-05", name: "Diamond 04 — Back", description: "Back royal gem on the crown." },
-  ...Array.from({ length: 8 }, (_, i) => ({
-    slug: `kingbid-spot-${String(6 + i).padStart(2, "0")}`,
+  { slug: "kingbid-spot-06", name: "Diamond 05 — Rear Left", description: "Rear-left royal gem on the crown." },
+  { slug: "kingbid-spot-07", name: "Diamond 06 — Front Left", description: "Front-left royal gem on the crown." },
+  ...Array.from({ length: 10 }, (_, i) => ({
+    slug: `kingbid-spot-${String(8 + i).padStart(2, "0")}`,
     name: `Royal Panel #${String(i + 1).padStart(2, "0")}`,
-    description: `Royal panel ${String(i + 1).padStart(2, "0")} on the KingBid crown.`,
+    description: `Top triangle panel ${String(i + 1).padStart(2, "0")} on the KingBid crown.`,
   })),
-  ...Array.from({ length: 8 }, (_, i) => ({
-    slug: `kingbid-spot-${String(14 + i).padStart(2, "0")}`,
+  ...Array.from({ length: 4 }, (_, i) => ({
+    slug: `kingbid-spot-${String(18 + i).padStart(2, "0")}`,
     name: `Court Spot #${String(i + 1).padStart(2, "0")}`,
     description: `Court spot ${String(i + 1).padStart(2, "0")} on the KingBid crown.`,
   })),

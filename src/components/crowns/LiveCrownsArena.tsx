@@ -9,6 +9,14 @@ import { gridVariantForFilter } from "@/lib/crown-grid-layout";
 
 export type ArenaFilter = "all" | "trending" | CrownGroup;
 
+const FILTERS: { id: ArenaFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "trending", label: "Trending" },
+  { id: "tech", label: "Tech" },
+  { id: "places", label: "Places" },
+  { id: "internet", label: "Internet" },
+];
+
 function LiveAuctionHeading() {
   return (
     <div className="arena-live-heading">
@@ -22,10 +30,12 @@ export function LiveCrownsArena({
   crowns,
   onSteal,
   filter = "all",
+  onFilterChange,
 }: {
   crowns: CrownState[];
   onSteal: (c: CrownState) => void;
   filter?: ArenaFilter;
+  onFilterChange: (filter: ArenaFilter) => void;
 }) {
   const gridVariant = gridVariantForFilter(filter);
   const isFullKingdom = filter === "all" && crowns.length >= 12;
@@ -49,7 +59,21 @@ export function LiveCrownsArena({
 
   return (
     <div className="arena-shell space-y-6">
-      {showBento && <LiveAuctionHeading />}
+      <div className="crowns-arena-top">
+        <nav className="crowns-filter-nav" aria-label="Crown categories">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => onFilterChange(f.id)}
+              className={`crowns-filter-btn ${filter === f.id ? "crowns-filter-active" : ""}`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </nav>
+        {showBento && <LiveAuctionHeading />}
+      </div>
 
       {isFullKingdom ? (
         <>

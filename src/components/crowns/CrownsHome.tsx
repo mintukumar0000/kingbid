@@ -26,14 +26,6 @@ type Payload = {
   dethronements: DethronementFeedItem[];
 };
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "trending", label: "Trending" },
-  { id: "tech", label: "Tech" },
-  { id: "places", label: "Places" },
-  { id: "internet", label: "Internet" },
-];
-
 const EMPTY_BOARD: LeaderboardData = {
   entries: [],
   bidSnapshot: [],
@@ -124,20 +116,7 @@ export function CrownsHome() {
 
       {/* Live Crowns */}
       <section id="live-crowns" className={`${PAGE_WIDE} pb-12`}>
-        <nav className="crowns-filter-nav mb-6">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setFilter(f.id)}
-              className={`crowns-filter-btn ${filter === f.id ? "crowns-filter-active" : ""}`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </nav>
-
-        <LiveCrownsArena crowns={crowns} onSteal={openSteal} filter={filter} />
+        <LiveCrownsArena crowns={crowns} onSteal={openSteal} filter={filter} onFilterChange={setFilter} />
       </section>
 
       {filter === "all" && (

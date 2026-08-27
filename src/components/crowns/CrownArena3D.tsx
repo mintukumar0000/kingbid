@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { Billboard, ContactShadows, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { CrownSpotState } from "@/lib/crown-spots-data";
 import { faviconFor } from "@/lib/format";
@@ -12,6 +12,17 @@ const CROWN_TARGET: [number, number, number] = [0, 0.28, 0];
 const BASE_DISTANCE = 1.85;
 
 useGLTF.preload(CROWN_URL);
+
+function RankbidStar() {
+  return (
+    <svg viewBox="0 0 32 32" width={26} height={26} aria-hidden className="crown-spot-star">
+      <path
+        fill="currentColor"
+        d="M16 3l1.8 6.2L24 11l-6.2 1.8L16 19l-1.8-6.2L8 11l6.2-1.8L16 3zm0 22l-1.2 4.2L10.5 27l4.3-1.2L16 21.5l1.2 4.3 4.3 1.2-4.3-1.2L16 25z"
+      />
+    </svg>
+  );
+}
 
 function GLBCrown() {
   const { scene } = useGLTF(CROWN_URL);
@@ -26,9 +37,6 @@ function GLBCrown() {
           const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           mats.forEach((mat) => {
             if ("envMapIntensity" in mat) mat.envMapIntensity = 1.35;
-            if ("metalness" in mat && typeof mat.metalness === "number") {
-              mat.metalness = Math.min(1, mat.metalness + 0.05);
-            }
           });
         }
       }
@@ -39,38 +47,78 @@ function GLBCrown() {
   return <primitive object={clone} />;
 }
 
-function spotRotation(position: [number, number, number]): [number, number, number] {
-  const [x, , z] = position;
-  return [0, Math.atan2(x, z), 0];
+function spotBrand(spot: CrownSpotState): string {
+  const raw = spot.ownerHandle ?? spot.ownerTitle ?? "";
+  return raw.replace(/^@/, "").toUpperCase().slice(0, 18);
 }
 
 function SpotMarker({
   spot,
+  crownGroup,
   hovered,
   selected,
   onHover,
   onSelect,
 }: {
   spot: CrownSpotState;
+  crownGroup: RefObject<THREE.Group | null>;
   hovered: boolean;
   selected: boolean;
   onHover: (id: string | null) => void;
   onSelect: (id: string) => void;
 }) {
   const active = hovered || selected;
+  const { camera } = useThree();
+  const [visible, setVisible] = useState(true);
+  const visibleRef = useRef(true);
+
+  useFrame(() => {
+    const group = crownGroup.current;
+    if (!group) return;
+
+    const [x, y, z] = spot.position;
+    if (Math.hypot(x, z) < 0.01) {
+      if (!visibleRef.current) {
+        visibleRef.current = true;
+        setVisible(true);
+      }
+      return;
+    }
+
+    const camLocal = camera.position.clone();
+    group.worldToLocal(camLocal);
+    const spotPos = new THREE.Vector3(x, y, z);
+    const outward = new THREE.Vector3(x, 0, z).normalize();
+    const toCam = camLocal.sub(spotPos);
+    toCam.y = 0;
+    if (toCam.lengthSq() < 0.0001) {
+      return;
+    }
+    toCam.normalize();
+    const facing = outward.dot(toCam) > 0.15;
+    const shouldShow = facing || active;
+    if (shouldShow !== visibleRef.current) {
+      visibleRef.current = shouldShow;
+      setVisible(shouldShow);
+    }
+  });
+
+  if (!visible) return null;
+
+  const distFactor = spot.tier === "crown" ? 14 : spot.tier === "diamond" ? 15 : 16;
 
   return (
-    <group position={spot.position} rotation={spotRotation(spot.position)}>
+    <Billboard position={spot.position} follow>
       <Html
-        transform
-        occlude="blending"
-        distanceFactor={spot.tier === "crown" ? 9 : spot.tier === "diamond" ? 10 : 11}
+        center
+        occlude
+        distanceFactor={distFactor}
         style={{ pointerEvents: "auto" }}
-        zIndexRange={[40, 0]}
+        zIndexRange={[active ? 50 : 10, 0]}
       >
         <button
           type="button"
-          className={`crown-surface-marker ${spot.hasOwner ? "crown-surface-marker--owned" : "crown-surface-marker--open"} ${active ? "crown-surface-marker--active" : ""} crown-surface-marker--${spot.tier}`}
+          className={`crown-surface-marker ${spot.hasOwner ? "crown-surface-marker--owned" : "crown-surface-marker--open"} ${active ? "crown-surface-marker--active" : ""}`}
           onPointerEnter={() => {
             onHover(spot.id);
             document.body.style.cursor = "pointer";
@@ -85,21 +133,24 @@ function SpotMarker({
           }}
         >
           {spot.hasOwner && spot.ownerUrl ? (
-            <img src={faviconFor(spot.ownerUrl)} alt="" width={spot.tier === "crown" ? 44 : 32} height={spot.tier === "crown" ? 44 : 32} />
+            <>
+              <img
+                src={faviconFor(spot.ownerUrl)}
+                alt=""
+                width={spot.tier === "crown" ? 40 : 32}
+                height={spot.tier === "crown" ? 40 : 32}
+              />
+              <span className="crown-spot-brand">{spotBrand(spot)}</span>
+            </>
           ) : (
             <>
-              <svg viewBox="0 0 24 24" width={16} height={16} aria-hidden>
-                <path
-                  fill="currentColor"
-                  d="M12 2l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 21 8 14 2 9.4h7.6L12 2z"
-                />
-              </svg>
+              <RankbidStar />
               <span>Available</span>
             </>
           )}
         </button>
       </Html>
-    </group>
+    </Billboard>
   );
 }
 
@@ -146,23 +197,23 @@ function CrownScene({
 
   useFrame((_, delta) => {
     if (!groupRef.current || paused) return;
-    groupRef.current.rotation.y += delta * 0.12;
+    groupRef.current.rotation.y += delta * 0.1;
   });
 
   return (
     <>
       <SceneBackground dark={dark} />
-      <ambientLight intensity={dark ? 0.4 : 0.65} />
-      <directionalLight position={[4, 6, 3]} intensity={dark ? 1.1 : 1.45} color="#fffaf0" castShadow />
-      <directionalLight position={[-3, 2, -2]} intensity={0.35} color="#fde68a" />
-      <pointLight position={[0, 0.8, 1.5]} intensity={0.45} color="#fef3c7" />
-      <Environment preset="city" />
+      <ambientLight intensity={dark ? 0.45 : 0.7} />
+      <directionalLight position={[4, 6, 3]} intensity={dark ? 1.15 : 1.5} color="#fffaf0" castShadow />
+      <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#fde68a" />
+      <Environment preset="studio" />
       <group ref={groupRef}>
         <GLBCrown />
         {spots.map((spot) => (
           <SpotMarker
             key={spot.id}
             spot={spot}
+            crownGroup={groupRef}
             hovered={hoveredId === spot.id}
             selected={selectedId === spot.id}
             onHover={onHover}
@@ -170,7 +221,7 @@ function CrownScene({
           />
         ))}
       </group>
-      <ContactShadows position={[0, 0, 0]} opacity={dark ? 0.45 : 0.32} scale={2.2} blur={2.2} far={0.9} />
+      <ContactShadows position={[0, 0, 0]} opacity={dark ? 0.4 : 0.28} scale={2.2} blur={2.5} far={0.9} />
       <OrbitControls
         enablePan={false}
         minDistance={BASE_DISTANCE * 0.7}

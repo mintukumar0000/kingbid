@@ -140,14 +140,14 @@ export function CrownsHome() {
           ))}
         </nav>
 
-        <LiveCrownsArena crowns={crowns} onSteal={openSteal} />
+        <LiveCrownsArena crowns={crowns} onSteal={openSteal} filter={filter} />
       </section>
 
       {filter === "all" && (
         <div className={`${PAGE_WIDE} crowns-feed`}>
-          {data?.trending && <CrownsTrending crowns={data.trending} />}
+          {data?.trending && <CrownsTrending crowns={data.trending} onClaim={openSteal} />}
           {data?.mostWanted && <CrownsMostWanted crowns={data.mostWanted} onClaim={openSteal} />}
-          {placeCrowns.length > 0 && <CrownsKingdomMap crowns={placeCrowns} />}
+          {placeCrowns.length > 0 && <CrownsKingdomMap crowns={placeCrowns} onClaim={openSteal} />}
           {data?.dethronements && <CrownsDethronedFeed items={data.dethronements} />}
         </div>
       )}

@@ -2,18 +2,20 @@
 
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
 import { useLiveUpdates } from "@/hooks/useLiveUpdates";
-import { CrownCard } from "@/components/crowns/CrownCard";
 import { LiveCrownsArena } from "@/components/crowns/LiveCrownsArena";
+import {
+  CrownsTrending,
+  CrownsMostWanted,
+  CrownsKingdomMap,
+  CrownsDethronedFeed,
+} from "@/components/crowns/CrownsFeedSections";
 import { BidModal, type BidPrefill } from "@/components/BidModal";
-import { getCrown, crownBidParams, CROWN_DISCLAIMER, type CrownGroup } from "@/lib/crowns";
+import { getCrown, crownBidParams, type CrownGroup } from "@/lib/crowns";
 import type { CrownState, DethronementFeedItem } from "@/lib/crowns-data";
 import type { LeaderboardData } from "@/lib/leaderboard";
-import { formatMoney } from "@/lib/format";
 import { PAGE_WIDE } from "@/lib/layout";
-import { RelativeTime } from "@/components/RelativeTime";
 
 type Filter = "all" | "trending" | CrownGroup;
 
@@ -25,11 +27,11 @@ type Payload = {
 };
 
 const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "ALL" },
-  { id: "trending", label: "🔥 TRENDING" },
-  { id: "tech", label: "TECH" },
-  { id: "places", label: "🌎 PLACES" },
-  { id: "internet", label: "🌐 INTERNET" },
+  { id: "all", label: "All" },
+  { id: "trending", label: "Trending" },
+  { id: "tech", label: "Tech" },
+  { id: "places", label: "Places" },
+  { id: "internet", label: "Internet" },
 ];
 
 const EMPTY_BOARD: LeaderboardData = {
@@ -56,7 +58,6 @@ export function CrownsHome() {
   const [board, setBoard] = useState<LeaderboardData>(EMPTY_BOARD);
   const [boardScope, setBoardScope] = useState<"global" | "local">("global");
   const [countryCode, setCountryCode] = useState<string | undefined>();
-  const [categorySlug, setCategorySlug] = useState<string | undefined>();
 
   const apiFilter = filter === "all" ? "" : `?filter=${filter}`;
   const { data } = useSWR<Payload>(`/api/crowns${apiFilter}`, fetcher, { refreshInterval: 12_000 });
@@ -69,7 +70,6 @@ export function CrownsHome() {
     const params = crownBidParams(def);
     setBoardScope(params.scope);
     setCountryCode(params.countryCode);
-    setCategorySlug(params.categorySlug);
 
     const qs = new URLSearchParams({ page: "1", limit: "50", scope: params.scope });
     if (params.countryCode) qs.set("country", params.countryCode);
@@ -93,7 +93,7 @@ export function CrownsHome() {
       {/* Hero */}
       <section className={`crowns-hero ${PAGE_WIDE} pb-6 pt-10 text-center sm:pt-14`}>
         <div className="crowns-hero-glow" aria-hidden />
-        <p className="kb-eyebrow relative">👑 KingBid</p>
+        <p className="kb-eyebrow relative">KingBid</p>
         <h1 className="font-display relative mt-4 text-[42px] font-semibold leading-[1.02] tracking-tight sm:text-[58px]">
           <span className="arena-headline-glow">WHO&apos;S KING?</span>
           <span className="ml-2 inline-block animate-[crown-float_3s_ease-in-out_infinite]" aria-hidden>
@@ -101,9 +101,7 @@ export function CrownsHome() {
           </span>
         </h1>
         <p className="relative mx-auto mt-4 max-w-md text-[16px] leading-relaxed text-muted">
-          Bid for the crown.
-          <br />
-          Keep it until someone outbids you.
+          Bid for the crown. Keep it until someone outbids you.
         </p>
         <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
           <button
@@ -129,17 +127,13 @@ export function CrownsHome() {
 
       {/* Live Crowns */}
       <section id="live-crowns" className={`${PAGE_WIDE} pb-12`}>
-        <nav className="mb-6 flex flex-wrap justify-center gap-1.5 sm:justify-end">
+        <nav className="crowns-filter-nav mb-6">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               type="button"
               onClick={() => setFilter(f.id)}
-              className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition-all ${
-                filter === f.id
-                  ? "bg-[var(--crown-gold)] text-[#0a0908] shadow-[0_0_20px_rgba(201,162,39,0.25)]"
-                  : "border border-border/80 bg-surface/50 text-muted hover:border-[var(--crown-gold)]/40 hover:text-foreground"
-              }`}
+              className={`crowns-filter-btn ${filter === f.id ? "crowns-filter-active" : ""}`}
             >
               {f.label}
             </button>
@@ -149,88 +143,13 @@ export function CrownsHome() {
         <LiveCrownsArena crowns={crowns} onSteal={openSteal} />
       </section>
 
-      {/* Trending */}
-      {data?.trending && data.trending.length > 0 && filter === "all" && (
-        <section className={`${PAGE_WIDE} border-t border-border pb-12 pt-10`}>
-          <h2 className="font-display text-[22px] font-semibold">🔥 Trending</h2>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {data.trending.slice(0, 5).map((c) => (
-              <Link
-                key={c.slug}
-                href={`/crown/${c.slug}`}
-                className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 transition-colors hover:border-[var(--crown-gold)]/40"
-              >
-                <span className="font-semibold">👑 {c.name}</span>
-                <span className="text-[13px] font-bold text-[var(--crown-gold)]">
-                  +{formatMoney(c.bidDeltaToday)} today
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Most Wanted */}
-      {data?.mostWanted && data.mostWanted.length > 0 && filter === "all" && (
-        <section className={`${PAGE_WIDE} border-t border-border pb-12 pt-10`}>
-          <h2 className="font-display text-[22px] font-semibold">🎯 Most Wanted</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {data.mostWanted.map((c) => (
-              <CrownCard key={c.slug} crown={c} onSteal={openSteal} compact />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Kingdom */}
-      {filter === "all" && placeCrowns.length > 0 && (
-        <section id="kingdom" className={`${PAGE_WIDE} border-t border-border pb-12 pt-10`}>
-          <h2 className="font-display text-[22px] font-semibold">🌎 The Kingdom</h2>
-          <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted">{CROWN_DISCLAIMER}</p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {placeCrowns.map((c) => (
-              <Link
-                key={c.slug}
-                href={`/crown/${c.slug}`}
-                className="rounded-xl border border-border bg-surface-2 px-4 py-5 text-center transition-all hover:border-[var(--crown-gold)]/50 hover:bg-surface"
-              >
-                <span className="text-2xl">{c.flag}</span>
-                <p className="mt-2 font-semibold">{c.name}</p>
-                <p className="mt-1 text-[12px] text-muted">
-                  {c.hasKing ? `${c.kingHandle} · ${formatMoney(c.currentBid)}` : "Unclaimed"}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Recently dethroned */}
-      {data?.dethronements && data.dethronements.length > 0 && filter === "all" && (
-        <section className={`${PAGE_WIDE} border-t border-border pb-16 pt-10`}>
-          <h2 className="font-display text-[22px] font-semibold">🏆 Recently Dethroned</h2>
-          <ul className="mt-4 space-y-3">
-            {data.dethronements.map((d, i) => (
-              <li
-                key={`${d.at}-${i}`}
-                className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-border bg-surface px-4 py-3 text-[14px]"
-              >
-                <Link href={`/crown/${d.crownSlug}`} className="font-semibold text-[var(--crown-gold)] hover:underline">
-                  {d.crownName}
-                </Link>
-                <span className="text-muted">
-                  {d.previousKing} → {d.newKing}
-                </span>
-                <span className="tabular text-muted">
-                  {formatMoney(d.previousBid)} → {formatMoney(d.newBid)}
-                </span>
-                <span className="ml-auto text-[12px] text-muted">
-                  <RelativeTime date={d.at} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {filter === "all" && (
+        <div className={`${PAGE_WIDE} crowns-feed`}>
+          {data?.trending && <CrownsTrending crowns={data.trending} />}
+          {data?.mostWanted && <CrownsMostWanted crowns={data.mostWanted} onClaim={openSteal} />}
+          {placeCrowns.length > 0 && <CrownsKingdomMap crowns={placeCrowns} />}
+          {data?.dethronements && <CrownsDethronedFeed items={data.dethronements} />}
+        </div>
       )}
 
       <BidModal

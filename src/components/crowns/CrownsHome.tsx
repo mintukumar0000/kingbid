@@ -128,32 +128,24 @@ export function CrownsHome() {
 
       {/* Live Crowns */}
       <section id="live-crowns" className={`${PAGE_WIDE} pb-12`}>
-        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border/60 pb-4">
-          <div>
-            <h2 className="font-display text-[26px] font-semibold sm:text-[30px]">🔥 Live Crowns</h2>
-            <p className="mt-1 text-[14px] text-muted">Every spot shows its current top bid.</p>
-          </div>
-          <nav className="flex flex-wrap gap-1.5">
-            {FILTERS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setFilter(f.id)}
-                className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition-all ${
-                  filter === f.id
-                    ? "bg-[var(--crown-gold)] text-[#0a0908] shadow-[0_0_20px_rgba(201,162,39,0.25)]"
-                    : "border border-border/80 bg-surface/50 text-muted hover:border-[var(--crown-gold)]/40 hover:text-foreground"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </nav>
-        </div>
+        <nav className="mb-6 flex flex-wrap justify-center gap-1.5 sm:justify-end">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setFilter(f.id)}
+              className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition-all ${
+                filter === f.id
+                  ? "bg-[var(--crown-gold)] text-[#0a0908] shadow-[0_0_20px_rgba(201,162,39,0.25)]"
+                  : "border border-border/80 bg-surface/50 text-muted hover:border-[var(--crown-gold)]/40 hover:text-foreground"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </nav>
 
-        <div className="mt-6">
-          <LiveCrownsArena crowns={crowns} onSteal={openSteal} />
-        </div>
+        <LiveCrownsArena crowns={crowns} onSteal={openSteal} />
       </section>
 
       {/* Trending */}

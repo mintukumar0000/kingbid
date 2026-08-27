@@ -522,3 +522,251 @@ html.dark .eco-room-tile {
   from { opacity: 0.5; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Crown headline highlight — rankbid brush stroke */
+.crown-headline-mark {
+  background: linear-gradient(90deg, rgba(201, 162, 39, 0.35), rgba(201, 162, 39, 0.12));
+  z-index: 0;
+}
+
+/* Kingdom bento grid — Brand My Mac lid on a crown */
+.kingdom-stage {
+  position: relative;
+  padding: 1.25rem;
+  border-radius: 28px;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201, 162, 39, 0.08), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%),
+    var(--surface);
+}
+
+.kingdom-stage-ring {
+  pointer-events: none;
+  position: absolute;
+  inset: 12px;
+  border-radius: 22px;
+  border: 1px dashed rgba(201, 162, 39, 0.12);
+}
+
+.kingdom-grid {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: auto auto auto auto;
+  grid-template-areas:
+    ". ai saas startups . ."
+    "dev dev center center coding coding"
+    "design design center center marketing marketing"
+    "usa india nepal uk x threads";
+}
+
+@media (max-width: 640px) {
+  .kingdom-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "center center"
+      "ai saas"
+      "startups dev"
+      "coding design"
+      "marketing usa"
+      "india nepal"
+      "uk x"
+      "threads threads";
+  }
+}
+
+.kingdom-grid-compact {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.kingdom-tile-fallback .kingdom-crown-icon {
+  font-size: 32px;
+}
+
+.kingdom-tile {
+  border: 1px solid rgba(var(--crown-accent-rgb, 201, 162, 39), 0.2);
+  background: linear-gradient(165deg, rgba(var(--crown-accent-rgb, 201, 162, 39), 0.07) 0%, #0f0d0b 50%, #0a0908 100%);
+  min-height: 88px;
+  cursor: pointer;
+}
+
+.kingdom-tile-open {
+  border-style: dashed;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.03) 0%, #0c0a09 100%);
+}
+
+.kingdom-tile-sm { min-height: 96px; }
+.kingdom-tile-md { min-height: 108px; }
+.kingdom-tile-lg { min-height: 120px; }
+.kingdom-tile-xl { min-height: 180px; }
+
+.kingdom-tile-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(var(--crown-accent-rgb, 201, 162, 39), 0.12), transparent 70%);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.kingdom-tile:hover,
+.kingdom-tile:focus-visible {
+  transform: translateY(-2px) scale(1.01);
+  border-color: rgba(var(--crown-accent-rgb, 201, 162, 39), 0.5);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.35),
+    0 0 24px rgba(var(--crown-accent-rgb, 201, 162, 39), 0.1);
+  outline: none;
+}
+
+.kingdom-tile:hover .kingdom-tile-glow,
+.kingdom-tile:focus-visible .kingdom-tile-glow {
+  opacity: 1;
+}
+
+.kingdom-crown-icon {
+  filter: drop-shadow(0 0 24px rgba(201, 162, 39, 0.35));
+  animation: crown-float 4s ease-in-out infinite;
+}
+
+@keyframes crown-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.kingdom-tile-cta {
+  color: var(--crown-accent, var(--crown-gold));
+}
+
+/* Live auction table — brandmymac / rankbid */
+.auction-table {
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.auction-table-head {
+  grid-template-columns: 1.4fr 1.2fr 0.8fr 140px;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.auction-group + .auction-group {
+  border-top: 1px solid var(--border);
+}
+
+.auction-group-title {
+  padding: 1rem 1.25rem 0.5rem;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.auction-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 1rem 1.25rem;
+  transition: background 0.15s ease;
+}
+
+.auction-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.auction-row-main {
+  display: grid;
+  gap: 1rem;
+  align-items: center;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .auction-row-main {
+    grid-template-columns: 1.4fr 1.2fr 0.8fr 140px;
+  }
+}
+
+.auction-col-spot {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.auction-rank {
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--surface-2);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.auction-size-pill {
+  display: inline-flex;
+  border-radius: 9999px;
+  background: var(--surface-2);
+  padding: 0.15rem 0.5rem;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.auction-claim-btn {
+  width: 100%;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(201, 162, 39, 0.55);
+  background: transparent;
+  padding: 0.55rem 1rem;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--crown-gold);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.auction-claim-btn:hover {
+  background: var(--crown-gold);
+  color: #0a0908;
+  transform: scale(1.02);
+}
+
+.auction-row-previous {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.auction-row-mobile-held {
+  margin-top: 0.75rem;
+}
+
+.auction-row-time {
+  margin-top: 0.5rem;
+  font-size: 11px;
+  color: var(--muted);
+}

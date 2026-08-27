@@ -16,6 +16,7 @@ export interface CrownState {
   hasKing: boolean;
   kingHandle: string | null;
   kingDisplayUrl: string | null;
+  kingUrl: string | null;
   kingListingId: string | null;
   kingSlug: string | null;
   currentBid: number;
@@ -118,6 +119,7 @@ export async function getCrownState(crown: CrownDefinition): Promise<CrownState>
     hasKing: !!king,
     kingHandle: kingLabel(king),
     kingDisplayUrl: king?.displayUrl ?? null,
+    kingUrl: king?.url ?? null,
     kingListingId: king?.id ?? null,
     kingSlug: king?.slug ?? null,
     currentBid: king?.currentBid ?? 0,

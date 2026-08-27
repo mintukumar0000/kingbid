@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
 import { useLiveUpdates } from "@/hooks/useLiveUpdates";
 import { CrownCard } from "@/components/crowns/CrownCard";
+import { LiveCrownsArena } from "@/components/crowns/LiveCrownsArena";
 import { BidModal, type BidPrefill } from "@/components/BidModal";
 import { getCrown, crownBidParams, CROWN_DISCLAIMER, type CrownGroup } from "@/lib/crowns";
 import type { CrownState, DethronementFeedItem } from "@/lib/crowns-data";
@@ -127,18 +128,21 @@ export function CrownsHome() {
 
       {/* Live Crowns */}
       <section id="live-crowns" className={`${PAGE_WIDE} pb-12`}>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 className="font-display text-[22px] font-semibold sm:text-[26px]">🔥 Live Crowns</h2>
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border/60 pb-4">
+          <div>
+            <h2 className="font-display text-[26px] font-semibold sm:text-[30px]">🔥 Live Crowns</h2>
+            <p className="mt-1 text-[14px] text-muted">Every spot shows its current top bid.</p>
+          </div>
           <nav className="flex flex-wrap gap-1.5">
             {FILTERS.map((f) => (
               <button
                 key={f.id}
                 type="button"
                 onClick={() => setFilter(f.id)}
-                className={`rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition-colors ${
+                className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition-all ${
                   filter === f.id
-                    ? "bg-[var(--crown-gold)] text-[#0a0908]"
-                    : "border border-border text-muted hover:border-border-strong hover:text-foreground"
+                    ? "bg-[var(--crown-gold)] text-[#0a0908] shadow-[0_0_20px_rgba(201,162,39,0.25)]"
+                    : "border border-border/80 bg-surface/50 text-muted hover:border-[var(--crown-gold)]/40 hover:text-foreground"
                 }`}
               >
                 {f.label}
@@ -147,10 +151,8 @@ export function CrownsHome() {
           </nav>
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {crowns.map((crown) => (
-            <CrownCard key={crown.slug} crown={crown} onSteal={openSteal} />
-          ))}
+        <div className="mt-6">
+          <LiveCrownsArena crowns={crowns} onSteal={openSteal} />
         </div>
       </section>
 

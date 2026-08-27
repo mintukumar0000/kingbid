@@ -1,107 +1,223 @@
 "use client";
 
 import Link from "next/link";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, faviconFor } from "@/lib/format";
 import type { CrownState } from "@/lib/crowns-data";
+import { crownVisual } from "@/lib/crown-visuals";
 import { RelativeTime } from "@/components/RelativeTime";
 
-const THEME_STYLES = {
-  tech: "border-[#2a3344] bg-gradient-to-b from-[#141820] to-[#0f1218] hover:border-[#3d4f6a]",
-  places: "border-[#3a3228] bg-gradient-to-b from-[#1a1612] to-[#12100e] hover:border-[#5c4a32]",
-  internet: "border-[#2e2838] bg-gradient-to-b from-[#16121c] to-[#100e14] hover:border-[#4a3d58]",
-} as const;
+function KingAvatar({ crown, size = 48 }: { crown: CrownState; size?: number }) {
+  const visual = crownVisual(crown.slug);
+  if (crown.hasKing && crown.kingUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={faviconFor(crown.kingUrl)}
+        alt=""
+        width={size}
+        height={size}
+        className="rounded-xl bg-surface object-cover ring-2 ring-white/10"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <div
+      className="flex items-center justify-center rounded-xl bg-surface-2 text-xl ring-2 ring-white/10"
+      style={{ width: size, height: size, color: visual.accent }}
+    >
+      {visual.icon}
+    </div>
+  );
+}
 
+function StatusPills({ crown }: { crown: CrownState }) {
+  return (
+    <>
+      {crown.isNewKing && (
+        <span className="crown-pill crown-pill-live">🚨 New King</span>
+      )}
+      {crown.isHot && !crown.isNewKing && <span className="crown-pill crown-pill-hot">🔥 Hot</span>}
+      {!crown.hasKing && <span className="crown-pill crown-pill-open">Open throne</span>}
+    </>
+  );
+}
+
+/** Large podium card — Outbid-style featured slot */
+export function CrownCardFeatured({
+  crown,
+  onSteal,
+  rank,
+}: {
+  crown: CrownState;
+  onSteal: (c: CrownState) => void;
+  rank?: number;
+}) {
+  const visual = crownVisual(crown.slug);
+
+  return (
+    <article
+      className={`crown-slot crown-slot-featured group relative overflow-hidden rounded-[22px] ${crown.isNewKing ? "crown-new-king" : ""}`}
+      style={
+        {
+          "--crown-accent": visual.accent,
+          "--crown-accent-rgb": visual.accentRgb,
+        } as React.CSSProperties
+      }
+    >
+      <div className="crown-slot-glow" aria-hidden />
+      <div className="crown-slot-inner relative flex h-full min-h-[220px] flex-col p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            {rank != null && (
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--crown-accent)] text-[13px] font-bold text-[#0a0908]">
+                #{rank}
+              </span>
+            )}
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: visual.accent }}>
+                {crown.headline}
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                <StatusPills crown={crown} />
+              </div>
+            </div>
+          </div>
+          <KingAvatar crown={crown} size={52} />
+        </div>
+
+        <div className="mt-auto pt-6">
+          {crown.hasKing ? (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">Current King</p>
+              <p className="mt-1 truncate text-[20px] font-bold leading-tight">{crown.kingHandle}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">Throne empty</p>
+              <p className="mt-1 text-[15px] font-medium text-muted">First bid takes the crown</p>
+            </>
+          )}
+
+          <div className="mt-4 flex items-end justify-between gap-4">
+            <div>
+              <p className="font-mono-label text-[40px] font-bold leading-none tabular sm:text-[48px]" style={{ color: visual.accent }}>
+                {formatMoney(crown.hasKing ? crown.currentBid : crown.nextBid)}
+              </p>
+              {crown.hasKing && (
+                <p className="mt-1.5 text-[13px] text-muted">
+                  Steal at <span className="font-semibold text-foreground">{formatMoney(crown.nextBid)}</span>
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => onSteal(crown)}
+              className="crown-steal-btn shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+            >
+              {crown.hasKing ? "Outbid" : "Claim"}
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3 text-[11px] text-muted">
+          <span>
+            {crown.watchers > 0 && `${crown.watchers} watching`}
+            {crown.watchers > 0 && crown.bidCount > 0 && " · "}
+            {crown.bidCount > 0 && `${crown.bidCount} bids`}
+          </span>
+          {crown.lastBidAt && <RelativeTime date={crown.lastBidAt} />}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/** Compact horizontal row — Brand My Mac table feel */
+export function CrownCardRow({
+  crown,
+  onSteal,
+  index,
+}: {
+  crown: CrownState;
+  onSteal: (c: CrownState) => void;
+  index: number;
+}) {
+  const visual = crownVisual(crown.slug);
+
+  return (
+    <article
+      className={`crown-slot crown-slot-row group relative overflow-hidden rounded-2xl ${crown.isNewKing ? "crown-new-king" : ""}`}
+      style={
+        {
+          "--crown-accent": visual.accent,
+          "--crown-accent-rgb": visual.accentRgb,
+        } as React.CSSProperties
+      }
+    >
+      <div className="crown-slot-glow" aria-hidden />
+      <div className="crown-slot-inner relative flex flex-wrap items-center gap-4 p-4 sm:flex-nowrap sm:px-5 sm:py-4">
+        <span className="hidden w-6 shrink-0 text-[12px] font-medium tabular text-muted sm:block">{index + 1}</span>
+        <KingAvatar crown={crown} size={44} />
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="truncate text-[15px] font-bold">{crown.name}</p>
+            <StatusPills crown={crown} />
+          </div>
+          <p className="mt-0.5 truncate text-[13px] text-muted">
+            {crown.hasKing ? (
+              <>
+                <span className="font-medium text-foreground">{crown.kingHandle}</span>
+                {crown.lastBidAt && (
+                  <>
+                    {" "}
+                    · <RelativeTime date={crown.lastBidAt} />
+                  </>
+                )}
+              </>
+            ) : (
+              "No king yet — throne open"
+            )}
+          </p>
+        </div>
+
+        <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-end">
+          <div className="text-right">
+            <p className="font-mono-label text-[22px] font-bold tabular leading-none" style={{ color: visual.accent }}>
+              {formatMoney(crown.hasKing ? crown.currentBid : crown.nextBid)}
+            </p>
+            {crown.hasKing && (
+              <p className="mt-1 text-[11px] text-muted">+{formatMoney(crown.nextBid - crown.currentBid)} to steal</p>
+            )}
+          </div>
+          <button type="button" onClick={() => onSteal(crown)} className="crown-steal-btn">
+            {crown.hasKing ? "Outbid" : "Claim"}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/** Legacy grid card — used in Most Wanted */
 export function CrownCard({
   crown,
   onSteal,
   compact,
 }: {
   crown: CrownState;
-  onSteal: (crown: CrownState) => void;
+  onSteal: (c: CrownState) => void;
   compact?: boolean;
 }) {
-  const themeClass = THEME_STYLES[crown.theme];
+  if (compact) return <CrownCardRow crown={crown} onSteal={onSteal} index={0} />;
+  return <CrownCardFeatured crown={crown} onSteal={onSteal} />;
+}
 
+export function CrownCardLink({ slug }: { slug: string }) {
   return (
-    <article
-      className={`crown-card group relative flex flex-col rounded-2xl border p-5 transition-all duration-200 ${themeClass} ${
-        crown.isNewKing ? "crown-new-king ring-1 ring-[var(--crown-gold)]/40" : ""
-      }`}
-    >
-      {crown.isNewKing && (
-        <span className="absolute -top-2.5 right-4 rounded-full bg-[var(--crown-gold)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0a0908]">
-          🚨 New King
-        </span>
-      )}
-      {crown.isHot && !crown.isNewKing && (
-        <span className="absolute -top-2.5 right-4 rounded-full border border-[var(--crown-gold)]/50 bg-[#1a1612] px-2.5 py-0.5 text-[10px] font-bold text-[var(--crown-gold)]">
-          🔥 HOT
-        </span>
-      )}
-
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--crown-gold)]">
-            {crown.flag ? `${crown.flag} ` : "👑 "}
-            {crown.headline}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 flex-1">
-        {crown.hasKing ? (
-          <>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted">Current King</p>
-            <p className="mt-1 truncate text-[17px] font-bold text-foreground">{crown.kingHandle}</p>
-            <p className="font-mono-label mt-3 text-[32px] font-bold leading-none tabular text-[var(--crown-gold)] sm:text-[36px]">
-              {formatMoney(crown.currentBid)}
-            </p>
-            <p className="mt-2 text-[13px] text-muted">
-              Next bid{" "}
-              <span className="font-semibold text-foreground">{formatMoney(crown.nextBid)}</span>
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted">No King yet</p>
-            <p className="mt-2 text-[14px] leading-snug text-muted">Be the first to claim the crown.</p>
-            <p className="font-mono-label mt-4 text-[28px] font-bold tabular text-[var(--crown-gold)]">
-              {formatMoney(crown.nextBid)}
-            </p>
-            <p className="mt-1 text-[12px] text-muted">Starting bid</p>
-          </>
-        )}
-      </div>
-
-      <div className="mt-5 space-y-2">
-        <button
-          type="button"
-          onClick={() => onSteal(crown)}
-          className="w-full rounded-full bg-[var(--crown-gold)] py-2.5 text-[13px] font-bold uppercase tracking-wide text-[#0a0908] transition-all hover:brightness-110 active:scale-[0.99]"
-        >
-          {crown.hasKing ? "🔥 Steal the Crown" : "👑 Claim the Crown"}
-        </button>
-        <Link
-          href={`/crown/${crown.slug}`}
-          className="block text-center text-[12px] font-medium text-muted transition-colors hover:text-[var(--crown-gold)]"
-        >
-          View crown →
-        </Link>
-      </div>
-
-      {!compact && (
-        <p className="mt-4 border-t border-border/60 pt-3 text-[11px] text-muted">
-          {crown.watchers > 0 && <span>{crown.watchers} watching</span>}
-          {crown.watchers > 0 && crown.bidCount > 0 && <span> · </span>}
-          {crown.bidCount > 0 && <span>{crown.bidCount} bids</span>}
-          {crown.lastBidAt && (
-            <>
-              {(crown.watchers > 0 || crown.bidCount > 0) && <span> · </span>}
-              <RelativeTime date={crown.lastBidAt} />
-            </>
-          )}
-        </p>
-      )}
-    </article>
+    <Link href={`/crown/${slug}`} className="text-[12px] font-medium text-muted hover:text-[var(--crown-gold)]">
+      View crown →
+    </Link>
   );
 }

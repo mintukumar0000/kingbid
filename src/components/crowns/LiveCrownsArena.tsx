@@ -8,6 +8,15 @@ import { CrownAuctionTable } from "@/components/crowns/CrownAuctionTable";
 
 type View = "kingdom" | "auction";
 
+function StatChip({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="arena-stat-chip">
+      <span className={`arena-stat-value ${accent ? "arena-stat-gold" : ""}`}>{value}</span>
+      <span className="arena-stat-label">{label}</span>
+    </div>
+  );
+}
+
 export function LiveCrownsArena({
   crowns,
   onSteal,
@@ -31,59 +40,51 @@ export function LiveCrownsArena({
   const totalBids = crowns.reduce((s, c) => s + c.bidCount, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Live stats — rankbid.tattoo style */}
-      <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px]">
-        <span className="font-semibold tabular text-foreground">{formatMoney(totalRaised)} raised</span>
-        <span className="hidden h-1 w-1 rounded-full bg-muted sm:inline-block" aria-hidden />
-        <span className="text-muted">
-          <span className="font-semibold text-foreground">{totalWatching || totalBids}</span>{" "}
-          {totalWatching > 0 ? "watching" : "bids placed"}
-        </span>
-        <span className="hidden h-1 w-1 rounded-full bg-muted sm:inline-block" aria-hidden />
-        <span className="flex items-center gap-1.5 text-muted">
-          <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-green" />
-          <span>
-            <span className="font-semibold text-[var(--crown-gold)]">{claimed}</span> of {crowns.length} crowns claimed
+    <div className="arena-shell space-y-8">
+      {/* Live stats — glass chips */}
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <StatChip label="raised" value={formatMoney(totalRaised)} accent />
+        <StatChip
+          label={totalWatching > 0 ? "watching" : "bids placed"}
+          value={String(totalWatching || totalBids)}
+        />
+        <div className="arena-stat-chip arena-stat-live">
+          <span className="pulse-dot h-2 w-2 rounded-full bg-green" />
+          <span className="arena-stat-value arena-stat-gold">
+            {claimed}/{crowns.length}
           </span>
-        </span>
+          <span className="arena-stat-label">claimed</span>
+        </div>
       </div>
 
-      {/* Headline + view toggle — brandmymac style */}
-      <div className="flex flex-col items-center gap-5 text-center">
+      {/* Headline + view toggle */}
+      <div className="flex flex-col items-center gap-6 text-center">
         <div>
-          <h3 className="font-display text-[28px] font-semibold leading-tight sm:text-[36px]">
+          <p className="kb-eyebrow mb-3 opacity-80">Live digital thrones</p>
+          <h3 className="arena-headline font-display text-[30px] font-semibold leading-[1.08] sm:text-[42px]">
             Put your brand on{" "}
-            <span className="relative inline-block">
+            <span className="arena-headline-glow relative inline-block">
               <span className="relative z-10">the crown.</span>
-              <span className="crown-headline-mark absolute -inset-x-1 bottom-0 top-[55%] -skew-y-1 rounded-sm" aria-hidden />
+              <span className="crown-headline-mark absolute -inset-x-2 bottom-0 top-[50%] -skew-y-1 rounded-sm" aria-hidden />
             </span>
           </h3>
-          <p className="mx-auto mt-2 max-w-md text-[14px] text-muted">
-            Every jewel is a live throne. Highest bid wins until someone steals it.
+          <p className="mx-auto mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
+            Fourteen live jewels. One kingdom. Highest bid wears the crown until someone steals it.
           </p>
         </div>
 
-        <div className="inline-flex rounded-full border border-border bg-surface p-1">
+        <div className="arena-toggle">
           <button
             type="button"
             onClick={() => setView("kingdom")}
-            className={`rounded-full px-5 py-2 text-[12px] font-semibold uppercase tracking-wide transition-all ${
-              view === "kingdom"
-                ? "bg-[var(--crown-gold)] text-[#0a0908] shadow-sm"
-                : "text-muted hover:text-foreground"
-            }`}
+            className={`arena-toggle-btn ${view === "kingdom" ? "arena-toggle-active" : ""}`}
           >
-            👑 Kingdom map
+            <span aria-hidden>👑</span> Kingdom map
           </button>
           <button
             type="button"
             onClick={() => setView("auction")}
-            className={`rounded-full px-5 py-2 text-[12px] font-semibold uppercase tracking-wide transition-all ${
-              view === "auction"
-                ? "bg-[var(--crown-gold)] text-[#0a0908] shadow-sm"
-                : "text-muted hover:text-foreground"
-            }`}
+            className={`arena-toggle-btn ${view === "auction" ? "arena-toggle-active" : ""}`}
           >
             The auction, live
           </button>
@@ -91,14 +92,14 @@ export function LiveCrownsArena({
       </div>
 
       {/* Live bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface/60 px-4 py-3 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <span className="pulse-dot h-2 w-2 rounded-full bg-green" />
-          <span className="text-[13px] font-medium">Live auction</span>
+      <div className="arena-live-bar">
+        <div className="flex items-center gap-2.5">
+          <span className="pulse-dot h-2 w-2 rounded-full bg-green shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+          <span className="text-[13px] font-semibold tracking-wide">Live auction</span>
           <span className="text-[12px] text-muted">· ongoing, no deadline</span>
         </div>
-        <p className="text-[13px] text-muted">
-          {view === "kingdom" ? "Tap any spot to bid" : "Outbid any crown anytime"}
+        <p className="text-[12px] text-muted">
+          {view === "kingdom" ? "Tap any jewel to bid" : "Outbid any crown anytime"}
         </p>
       </div>
 

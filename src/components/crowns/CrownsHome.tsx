@@ -91,17 +91,21 @@ export function CrownsHome() {
   return (
     <>
       {/* Hero */}
-      <section className={`${PAGE_WIDE} pb-6 pt-10 text-center sm:pt-14`}>
-        <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-[var(--crown-gold)]">👑 KingBid</p>
-        <h1 className="font-display mt-4 text-[40px] font-semibold leading-[1.05] tracking-tight sm:text-[52px]">
-          WHO&apos;S KING? 👑
+      <section className={`crowns-hero ${PAGE_WIDE} pb-6 pt-10 text-center sm:pt-14`}>
+        <div className="crowns-hero-glow" aria-hidden />
+        <p className="kb-eyebrow relative">👑 KingBid</p>
+        <h1 className="font-display relative mt-4 text-[42px] font-semibold leading-[1.02] tracking-tight sm:text-[58px]">
+          <span className="arena-headline-glow">WHO&apos;S KING?</span>
+          <span className="ml-2 inline-block animate-[crown-float_3s_ease-in-out_infinite]" aria-hidden>
+            👑
+          </span>
         </h1>
-        <p className="mx-auto mt-4 max-w-md text-[16px] leading-relaxed text-muted">
+        <p className="relative mx-auto mt-4 max-w-md text-[16px] leading-relaxed text-muted">
           Bid for the crown.
           <br />
           Keep it until someone outbids you.
         </p>
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+        <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             onClick={() => {
@@ -113,14 +117,11 @@ export function CrownsHome() {
                 setModalOpen(true);
               }
             }}
-            className="rounded-full bg-[var(--crown-gold)] px-7 py-3 text-[14px] font-bold uppercase tracking-wide text-[#0a0908] hover:brightness-110"
+            className="crowns-cta-primary"
           >
             Claim a Crown
           </button>
-          <a
-            href="#live-crowns"
-            className="rounded-full border border-border-strong px-7 py-3 text-[14px] font-semibold text-foreground hover:border-[var(--crown-gold)] hover:text-[var(--crown-gold)]"
-          >
+          <a href="#live-crowns" className="crowns-cta-secondary">
             Explore Crowns
           </a>
         </div>
